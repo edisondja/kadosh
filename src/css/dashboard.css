@@ -1,0 +1,29 @@
+li{
+	cursor: pointer;
+	padding: 10px;
+
+
+}
+
+li:hover{
+	background: #466d7e;
+    opacity: 10;
+    border-radius: 10px;
+    color: gold;
+}
+
+
+
+.menuStilos{
+
+	padding-top: 50px;
+
+}
+
+.buscar_doctor{
+		overflow-x: scroll;
+		height: 400px;
+		
+
+
+}
