@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
-
+import alertify from 'alertifyjs';
+import BuscarProcedimiento from './buscando_procedimiento';
 class ProcedimientoForm extends React.Component{
 
 
@@ -11,9 +12,19 @@ class ProcedimientoForm extends React.Component{
 
 		}
 
-		guardar_datos=()=>{
+		guardar_datos(){
+			var nombre = document.getElementById("nombre_procedimiento").value;
+			var precio = document.getElementById("precio").value;
 
+			Axios.get(`http://localhost:8000/api/guardar_procedimiento/${nombre}/${precio}`).then(data=>{
 
+					alertify.message("Procedimiento guardado con exito");
+
+			}).catch(error=>{
+
+				alertify.error("No se pudo guardar el procedimiento");
+
+			});
 
 
 		}
@@ -24,10 +35,11 @@ class ProcedimientoForm extends React.Component{
 			return (<div className="col-md-8">
 					    <br/><h1>Agregar Procedimiento</h1><br/>
 						<strong>Nombre</strong><br/>
-						<input type="text" className="form-control"/><br/>
+						<input type="text" className="form-control" id="nombre_procedimiento"/><br/>
 						<strong>Precio</strong><br/>
-						<input type="text" className="form-control"/><br/>
-						<button className="btn btn-primary" onClick={this.guardar_datos()}>Guardar</button>
+						<input type="text" className="form-control" id="precio"/><br/>
+						<button className="btn btn-primary" onClick={this.guardar_datos}>Guardar</button>
+						<BuscarProcedimiento/>
 					</div>);
 
 		}

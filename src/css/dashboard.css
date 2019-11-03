@@ -12,6 +12,15 @@ li:hover{
     color: gold;
 }
 
+.procedimiento{
+	height: 800px;
+	overflow-y:scroll
+}
+
+.espacio{
+	margin-right: 5px;
+
+}
 
 
 .menuStilos{

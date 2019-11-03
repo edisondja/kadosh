@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import ReactToast from 'react-toasts';
+import Alertify from 'alertifyjs';
 import { BrowserRouter, Route} from "react-router-dom";
 
 
@@ -9,16 +10,17 @@ class ActualizarDoctor extends React.Component{
 
     constructor(props){
             super(props);
-            this.estate = {doctor:{nombre:"David",apellido:"Gonzales",telefono:"809-565-1484",dni:"455-5515-25"}}
+            this.state = {doctor:{nombre:"Edison",apellido:"De Jesus Abreu"}};
             this.editando_campo = this.editando_campo.bind(this);
     }
             
     componentDidMount(){
 
-        this.cargar_doctor(this.props.id);
+        this.cargar_doctor(this.props.id_doctor);
     }
-
+0
     cargar_doctor=(id)=>{
+
 
         Axios.get(`http://localhost:8000/api/cargar_doctor/${id}`).then(data=>{
 
@@ -26,7 +28,7 @@ class ActualizarDoctor extends React.Component{
 
         }).catch(error=>{
 
-            console.log(error);
+            Alertify.message(error);
 
         });
 
@@ -36,28 +38,33 @@ class ActualizarDoctor extends React.Component{
 
         if(e.target.id=="nombre"){
             
-            this.setState({nombre:e.target.value});
+            this.setState({doctor:{nombre:e.target.value}});
 
         }else if(e.target.id=="apellido"){
 
-            this.setState({apellido:e.target.value});
+            this.setState({doctor:{apellido:e.target.value}});
 
-        }else if(e.target.id=="telefo"){  
+        }else if(e.target.id=="telefono"){  
 
-            this.setState({telefono:e.target.value});
+            this.setState({doctor:{telefono:e.target.value}});
 
         }else if(e.target.id=="dni"){
 
-             this.setState({dni:e.target.value});
+             this.setState({doctor:{dni:e.target.value}});
         }
 
     }
 
-    actualizar_doctor(){
+    actualizar_doctor=()=>{
 
-        Axios.get(`http://localhost:8000/api/actualizar_doctor/${this.state.doctor.nombre}/${this.state.doctor.apellido}/${this.state.doctor.cedula}/${this.state.doctor.telefono}/${this.state.doctor.id}`).then(data=>{
+        var nombre = document.getElementById("nombre").value;
+        var apellido = document.getElementById("apellido").value;
+        var telefono = document.getElementById("telefono").value;
+        var dni = document.getElementById("dni").value;
 
-            alert(data);
+        Axios.get(`http://localhost:8000/api/actualizar_doctor/${nombre}/${apellido}/${telefono}/${dni}/${this.props.id_doctor}`).then(data=>{
+
+            Alertify.message(`Se actualizo correctamente`)
 
         }).catch(error=>{
 
@@ -74,13 +81,13 @@ class ActualizarDoctor extends React.Component{
                 <div> <br/><br/>
                     <h2>Actualizar doctor</h2>
                     <strong>Nombre</strong><br/>
-                    <input type="text" value="" id="nombre" onChange={this.editando_campo}  value={this.estate.doctor.nombre}  defaultValue={this.estate.doctor.nombre} className="form-control"/><br/>
+                    <input type="text" id="nombre" onChange={this.editando_campo}  value={this.state.doctor.nombre}  defaultValue={this.state.doctor.nombre} className="form-control"/><br/>
                     <strong>Apellido</strong><br/>
-                    <input type="text" value="" id="apellido"  onChange={this.editando_campo}  value={this.estate.doctor.apellido}  defaultValue={this.estate.doctor.apellido} className="form-control" /><br/> 
+                    <input type="text" id="apellido"  onChange={this.editando_campo}  value={this.state.doctor.apellido}  defaultValue={this.state.doctor.apellido} className="form-control" /><br/> 
                     <strong>TELEFONO</strong><br/>
-                    <input type="text" value="" id="telefono"  onChange={this.editando_campo}  value={this.estate.doctor.telefono}  defaultValue={this.estate.doctor.telefono} className="form-control" /><br/> 
+                    <input type="text"  id="telefono"  onChange={this.editando_campo}  value={this.state.doctor.numero_telefono}  defaultValue={this.state.doctor.numero_telefono} className="form-control" /><br/> 
                     <strong>DNI</strong><br/>
-                    <input type="text" value="" id="dni"  onChange={this.editando_campo} className="form-control"/><br/> 
+                    <input type="text" id="dni"  onChange={this.editando_campo} className="form-control" value={this.state.doctor.dni}/><br/> 
                     <button className="btn btn-success" onClick={this.actualizar_doctor}>Actualizar</button>
                 </div>
             </div>  

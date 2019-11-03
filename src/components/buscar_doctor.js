@@ -4,6 +4,7 @@ import '../css/dashboard.css';
 import Axios from 'axios';
 import ActualizarDoctor from './actualizando_doctor';
 import { BrowserRouter, Route} from 'react-router-dom';
+import alertify from 'alertifyjs';
 
 const estilo_botones = {
 
@@ -58,10 +59,21 @@ class BuscarDoctor extends React.Component{
 
 		eliminar_doctor(id){
 
-				Axios.get(`https://api/eliminar_doctor/${id}`).then(data=>{
+			alertify.confirm("Seguro que deseas eliminar este doctor?",function(){
 
-						console.log(data.json());
-				});
+				Axios.get(`http://localhost:8000/api/eliminar_doctor/${id}`).then(data=>{
+
+					alertify.message("Registro borrado con exito");
+
+				}).catch(error=>{
+					
+					alertify.error("No se pudo eliminar este doctor");
+				})
+
+
+			},function(){
+
+			});
 
 		}
 
@@ -70,7 +82,7 @@ class BuscarDoctor extends React.Component{
 
 			if(this.state.opcion=="actualizar_doctor"){
 
-				return  <ActualizarDoctor nombre={this.state.id_select}/>;
+				return  <ActualizarDoctor id_doctor={this.state.id_select}/>;
 			}
 			return (<div className="col-md-8"><br/>
 					<h1>Bucando doctor</h1>
@@ -85,7 +97,7 @@ class BuscarDoctor extends React.Component{
 									</div>
 									<div style={estilo_botones}>
 											<button class="btn btn-primary" onClick={()=>this.actualizar_doctor(data.id)}>Actualizar</button>
-								  			<button class="btn btn-secondary" style={{marginLeft:5}}>Eliminar</button>	
+								  			<button class="btn btn-secondary" onClick={(e)=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
 									</div>
 									
 								</div>
