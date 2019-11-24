@@ -4,6 +4,8 @@ import '../css/dashboard.css';
 import Axios from 'axios';
 import ActualizarDoctor from './actualizando_doctor';
 import { BrowserRouter, Route} from 'react-router-dom';
+import cargar_doctores from './funciones_extras';
+
 import alertify from 'alertifyjs';
 
 const estilo_botones = {
@@ -11,6 +13,7 @@ const estilo_botones = {
 	marginLeft:'75%',
 	marginTop:'5px'
 }
+
 
 
 class BuscarDoctor extends React.Component{
@@ -23,7 +26,7 @@ class BuscarDoctor extends React.Component{
 		
 		componentDidMount(){
 
-			this.cargar_doctores();
+				cargar_doctores.cargar_doctores(this);
 		}
 
 		buscar_doctor=(e)=>{

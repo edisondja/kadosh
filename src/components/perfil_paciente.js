@@ -31,6 +31,11 @@ class PerfilPaciente extends React.Component{
 
 
 		}
+
+		cargar_procedimientos(){
+
+			
+		}
 		
 		agregar_factura=()=>{
 
@@ -39,7 +44,7 @@ class PerfilPaciente extends React.Component{
 
 		render(){
 				if(this.state.select=='agregando_factura'){
-					return <AgregarFactura/>;
+					return <AgregarFactura IDpaciente={this.props.id_paciente}/>;
 				}
 
 				return (<div className="col-md-8">

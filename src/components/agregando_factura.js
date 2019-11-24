@@ -3,17 +3,20 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import FacturaInterfaz from './factura_interfaz';
+import cargar_doctores from './funciones_extras';
 
 class  AgregarFactura extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[]};
+        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[]};
     }
 
 
     componentDidMount(){
-        this.cargar_procedimientos();
+
+        cargar_doctores.cargar_procedimientos(this);
+        cargar_doctores.cargar_doctores(this);
     }
 
     agregarProcedimiento=(id,nombre,precio)=>{
@@ -24,7 +27,7 @@ class  AgregarFactura extends React.Component{
                ,(evt, value)=>{ 
                     
                     this.setState(state=>({
-                        lista_procedimiento:state.lista_procedimiento.concat({nombre_procedimiento:nombre,precio_procedimiento:precio,total:precio*value,id:id,cantidad:value})
+                        lista_procedimiento:state.lista_procedimiento.concat({nombre_procedimiento:nombre,total:precio*value,id_procedimiento:id,cantidad:value})
                     }));
                     this.setState({total:this.state.total+(value*precio)});
                 }
@@ -32,15 +35,21 @@ class  AgregarFactura extends React.Component{
 
     }
 
-    cargar_procedimientos=()=>{
+    generar_factura=()=>{
+            //accion a ajecutar cuando se haga click en generar factura
+            var id_doctor = document.querySelector("#doctor_i").value;
+            Axios.post("http://localhost:8000/api/crear_factura",{id_paciente:this.props.IDpaciente,IDdoctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then(data=>{
 
-        Axios.get("http://localhost:8000/api/cargar_procedimientos").then(data=>{
-            this.setState({procedimientos:data.data});
-        }).catch(error=>{
-            Alertify.alert("Problema al cargar procedimientos");
-        });
+                    //Alertify.message(data.data);
+                    alert(data);
+                    console.log(data);
+            }).catch(error=>{
+                    Alertify.error("Error al crear factura");
+            });
 
     }
+
+
 
     buscar_procedimiento=()=>{ 
             
@@ -81,7 +90,13 @@ class  AgregarFactura extends React.Component{
                     </table>
                     <h3>Monto total</h3>
                     <strong id="monto_total">$ {this.state.total}</strong>
-                    <button className="btn btn-primary" style={{marginLeft:250}}>Generar Factura</button><br/><br/>
+                    <strong  style={{float:'right',margin:'5px'}}>Seleccione el doctor</strong>
+                    <select className="form-control col-md-3" style={{float:'right'}} id="doctor_i">
+                        {this.state.doctores.map(data=>(
+                             <option value={data.id}>{data.nombre} {data.apellido}</option>
+                        ))}
+                    </select>
+                    <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura}>Generar Factura</button><br/><br/>
                     <input type="text" className="form-control" id="buscando" onKeyUp={this.buscar_procedimiento} placeholder="Escriba el procedimiento"/><br/>
 
                     {

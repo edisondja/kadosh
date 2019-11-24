@@ -4,6 +4,8 @@ import Axios from 'axios';
 import alertify from 'alertifyjs';
 import '../css/dashboard.css';
 import Actualizar from './actualizando_procedimiento';
+import cargar_doctores from './funciones_extras';
+
 
 class BuscandoProcedimiento extends  React.Component{
 
@@ -14,20 +16,11 @@ class BuscandoProcedimiento extends  React.Component{
 
     componentDidMount(){
 
-        this.cargar_procedimientos();
+        cargar_doctores.cargar_procedimientos(this)
     }
 
 
 
-    cargar_procedimientos(){
-
-        Axios.get("http://localhost:8000/api/cargar_procedimientos").then(data=>{
-                this.setState({procedimientos:data.data});
-        }).catch(error=>{
-            alertify.alert("Problema al cargar procedimientos");
-        });
-
-    }
 
     actualizar=(id)=>{
         this.setState({actualizar:true,id_procedimiento:id});
