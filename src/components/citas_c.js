@@ -4,13 +4,14 @@ import Axios from 'axios';
 import '../css/bootstrap.css';
 import Logo from '../logo.jpg';
 import PerfilPaciente from './perfil_paciente';
-
+import AgregarCita from './agregar_cita';
 class  Cita extends React.Component{
 
 	constructor(props){
 		super(props);
 		this.id_paciente=0;
 		this.state ={perfil_selec:false,
+					nombre_paciente:"",
 					clientes:[
 						  
 					    ],
@@ -33,6 +34,11 @@ class  Cita extends React.Component{
 			}).catch(error=>{
 					console.log(error);
 			});
+	}
+
+	asignar_cita=(id,nombre)=>{
+
+		this.setState({perfil_selec:'agregar_citas',id_cliente:id,nombre_paciente:nombre});
 	}
 
 	buscarPaciente=(e)=>{
@@ -60,6 +66,10 @@ class  Cita extends React.Component{
 
 				return <PerfilPaciente id_paciente={this.state.id_cliente} nombre="oye esto es un nombre cabron" />;
 
+		}else if(this.state.perfil_selec=="agregar_citas"){
+
+			return <AgregarCita paciente={this.state.nombre_paciente} id_paciente={this.state.id_cliente}/>;
+
 		}
 
 		return (<div className="col-md-8"><br/>
@@ -74,7 +84,7 @@ class  Cita extends React.Component{
 									<img src={Logo} width="30"/>
 									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p>
 									<button className="btn-primary" onClick={()=>this.cargar(data.id)}>Ver perfil</button>
-									<button className="btn-success">Asignar Cita</button>
+									<button className="btn-success" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>
 								</div>
 							</div><br/>
 							</div>

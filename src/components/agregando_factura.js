@@ -38,7 +38,8 @@ class  AgregarFactura extends React.Component{
     generar_factura=()=>{
             //accion a ajecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
-            Axios.post("http://localhost:8000/api/crear_factura",{id_paciente:this.props.IDpaciente,IDdoctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then(data=>{
+            var tipo_de_pago = document.querySelector('#tipo_de_pago').value;
+            Axios.post("http://localhost:8000/api/crear_factura",{id_paciente:this.props.IDpaciente,IDdoctor:id_doctor,total:this.state.total,tp_pago:tipo_de_pago,procedimientos:[this.state.lista_procedimiento]}).then(data=>{
 
                     //Alertify.message(data.data);
                     alert(data);
@@ -97,6 +98,7 @@ class  AgregarFactura extends React.Component{
                         ))}
                     </select>
                     <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura}>Generar Factura</button><br/><br/>
+             
                     <input type="text" className="form-control" id="buscando" onKeyUp={this.buscar_procedimiento} placeholder="Escriba el procedimiento"/><br/>
 
                     {
