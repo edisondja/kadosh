@@ -98,7 +98,7 @@ class PerfilPaciente extends React.Component{
 
 				}else if(this.state.select=="ver_facturas"){
 
-					return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente}/>;
+					return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre}/>;
 
 				}
 
