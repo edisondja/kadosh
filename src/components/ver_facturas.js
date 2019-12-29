@@ -3,6 +3,7 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import IconInvoice from '../expediente.png';
 import FacturaInterface from './factura_interfaz';
+import FuncionesExtras from './funciones_extras';
 class VerFacturas extends React.Component{
 
 
@@ -29,7 +30,20 @@ class VerFacturas extends React.Component{
     }
 
     eliminar_factura(id_factura){
+            Alertify.prompt("Eliminar Factura","Digite la contraseña admin para eliminar esta factura","",
+        function(event,value){
+                if(FuncionesExtras.password==value){
+                    
+                    Axios.get(`http://localhost:8000/api/eliminar_factura/${id_factura}`).then(data=>{
+                            Alertify.success("Factura eliminada con exito");
+                    }).catch(error=>{
+                            Alertify.error("No se pudo eliminar la factura");
+                    });
+                    Alertify.success("contraseña correcta");
+                }
+        },function(error){
 
+        });
     }
 
     actualizar_factura(id_factura){
@@ -64,7 +78,7 @@ class VerFacturas extends React.Component{
                         this.state.facturas.map((data=>(
 
                             <div className="card-body">
-                                <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info">Eliminar</button> <button className="btn-primary">Editar</button> <button className="btn-info">Imprimir</button>   <strong>Total a pagar:</strong>RD${data.precio_estatus}<hr/>
+                                <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info" onClick={()=>this.eliminar_factura(data.id)}>Eliminar</button><strong>Total a pagar:</strong>RD${data.precio_estatus}<hr/>
                             </div>
                         )))
                         

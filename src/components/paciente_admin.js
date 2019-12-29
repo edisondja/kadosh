@@ -2,14 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Citas from './citas_c';
 import Axios from 'axios';
+import FuncionesExtras from './funciones_extras';
 
 class PacienteAdmin extends  React.Component{
 
 	constructor(props){
 			super(props);
-			this.state={estados:true,ver_paciente:false};
+			this.state={estados:true,ver_paciente:false,doctores:[]};
 			
 
+	}
+
+	componentDidMount(){
+			FuncionesExtras.cargar_doctores(this);
 	}
 
 	ver_pacientes=()=>{
@@ -71,11 +76,11 @@ class PacienteAdmin extends  React.Component{
 
 						<input type='tel'  id="telefono" className="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
 						
-						<strong>Engrasado por doctor</strong><br/>
+						<strong>Ingresado por doctor</strong><br/>
 						<select id="doctores_select" className="form-control">
-							<option>Noelia</option>
-							<option>Alex</option>
-							<option>Naiel</option>
+							{this.state.doctores.map((data=>(
+										<option value={data.id}>{data.nombre} {data.apellido}</option>
+							)))}
 						</select><br/>
 						<button className="btn btn-primary" onClick={this.guardar_paciente}>Guardar</button>
 					</div>

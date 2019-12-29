@@ -10,6 +10,17 @@ class  AgregarFactura extends React.Component{
     constructor(props){
         super(props);
         this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[]};
+        this.removeTodo = this.removeTodo.bind(this);
+
+    }
+
+    removeTodo(name,resta){
+        this.setState({
+            lista_procedimiento: this.state.lista_procedimiento.filter(el => el !== name),total:this.state.total-resta
+        },()=>{
+            console.log(this.state.lista_procedimiento);
+        });
+        
     }
 
 
@@ -47,6 +58,12 @@ class  AgregarFactura extends React.Component{
             });
 
     }
+    
+    eliminar_procedimiento=(indice)=>{
+                    console.log("intentando eliminar procedimiento ..");
+                    this.setState({})
+                    
+    }
 
 
 
@@ -66,6 +83,7 @@ class  AgregarFactura extends React.Component{
 
 
     render(){
+         var indice_procedimiento = 0;
         return (<div className="col-md-8">
                 <div><br/>
                     <h2>CREACCION DE FACTURA</h2><hr/>
@@ -75,14 +93,15 @@ class  AgregarFactura extends React.Component{
                             <td>Nombre</td>
                             <td>Cantidad</td>
                             <td>Monto</td>
+                            <td>Eliminar</td>
                         </tr>
                     {
                         this.state.lista_procedimiento.map(data=>(
-
                             <tr>
                                 <td>{data.nombre_procedimiento}</td>
                                 <td>{data.cantidad}</td>
                                 <td>{data.total}</td>
+                                <td><button className="btn-danger" onClick={()=>this.removeTodo(data,data.total)}>X</button></td>
                             </tr>
                         ))
                     }

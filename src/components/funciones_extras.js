@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
 
+var password= "kadosh2019";
 
 function cargar_doctores(el){
 
@@ -28,5 +29,5 @@ function cargar_procedimientos(el){
 }
 
 
-export default {cargar_doctores,cargar_procedimientos};
+export default {cargar_doctores,cargar_procedimientos,password};
 
