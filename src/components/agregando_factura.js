@@ -42,7 +42,7 @@ class  AgregarFactura extends React.Component{
                     }));
                     this.setState({total:this.state.total+(value*precio)});
                 }
-               ,()=> { Alertify.error('Cancel') })
+               ,()=> { Alertify.error('Cancel') }).set('type','text');
 
     }
 
@@ -53,7 +53,9 @@ class  AgregarFactura extends React.Component{
 
                     console.log(data.data);
                     Alertify.success("Factura generada correctamente, puede ir al perfil del paciente y verla");
-            }).catch(error=>{
+                    document.getElementById("agregar_paciente").click();
+
+                }).catch(error=>{
                     Alertify.error("Error al crear factura");
             });
 

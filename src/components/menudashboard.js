@@ -71,8 +71,8 @@ class MenuDashboard extends React.Component{
 				</div>
 
 					<ul style={this.estilos} className="menuStilos">
-								<li><img src={Select} />Notificaciones</li>
-								<li onClick={(e)=>this.menu_select('paciente')}><img src={Select} /><span className="icon-bar"></span>Agregar Paciente</li>
+								<li id="notificaiones"><img src={Select}/>Notificaciones</li>
+								<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={Select} /><span className="icon-bar"></span>Agregar Paciente</li>
 								<li onClick={(e)=>this.menu_select('doctor')}><img src={Select} />Agregar Doctor</li>
 								<li onClick={(e)=>this.menu_select('procedimiento')}><img src={Select} />Agregar Procedimientos</li>
 								<li><img src={Select} />Factura Directa</li>

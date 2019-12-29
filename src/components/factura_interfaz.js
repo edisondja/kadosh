@@ -4,6 +4,7 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import ReactPrint from 'react-to-print';
 import ImprimirRecibo from './imprimir_recibo';
+import Url_base from './funciones_extras';
 import '../css/dashboard.css';
 
 class FacturaInterfaz extends React.Component{
@@ -22,7 +23,7 @@ class FacturaInterfaz extends React.Component{
 
     cargar_procedimientos=(id_factura)=>{
 
-        Axios.get(`http://localhost:8000/api/cargar_procedimientos_de_factura/${id_factura}`).then(data=>{
+        Axios.get(`${Url_base.url_base}/api/cargar_procedimientos_de_factura/${id_factura}`).then(data=>{
 
             this.setState({procedimientos:data.data});
 
@@ -34,7 +35,7 @@ class FacturaInterfaz extends React.Component{
     
     cargar_recibos=(id_factura)=>{
 
-        Axios.get(`http://localhost:8000/api/cargar_recibos/${id_factura}`).then(data=>{
+        Axios.get(`${Url_base.url_base}/api/cargar_recibos/${id_factura}`).then(data=>{
                 this.setState({recibos:data.data});
         }).catch(error=>{
                 Alertify.error("error al cargar los recibos");
@@ -46,7 +47,11 @@ class FacturaInterfaz extends React.Component{
             
         Alertify.prompt("Descuento manual","Digite la cantidad que le quiere descontar a la facutra.","",function(event,value){
 
-                alert(value);
+                Axios.get(`${Url_base.url_base}/api/descontar_precio_factura/${id_factura}/${value}`).then(data=>{
+                    Alertify.success("Descuento aplicado con exito");
+                }).catch(error=>{
+                    Alertify.error("No se pudo aplicar el descuento con exito");
+                })
 
         },function(error){
 
@@ -57,7 +62,7 @@ class FacturaInterfaz extends React.Component{
 
     imprimir_factura=(id_recibo,id_factura)=>{
             
-        Axios.get(`http://localhost:8000//api/imprimir_recibo/${id_recibo}/${id_factura}`).then(data=>{
+        Axios.get(`${Url_base.url_base}/api/imprimir_recibo/${id_recibo}/${id_factura}`).then(data=>{
                 this.setState({config:'imprimir_recibo',data_factura:data.data.recibo,procedimientos_imprimir:data.data.procedimientos});
         }).catch(error=>{
                 Alertify.error("No se pudo imprimir el recibo");
@@ -80,8 +85,9 @@ class FacturaInterfaz extends React.Component{
     eliminar_recibo(id_recibo,id_factura){
 
         Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",function(){
-                    Axios.get(`http://localhost:8000/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
+                    Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
                             Alertify.success("Recibo eliminado correctamente..");
+                            document.getElementById(id_recibo).remove();
                     }).catch(error=>{
                             Alertify.error("No se pudo eliminar el recibo..");
                     });
@@ -100,7 +106,7 @@ class FacturaInterfaz extends React.Component{
 
                         if(option==1){
 
-                            Axios.get(`http://localhost:8000/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}`).then(data=>{
+                            Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}`).then(data=>{
                                             Alertify.success("Pago realizado con exito");
                                             this.setState({mensaje:data});
                             }).catch(error=>{
@@ -131,7 +137,7 @@ class FacturaInterfaz extends React.Component{
 
     cargar_factura=(id_factura)=>{
             
-            Axios.get(`http://localhost:8000/api/cargar_factura/${id_factura}`).then(data=>{
+            Axios.get(`${Url_base.url_base}/api/cargar_factura/${id_factura}`).then(data=>{
                     this.setState({factura:data.data[0]});
             }).catch(error=>{
                     Alertify.message("No se pudo cargar la factura");
@@ -168,7 +174,7 @@ class FacturaInterfaz extends React.Component{
                     }
                     </table>
                     <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
-                    <button className="btn btn-primary" onclick={()=>this.desconctar(this.props.id_factura)}>Descontar</button>&nbsp;
+                    <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
                     <button className="btn btn-dark">X</button><strong>&nbsp;&nbsp;&nbsp;TOTAL $RD {this.state.total}</strong> <hr/>
                     <h2>Pagos Realizados</h2>
                     <table className="table boxslider">
@@ -183,7 +189,7 @@ class FacturaInterfaz extends React.Component{
                            {
                                this.state.recibos.map((data=>(
 
-                                    <tr>
+                                    <tr id={this.data.id}>
                                         <td>{data.monto}</td>
                                         <td>{data.concepto_pago}</td>
                                         <td>{data.tipo_de_pago}</td>

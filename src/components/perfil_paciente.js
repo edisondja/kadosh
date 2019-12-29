@@ -6,6 +6,7 @@ import '../css/dashboard.css';
 import AgregarFactura from './agregando_factura';
 import AgregarCita from './agregar_cita';
 import VerFacturas from './ver_facturas';
+import Verficar from './funciones_extras';
 
 class PerfilPaciente extends React.Component{
 
@@ -19,10 +20,28 @@ class PerfilPaciente extends React.Component{
 			this.consultarPaciente(this.props.id_paciente);
 			this.cargar_citas_paciente(this.props.id_paciente);
 		}
+
+		eliminar_paciente(id_paciente){
+
+			Alertify.prompt("Eliminar paciente","Digite su clave admin para eliminar este paciente","",function(event,value){
+				if(Verficar.password==value){
+					Alertify.success("contraseña correcta!");
+					Axios.get(`${Verficar.url_base}/api/borrar_paciente/${id_paciente}`).then(data=>{
+							Alertify.success("Paciente eliminado con exito");
+							document.getElementById("agregar_paciente").click();
+					}).catch(error=>{
+							Alertify.error("No se pudo eliminar el paciente");
+					});
+				}
+			},function(error){
+
+			}).set("type","password");
+
+		}
 		
 		cargar_citas_paciente=(id_paciente)=>{
 
-			Axios.get(`http://localhost:8000/api/cargar_citas_de_paciente/${id_paciente}`).then(data=>{
+			Axios.get(`${Verficar.url_base}/api/cargar_citas_de_paciente/${id_paciente}`).then(data=>{
 
 			this.setState({lista_citas:data.data});
 				console.log(data.data);
@@ -36,7 +55,7 @@ class PerfilPaciente extends React.Component{
 
 		consultarPaciente=(id)=>{
 
-			Axios.get(`http://localhost:8000/api/paciente/${id}`).then(data=>{
+			Axios.get(`${Verficar.url_base}/api/paciente/${id}`).then(data=>{
 
 				this.setState({paciente:data.data});
 
@@ -52,7 +71,7 @@ class PerfilPaciente extends React.Component{
 			
 			Alertify.confirm("Eliminar esta cita","Segur@ que deseas eliminar esta cita?",function(){
 
-				Axios.get(`http://localhost:8000/api/eliminar_cita/${id}`).then(data=>{
+				Axios.get(`${Verficar.url_base}/api/eliminar_cita/${id}`).then(data=>{
 							Alertify.success("cita eliminada correctamente");
 	
 				}).catch(error=>{
@@ -72,7 +91,7 @@ class PerfilPaciente extends React.Component{
 
 		cargar_cita=(id)=>{
 			//alert("entro");
-			Axios.get(`http://localhost:8000/api/cargar_cita/${id}`).then(data=>{
+			Axios.get(`${Verficar.url_base}/api/cargar_cita/${id}`).then(data=>{
 				this.setState({cita:data.data,select:'editando_cita',id_cita:id},()=>{
 						document.getElementById("hora").value= data.data.hora;
 						document.getElementById("dia").value= data.data.dia;
@@ -107,7 +126,7 @@ class PerfilPaciente extends React.Component{
 							<strong>Nombre: {this.state.paciente.nombre} {this.state.paciente.apellido}</strong><br/>
 							<strong>Cedula: {this.state.paciente.cedula}</strong><br/>
 							<strong>Ingrasado por el Dr: Naiel Sanchez</strong><br/><hr/>
-							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio">Eliminar Paciente</button>
+							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>
 							<strong>Lista de citas</strong>
 							{

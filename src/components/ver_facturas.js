@@ -19,7 +19,7 @@ class VerFacturas extends React.Component{
     }
 
     cargar_facturas=(id_paciente)=>{
-        Axios.get(`http://localhost:8000/api/cargar_facturas_paciente/${id_paciente}`).then(data=>{
+        Axios.get(`${FuncionesExtras.url_base}/api/cargar_facturas_paciente/${id_paciente}`).then(data=>{
             
             this.setState({facturas:data.data});
             Alertify.message("Facturas listas");
@@ -34,8 +34,9 @@ class VerFacturas extends React.Component{
         function(event,value){
                 if(FuncionesExtras.password==value){
                     
-                    Axios.get(`http://localhost:8000/api/eliminar_factura/${id_factura}`).then(data=>{
+                    Axios.get(`${FuncionesExtras.url_base}/api/eliminar_factura/${id_factura}`).then(data=>{
                             Alertify.success("Factura eliminada con exito");
+                            document.getElementById(id_factura).remove();
                     }).catch(error=>{
                             Alertify.error("No se pudo eliminar la factura");
                     });
@@ -77,7 +78,7 @@ class VerFacturas extends React.Component{
                     {
                         this.state.facturas.map((data=>(
 
-                            <div className="card-body">
+                            <div className="card-body" id={data.id}>
                                 <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info" onClick={()=>this.eliminar_factura(data.id)}>Eliminar</button><strong>Total a pagar:</strong>RD${data.precio_estatus}<hr/>
                             </div>
                         )))

@@ -33,7 +33,7 @@ class PacienteAdmin extends  React.Component{
 			var id_doctor = 1;
 			var fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
 
-			Axios.get(`http://localhost:8000/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/2017-06-15`).then(data=>{
+			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/2017-06-15`).then(data=>{
 
 					this.setState({ver_paciente:true});
 
@@ -54,7 +54,7 @@ class PacienteAdmin extends  React.Component{
 		}
 
 		return(<div className="col-md-8"><br/><h1>Agregar Paciente</h1>
-					<div><button className="btn btn-info" style={{marginLeft:'80%'}} onClick={this.ver_pacientes}>Ver Pacientes</button><br/>
+					<div><button className="btn btn-info" style={{marginLeft:'80%'}} onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>
 						
 						<strong>Nombre</strong><br/>
 

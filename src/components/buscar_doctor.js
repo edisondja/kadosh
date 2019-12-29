@@ -33,14 +33,14 @@ class BuscarDoctor extends React.Component{
 
 			var nombre_doctor =  e.target.value;
 			
-			Axios.get(`http://localhost:8000/api/buscando_doctor/${nombre_doctor}`).then(data=>{
+			Axios.get(`${cargar_doctores.url_base}/api/buscando_doctor/${nombre_doctor}`).then(data=>{
 					
 						this.setState({doctores:data.data});		
 			});
 		}	
 
 		cargar_doctores(){
-				Axios.get("http://localhost:8000/api/doctores").then(data=>{
+				Axios.get(`${cargar_doctores.url_base}/api/doctores`).then(data=>{
 
 					this.setState({doctores:data.data})
 
@@ -64,7 +64,7 @@ class BuscarDoctor extends React.Component{
 
 			alertify.confirm("Seguro que deseas eliminar este doctor?",function(){
 
-				Axios.get(`http://localhost:8000/api/eliminar_doctor/${id}`).then(data=>{
+				Axios.get(`${cargar_doctores.url_base}/api/eliminar_doctor/${id}`).then(data=>{
 
 					alertify.message("Registro borrado con exito");
 

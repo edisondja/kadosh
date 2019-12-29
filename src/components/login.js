@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import Logo from  '../logo.jpg';
 import Dashboard from './dashboard';
+import Verificar from './funciones_extras';
 
 
 
@@ -10,7 +11,7 @@ class Login extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state= {login:true,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
+			this.state= {login:false,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
 			this.color_notifiacion = {
 					color:'blue'
 			}

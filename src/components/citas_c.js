@@ -5,6 +5,7 @@ import '../css/bootstrap.css';
 import Logo from '../logo.jpg';
 import PerfilPaciente from './perfil_paciente';
 import AgregarCita from './agregar_cita';
+import Url from './funciones_extras';
 class  Cita extends React.Component{
 
 	constructor(props){
@@ -29,7 +30,7 @@ class  Cita extends React.Component{
 
 	cargar_citas()
 	{
-			Axios.get("http://localhost:8000/api/paciente").then(data=>{
+			Axios.get(`${Url.url_base}/api/paciente`).then(data=>{
 			    this.setState({clientes:data.data});
 			}).catch(error=>{
 					console.log(error);
@@ -43,7 +44,7 @@ class  Cita extends React.Component{
 
 	buscarPaciente=(e)=>{
 
-		Axios.get(`http://localhost:8000/api/buscar_paciente/${e.target.value}`).then(data=>{
+		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}`).then(data=>{
 			this.setState({clientes:data.data});
 		}).catch(error=>{
 				console.log(error);

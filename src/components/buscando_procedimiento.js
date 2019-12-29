@@ -30,7 +30,7 @@ class BuscandoProcedimiento extends  React.Component{
 
         alertify.confirm("Deseas eliminar este procedimiento",function(){
 
-            Axios.get(`http://localhost:8000/api/eliminar_procedimiento/${id}`).then(data=>{
+            Axios.get(`${cargar_doctores.url_base}/api/eliminar_procedimiento/${id}`).then(data=>{
                 
                     alertify.message("Procedimiento borrado correctamente!");
                     this.cargar_procedimientos();
@@ -48,7 +48,7 @@ class BuscandoProcedimiento extends  React.Component{
     buscar_p=()=>{ 
             
         var buscar = document.getElementById("buscando").value;
-            Axios.get(`http://localhost:8000/api/buscar_procedimiento/${buscar}`).then(data=>{
+            Axios.get(`${cargar_doctores.url_base}/api/buscar_procedimiento/${buscar}`).then(data=>{
 
                     this.setState({procedimientos:data.data});
 
