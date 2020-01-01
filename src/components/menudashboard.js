@@ -7,13 +7,15 @@ import Logo from  '../logo.jpg';
 import Paciente from './paciente_admin';
 import Doctor from './admin_doctor';
 import ProcedimientoForm from './agregar_procedimiento';
-
-
+import Notificaciones from './notificaciones';
+import Reporte from './reporte';
+import FuncionesExtras from './funciones_extras';
+import Alertify from 'alertifyjs';
 class MenuDashboard extends React.Component{
 
 	constructor(props){
 		super(props);
-		this.state= {estado:true,select_opcion:'citas'}
+		this.state= {estado:true,select_opcion:'citas',notificaciones:[],notificado:false}
 		this.estilos = {
 					  listStyleType:"none"
 			}	
@@ -21,6 +23,11 @@ class MenuDashboard extends React.Component{
 
 	}
 
+	componentDidMount(){
+
+		FuncionesExtras.notificar_cumple(this);
+
+	}
 
 	menu_select=(select)=>{
 
@@ -38,6 +45,11 @@ class MenuDashboard extends React.Component{
 
 
 	render(){
+		if(this.state.notificaciones!="" && this.state.notificado==false){
+			Alertify.success("Hoy estan de cumple años, revise las notifaciones");
+			this.setState({notificado:true});
+		}
+
 		let ver;
 
 			if(this.state.select_opcion=="citas"){
@@ -57,6 +69,14 @@ class MenuDashboard extends React.Component{
 
 
 				ver =<ProcedimientoForm/>;
+			
+			}else if(this.state.select_opcion=="notificaciones"){
+				
+				ver =<Notificaciones/>;
+			
+			}else if(this.state.select_opcion=="reportes"){
+				
+				ver = <Reporte/>;
 			}
 
 
@@ -71,12 +91,11 @@ class MenuDashboard extends React.Component{
 				</div>
 
 					<ul style={this.estilos} className="menuStilos">
-								<li id="notificaiones"><img src={Select}/>Notificaciones</li>
+								<li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={Select}/>Notificaciones</li>
 								<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={Select} /><span className="icon-bar"></span>Agregar Paciente</li>
 								<li onClick={(e)=>this.menu_select('doctor')}><img src={Select} />Agregar Doctor</li>
 								<li onClick={(e)=>this.menu_select('procedimiento')}><img src={Select} />Agregar Procedimientos</li>
-								<li><img src={Select} />Factura Directa</li>
-								<li><img src={Select} />Generar Reportes</li>
+								<li onClick={(e)=>this.menu_select('reportes')}><img src={Select} />Generar Reportes</li>
 					</ul>							
 				</div>
 				{ver}

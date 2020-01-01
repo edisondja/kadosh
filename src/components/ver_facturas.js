@@ -44,7 +44,7 @@ class VerFacturas extends React.Component{
                 }
         },function(error){
 
-        });
+        }).set('type','password');
     }
 
     actualizar_factura(id_factura){

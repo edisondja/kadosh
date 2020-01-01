@@ -46,3 +46,8 @@ li:hover{
 	margin-left: 30%;
 
 }
+
+.interfaz_reporte{
+	overflow-y:scroll;
+	height: 400px;
+}

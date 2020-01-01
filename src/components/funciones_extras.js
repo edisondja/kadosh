@@ -4,6 +4,7 @@ import Alertify from 'alertifyjs';
 var password= "kadosh2019";
 var url_base =  "http://localhost:8000";
 
+
 function cargar_doctores(el){
 
     Axios.get(`${url_base}/api/doctores`).then(data=>{
@@ -16,6 +17,19 @@ function cargar_doctores(el){
 
     })
 }
+
+    function notificar_cumple(el){
+    
+        Axios.get(`${url_base}/api/notificar_cumple`).then(data=>{
+                el.setState({notificaciones:data.data});
+        }).catch(error=>{
+                Alertify.message("No se pudieron cargar las notificaciones");
+        });
+
+    }
+
+
+
 
 function cargar_procedimientos(el){
 
@@ -30,5 +44,5 @@ function cargar_procedimientos(el){
 }
 
 
-export default {cargar_doctores,cargar_procedimientos,password,url_base};
+export default {cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple};
 

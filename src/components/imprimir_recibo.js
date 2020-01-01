@@ -27,9 +27,9 @@ class ImprimirRecibo extends React.Component{
         
         return (<div><hr/>
                     <div className="card" id="recibo">
-                            <h4>Reicibo #{this.props.data_recibo.id}</h4>
+                            <h4>#{this.props.data_recibo.codigo_recibo}</h4>
                                 <strong className="titulo_kadosh">CLINICA DENTAL KADOSH</strong>
-                                <p>RL C/San Antonio #33A Los Alcarrizos Santo Domingo,R.D TEL: 809-620-8641 RNC: 131-76629-3</p>
+                                <p>RL C/San Antonio #33A Los Alcarrizos Santo Domingo,R.D TEL: 809-620-864 RNC: 131-76629-3</p>
                                 <table className="table">
                                     <tr>
                                         <td>Procedimiento</td>
@@ -76,14 +76,14 @@ class ImprimirRecibo extends React.Component{
                                     <tr>
                                         <td>ABONO</td>
                                         <td>EFECTIVO</td>
-                                        <td>5616</td>
-                                        <td>{this.props.data_recibo.created_at}</td>
+                                        <td>131-76629-3</td>
+                                        <td>{this.props.data_recibo.fecha_pago}</td>
                                     </tr>
                                    
                                 </table>    
 
                                 <strong>Ref: {this.props.data_recibo.id_factura}</strong>
-                                <strong style={{float:'rigth'}}>   Firma _____________________</strong>
+                                <strong style={{float:'rigth'}}>   Firma _______________________________</strong>
                     </div> 
                     <button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
 

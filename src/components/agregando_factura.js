@@ -49,11 +49,12 @@ class  AgregarFactura extends React.Component{
     generar_factura=()=>{
             //accion a ajecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
-            Axios.post("http://localhost:8000/api/crear_factura",{id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then(data=>{
+            Axios.post("http://localhost:8000/api/crear_factura",{id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
 
                     console.log(data.data);
+                    this.setState({total:0,lista_procedimiento:[]});
                     Alertify.success("Factura generada correctamente, puede ir al perfil del paciente y verla");
-                    document.getElementById("agregar_paciente").click();
+                   // document.getElementById("agregar_paciente").click();
 
                 }).catch(error=>{
                     Alertify.error("Error al crear factura");

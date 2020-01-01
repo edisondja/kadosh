@@ -3,6 +3,7 @@ import ReactDom from 'react-dom';
 import Logo from  '../logo.jpg';
 import Dashboard from './dashboard';
 import Verificar from './funciones_extras';
+import Axios from 'axios';
 
 
 
@@ -11,7 +12,7 @@ class Login extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state= {login:false,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
+			this.state= {login:true,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
 			this.color_notifiacion = {
 					color:'blue'
 			}
@@ -30,19 +31,18 @@ class Login extends React.Component{
 			let usuario = document.querySelector("#usuario").value;
 			let clave = document.querySelector("#clave").value;
 
-			if(usuario=="e" && clave=="s"){
-
-
+			Axios.get(`${Verificar.url_base}/api/login/${usuario}/${clave}`).then(data=>{
+				if(data.data!=""){
 					this.setState({login:true});
 					this.setState({mensaje:" Creedenciales correcto"});
 					this.color_notifiacion={color:"green"}
-			}else{
+				}
+			}).catch(error=>{
+				this.setState({mensaje:" usuario y Contraseña no validos"});
+				this.color_notifiacion={color:"red"}
+			});
 
-					this.setState({mensaje:" usuario y Contraseña no validos"});
-					this.color_notifiacion={color:"red"}
-
-
-			}
+		
 		}
 
 		render(){

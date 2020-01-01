@@ -125,6 +125,7 @@ class PerfilPaciente extends React.Component{
 							<h1>Perfil de paciente</h1><br/>
 							<strong>Nombre: {this.state.paciente.nombre} {this.state.paciente.apellido}</strong><br/>
 							<strong>Cedula: {this.state.paciente.cedula}</strong><br/>
+							<strong>Telefono: {this.state.paciente.telefono}</strong><br/>
 							<strong>Ingrasado por el Dr: Naiel Sanchez</strong><br/><hr/>
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>

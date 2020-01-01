@@ -33,7 +33,7 @@ class PacienteAdmin extends  React.Component{
 			var id_doctor = 1;
 			var fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
 
-			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/2017-06-15`).then(data=>{
+			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/${fecha_nacimiento}`).then(data=>{
 
 					this.setState({ver_paciente:true});
 
