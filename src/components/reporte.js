@@ -14,7 +14,7 @@ class Reporte extends React.Component{
         }
     
         componentDidMount(){
-               // this.cargar_recibos();
+                this.reportes(null);
         }
 
         
@@ -27,10 +27,18 @@ class Reporte extends React.Component{
             ventimp.close();
         }
 
-        reportes=()=>{
-            var fecha_inicial = document.getElementById('fecha_inicial').value;
-            var fecha_final = document.getElementById('fecha_final').value;
+        reportes=(config='normal')=>{
+            var fecha_inicial;
+            var fecha_final;
 
+            if(config=='normal'){
+                fecha_inicial = document.getElementById('fecha_inicial').value;
+                fecha_final = document.getElementById('fecha_final').value;
+            }else {
+                var f = new Date();
+                fecha_inicial = f.getFullYear() + "-" + (f.getMonth() +1) + "-" + f.getDate();
+                fecha_final = f.getFullYear() + "-" + (f.getMonth() +1) + "-" + f.getDate();
+            }
            Axios.get(`${FuncionesExtras.url_base}/api/facturas_reportes/${fecha_inicial}/${fecha_final}`).then(data=>{
 
                 this.setState({recibos:data.data.recibos,monto_total:data.data.monto_total});    

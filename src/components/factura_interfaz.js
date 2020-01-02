@@ -83,16 +83,17 @@ class FacturaInterfaz extends React.Component{
 
     }
 
-    eliminar_recibo(id_recibo,id_factura){
+    eliminar_recibo(id_recibo,id_factura,monto){
 
-        Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",function(){
+        Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",()=>{
                     Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
                             Alertify.success("Recibo eliminado correctamente..");
-                            document.getElementById(id_recibo).remove();
-                    }).catch(error=>{
+                                this.cargar_recibos(this.props.factura);
+                                this.setState({factura:{precio_estatus:this.state.factura.precio_estatus+monto}});
+                        }).catch(error=>{
                             Alertify.error("No se pudo eliminar el recibo..");
                     });
-        },function(){
+        },()=>{
                 Alertify.message("BYE");
         });
     }
@@ -193,7 +194,7 @@ class FacturaInterfaz extends React.Component{
                                         <td>{data.monto}</td>
                                         <td>{data.concepto_pago}</td>
                                         <td>{data.tipo_de_pago}</td>
-                                        <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura)}>Eliminar</button></td>
+                                        <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
                                         <td><button class="btn btn" onClick={()=>this.imprimir_factura(data.id,this.props.id_factura)}>Imprimir</button></td>
                                     </tr> 
 
