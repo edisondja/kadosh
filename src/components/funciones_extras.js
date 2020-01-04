@@ -2,7 +2,7 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 
 var password= "kadosh2019";
-var url_base =  "http://localhost:8000";
+var url_base =  "http://service.clinickadosh.com";
 
 
 function cargar_doctores(el){

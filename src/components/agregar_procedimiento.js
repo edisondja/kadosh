@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
 import BuscarProcedimiento from './buscando_procedimiento';
+import core from './funciones_extras';
 class ProcedimientoForm extends React.Component{
 
 
@@ -16,9 +17,10 @@ class ProcedimientoForm extends React.Component{
 			var nombre = document.getElementById("nombre_procedimiento").value;
 			var precio = document.getElementById("precio").value;
 
-			Axios.get(`http://localhost:8000/api/guardar_procedimiento/${nombre}/${precio}`).then(data=>{
+			Axios.get(`${core.url_base}/api/guardar_procedimiento/${nombre}/${precio}`).then(data=>{
 
 					alertify.message("Procedimiento guardado con exito");
+					document.getElementById("procedimiento").click();
 
 			}).catch(error=>{
 

@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import BuscarDoctor from './buscar_doctor';
 import Axios from 'axios';
-
+import Core from './funciones_extras';
+import Alertify from 'alertifyjs';
 class DoctorFormulario extends React.Component{
 
 
@@ -30,10 +31,8 @@ class DoctorFormulario extends React.Component{
 			var cedula = document.getElementById("cedula").value;
 			var telefono = document.getElementById("telefono").value;
 
-			Axios.get(`http://localhost:8000/api/crear_doctor/${nombre}/${apellido}/${cedula}/${telefono}`).then(data=>{
-
-					alert("guardado");
-
+			Axios.get(`${Core.url_base}/api/crear_doctor/${nombre}/${apellido}/${cedula}/${telefono}`).then(data=>{
+					Alertify.message("Doctor guardado con exito");
 			}).catch(error=>{
 
 				alert(error);
