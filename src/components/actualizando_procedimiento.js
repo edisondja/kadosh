@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
-
+import Core from 'funciones_extras';
 class ActualizandoProcedmiento extends React.Component{
 
     constructor(props){
@@ -18,7 +18,7 @@ class ActualizandoProcedmiento extends React.Component{
 
     cargar_procedimiento=(id)=>{
 
-        Axios.get(`http://localhost:8000/api/cargar_procedimiento/${id}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
             
                 this.setState({procedimiento:data.data})
 
@@ -33,7 +33,7 @@ class ActualizandoProcedmiento extends React.Component{
         var precio = this.state.procedimiento.precio;
         var id = this.state.procedimiento.id;
         
-        Axios.get(`http://localhost:8000/api/actualizar/${nombre}/${precio}/${id}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/actualizar/${nombre}/${precio}/${id}`).then(data=>{
                 alertify.message("Procedimiento actualizado con exito");
         }).catch(error=>{  
                 alertify.error("no se pudo actualizar el procedimiento");

@@ -28,7 +28,7 @@ class BuscandoProcedimiento extends  React.Component{
 
     eliminar(id){
 
-        alertify.confirm("Deseas eliminar este procedimiento",function(){
+        alertify.confirm("Deseas eliminar este procedimiento",()=>{
 
             Axios.get(`${cargar_doctores.url_base}/api/eliminar_procedimiento/${id}`).then(data=>{
                 
@@ -39,7 +39,7 @@ class BuscandoProcedimiento extends  React.Component{
                     alertify.error("no se pudo eliminar el procedimiento");
             });
                 
-        },function(){
+        },()=>{
 
         });
 
