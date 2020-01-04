@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
-import Core from 'funciones_extras';
+import Core from './funciones_extras';
 class ActualizandoProcedmiento extends React.Component{
 
     constructor(props){
