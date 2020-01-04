@@ -100,7 +100,7 @@ class BuscarDoctor extends React.Component{
 									</div>
 									<div style={estilo_botones}>
 											<button class="btn btn-primary" onClick={()=>this.actualizar_doctor(data.id)}>Actualizar</button>
-								  			<button class="btn btn-secondary" onClick={(e)=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
+								  			<button class="btn btn-secondary" onClick={()=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
 									</div>
 									
 								</div>
