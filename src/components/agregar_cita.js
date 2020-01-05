@@ -4,6 +4,7 @@ import React from 'react';
 import '../css/dashboard.css';
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
+import Core from './funciones_extras';
 
 class  AgregarCita extends React.Component{
 
@@ -24,7 +25,7 @@ class  AgregarCita extends React.Component{
 
         let data = this.captura_fecha_hora();
     
-        Axios.get(`http://localhost:8000/api/guardar_cita/${this.props.id_paciente}/${data.hora}/${data.dia}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/guardar_cita/${this.props.id_paciente}/${data.hora}/${data.dia}`).then(data=>{
 
             Alertify.success("Cita registrada correctamente");
 
@@ -37,7 +38,7 @@ class  AgregarCita extends React.Component{
     }
 
     cargar_citas(id_paciente){
-            Axios.get(`http://localhost:8000/api/cargar_citas_de_paciente/${id_paciente}`).then(data=>{
+            Axios.get(`${Core.url_base}/api/cargar_citas_de_paciente/${id_paciente}`).then(data=>{
                     this.setState({citas:data.data});
             }).catch(error=>{
             
@@ -49,7 +50,7 @@ class  AgregarCita extends React.Component{
         let data =this.captura_fecha_hora();
         Alertify.message(id);
 
-        Axios.get(`http://localhost:8000/api/actualizar_cita/${this.props.id_cita}/${data.hora}/${data.dia}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/actualizar_cita/${this.props.id_cita}/${data.hora}/${data.dia}`).then(data=>{
                 Alertify.success(data.data);
         }).catch(error=>{
             Alertify.error(error);

@@ -102,7 +102,7 @@ class FacturaInterfaz extends React.Component{
 
             Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
                             
-                    Alertify.prompt("Pagando factura","<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='2'>TARGETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>","$RD 00.00",(event,value)=>{
+                    Alertify.prompt("Pagando factura","<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>","$RD 00.00",(event,value)=>{
                         
                         let option = document.getElementById("seleccionar_pago").value;
 
@@ -118,7 +118,7 @@ class FacturaInterfaz extends React.Component{
                             });
                             
                         }else if(option==2){
-                            Alertify.message("has seleccionado pago en targeta");
+                            Alertify.message("has seleccionado pago en tarjeta");
 
                         }else if(option==3){
                             Alertify.message("has seleccionado pago para cheques");
