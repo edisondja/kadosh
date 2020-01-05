@@ -179,6 +179,7 @@ class FacturaInterfaz extends React.Component{
                     <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
                     <button className="btn btn-dark">X</button><strong>&nbsp;&nbsp;&nbsp;TOTAL $RD {this.state.total}</strong> <hr/>
                     <h2>Pagos Realizados</h2>
+                    <div className="tableflow">
                     <table className="table boxslider">
                         <tr>
                             <td>Monto</td>
@@ -203,6 +204,7 @@ class FacturaInterfaz extends React.Component{
                            }
                             
                     </table>
+                    </div>
                 </div>
 
         </div>);

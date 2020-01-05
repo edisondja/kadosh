@@ -21,6 +21,7 @@ class ProcedimientoForm extends React.Component{
 
 					alertify.message("Procedimiento guardado con exito");
 					document.getElementById("procedimiento").click();
+					this.setState({estado:'se guardo correctamente'});
 
 			}).catch(error=>{
 
@@ -33,6 +34,7 @@ class ProcedimientoForm extends React.Component{
 
 
 		render(){
+
 
 			return (<div className="col-md-8">
 					    <br/><h1>Agregar Procedimiento</h1><br/>

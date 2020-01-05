@@ -33,6 +33,7 @@ class DoctorFormulario extends React.Component{
 
 			Axios.get(`${Core.url_base}/api/crear_doctor/${nombre}/${apellido}/${cedula}/${telefono}`).then(data=>{
 					Alertify.message("Doctor guardado con exito");
+					this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
 
 				alert(error);
