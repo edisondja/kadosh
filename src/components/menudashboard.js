@@ -75,8 +75,13 @@ class MenuDashboard extends React.Component{
 				ver =<Notificaciones/>;
 			
 			}else if(this.state.select_opcion=="reportes"){
-				
+
 				ver = <Reporte/>;
+
+			}else if(this.state.select_opcion=="cargar_pacientes"){
+				
+				ver =  <Citas/>;
+
 			}
 
 
@@ -84,18 +89,18 @@ class MenuDashboard extends React.Component{
 				<br/><div className="card">
 					<table>
 						<tr>
-							<td><img src={Logo} width="50" className="img-responsive" style={{marginLeft:'10px;'}} /></td>
+							<td onClick={()=>this.menu_select('cargar_pacientes')}><img src={Logo} width="50" className="img-responsive" style={{marginLeft:'10px;'}} /></td>
 							<td><strong>Kadosh Dental</strong></td>
 						</tr>
 					</table>
 				</div>
 
 					<ul style={this.estilos} className="menuStilos">
-								<li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={Select}/>Notificaciones</li>
-								<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={Select} /><span className="icon-bar"></span>Agregar Paciente</li>
-								<li onClick={(e)=>this.menu_select('doctor')}><img src={Select} />Agregar Doctor</li>
-								<li onClick={(e)=>this.menu_select('procedimiento')}><img src={Select} />Agregar Procedimientos</li>
-								<li onClick={(e)=>this.menu_select('reportes')}><img src={Select} />Generar Reportes</li>
+								<li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={Select}/>&nbsp;Notificaciones</li>
+								<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={Select} /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
+								<li onClick={(e)=>this.menu_select('doctor')}><img src={Select} />&nbsp;Agregar Doctor</li>
+								<li onClick={(e)=>this.menu_select('procedimiento')}><img src={Select} />&nbsp;Agregar Procedimientos</li>
+								<li onClick={(e)=>this.menu_select('reportes')}><img src={Select} />&nbsp;Generar Reportes</li>
 					</ul>							
 				</div>
 				{ver}

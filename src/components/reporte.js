@@ -86,7 +86,7 @@ class Reporte extends React.Component{
                             }
                         </table>
                         </div>
-                        <h4 style={{float:'right'}}>Ingresos total  {this.state.monto_total}</h4>
+                        <h4 style={{float:'right'}}>Ingresos total $RD {this.state.monto_total}</h4>
 
                    </div>
             )
