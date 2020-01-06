@@ -7,7 +7,8 @@ class ActualizandoProcedmiento extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimiento:false,procedimiento:[]};
+        this.state= {procedimiento:false,nombre:"",precio:0,id:0};
+        this.cambiar = this.cambiar.bind(this);
 
     }
 
@@ -20,7 +21,7 @@ class ActualizandoProcedmiento extends React.Component{
 
         Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
             
-                this.setState({procedimiento:data.data})
+                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id});
 
         }).catch(error=>{
             alertify.error("No se puedo cargar este paciente");
@@ -29,15 +30,22 @@ class ActualizandoProcedmiento extends React.Component{
 
     }
     actualizar=()=>{
-        var nombre = this.state.procedimiento.nombre;
-        var precio = this.state.procedimiento.precio;
         var id = this.state.procedimiento.id;
         
-        Axios.get(`${Core.url_base}/api/actualizar/${nombre}/${precio}/${id}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/actualizar/${this.state.nombre}/${this.state.precio}/${id}`).then(data=>{
                 alertify.message("Procedimiento actualizado con exito");
         }).catch(error=>{  
                 alertify.error("no se pudo actualizar el procedimiento");
         });
+
+    }
+    
+    cambiar=(e)=>{
+        if(e.target.id=="nombre"){
+            this.setState({nombre:e.target.value});
+        }else{
+            this.setState({precio:e.target.value});
+        }
 
     }
 
@@ -47,9 +55,9 @@ class ActualizandoProcedmiento extends React.Component{
                 <div className="card">
                     <div className="card-body">
                         <strong>Nombre</strong><br/>
-                        <input type="text" className="form-control" value={this.state.procedimiento.nombre} id="nombre"/><br/>
+                        <input type="text" className="form-control" onChange={this.cambiar} value={this.state.nombre} id="nombre"/><br/>
                         <strong>Precio</strong><br/>
-                        <input type="text" className="form-control" value={this.state.procedimiento.precio} id="precio"/><br/>
+                        <input type="text" className="form-control" onChange={this.cambiar} value={this.state.precio} id="precio"/><br/>
                         <button className="btn btn-dark" onClick={this.actualizar}>Actualizar</button>
                     </div>
                 </div>

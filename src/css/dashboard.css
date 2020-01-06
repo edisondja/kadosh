@@ -13,8 +13,8 @@ li:hover{
 }
 
 .procedimiento{
-	height: 800px;
-	overflow-y:scroll
+	overflow-y:scroll;
+	height:350px;
 }
 
 .espacio{
@@ -53,7 +53,6 @@ li:hover{
 }
 
 .tableflow{
-	overflow-y:scroll;
-	width: 500px;
+	overflow-y: scroll;
 	height: 250px;
 }
