@@ -30,9 +30,9 @@ class ActualizandoProcedmiento extends React.Component{
 
     }
     actualizar=()=>{
-        var id = this.state.procedimiento.id;
+
         
-        Axios.get(`${Core.url_base}/api/actualizar/${this.state.nombre}/${this.state.precio}/${id}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/actualizar_procedimiento/${this.state.nombre}/${this.state.precio}/${this.state.id}`).then(data=>{
                 alertify.message("Procedimiento actualizado con exito");
         }).catch(error=>{  
                 alertify.error("no se pudo actualizar el procedimiento");
