@@ -18,6 +18,19 @@ function cargar_doctores(el){
     })
 }
 
+function cargar_doctor(el,id_doctor){
+
+        Axios.get(`${url_base}/api/cargar_doctor/${id_doctor}`).then(data=>{
+
+                el.setState({doctor:data.data});
+
+        }).catch(error=>{
+
+            console.log(error);
+
+        })
+}
+
     function notificar_cumple(el){
     
         Axios.get(`${url_base}/api/notificar_cumple`).then(data=>{
@@ -44,5 +57,5 @@ function cargar_procedimientos(el){
 }
 
 
-export default {cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple};
+export default {cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

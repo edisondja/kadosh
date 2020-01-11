@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
 import Core from './funciones_extras';
+import BuscarProcedimiento from './buscando_procedimiento';
 class ActualizandoProcedmiento extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimiento:false,nombre:"",precio:0,id:0};
+        this.state= {procedimiento:false,nombre:"",precio:0,id:0,config:0};
         this.cambiar = this.cambiar.bind(this);
 
     }
@@ -34,6 +35,7 @@ class ActualizandoProcedmiento extends React.Component{
         
         Axios.get(`${Core.url_base}/api/actualizar_procedimiento/${this.state.nombre}/${this.state.precio}/${this.state.id}`).then(data=>{
                 alertify.message("Procedimiento actualizado con exito");
+                this.setState({config:'perfil_procedimientos'});
         }).catch(error=>{  
                 alertify.error("no se pudo actualizar el procedimiento");
         });
@@ -51,6 +53,10 @@ class ActualizandoProcedmiento extends React.Component{
 
     render(){
 
+        if(this.state.config=='perfil_procedimientos'){
+
+            return <BuscarProcedimiento/>;
+        }
         return (<div><hr/>
                 <div className="card">
                     <div className="card-body">

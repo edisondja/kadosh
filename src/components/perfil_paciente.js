@@ -12,13 +12,14 @@ class PerfilPaciente extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state={paciente:{nombre:null,apellido:null},select:false,lista_citas:[],cita:"",id_cita:"",eliminar:0};
+			this.state={doctor:{nombre:'Noelia',apellido:'Felix'},paciente:{nombre:null,apellido:null},select:false,lista_citas:[],cita:"",id_cita:"",eliminar:0};
 		}
 		componentDidMount(){
 
 			//alert(this.props.id_paciente);
 			this.consultarPaciente(this.props.id_paciente);
 			this.cargar_citas_paciente(this.props.id_paciente);
+			Verficar.cargar_doctor(this,this.state.paciente.id_doctor);
 		}
 
 		eliminar_paciente(id_paciente){
@@ -128,7 +129,7 @@ class PerfilPaciente extends React.Component{
 							<strong>Cedula: {this.state.paciente.cedula}</strong><br/>
 							<strong>Telefono: {this.state.paciente.telefono}</strong><br/>
 							<strong>Fecha de ingreso: {this.state.paciente.fecha_de_ingreso}</strong><br/>
-							<strong>Ingrasado por el Dr loading</strong><br/><hr/>
+							<strong>Ingrasado por el Dr {this.state.doctor.nombre} {this.state.doctor.apellido}</strong><br/><hr/>
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>
 							<strong>Lista de citas</strong>

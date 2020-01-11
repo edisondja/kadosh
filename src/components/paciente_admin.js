@@ -30,7 +30,7 @@ class PacienteAdmin extends  React.Component{
 			var apellido = document.getElementById("apellido").value;
 			var dni = document.getElementById("cedula").value;
 			var telefono = document.getElementById("telefono").value;
-			var id_doctor = 1;
+			var id_doctor = document.getElementById("doctores_select").value;
 			var fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
 
 			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/${fecha_nacimiento}`).then(data=>{

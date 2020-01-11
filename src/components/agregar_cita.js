@@ -5,6 +5,7 @@ import '../css/dashboard.css';
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import Core from './funciones_extras';
+import PerfilPaciente from './perfil_paciente';
 
 class  AgregarCita extends React.Component{
 
@@ -28,6 +29,7 @@ class  AgregarCita extends React.Component{
         Axios.get(`${Core.url_base}/api/guardar_cita/${this.props.id_paciente}/${data.hora}/${data.dia}`).then(data=>{
 
             Alertify.success("Cita registrada correctamente");
+            this.setState({control:'cargar_paciente'});
 
         }).catch(error=>{
              console.log(error);
@@ -88,7 +90,10 @@ class  AgregarCita extends React.Component{
         if(this.state.control=="actualizar" || this.props.config=="actualizar"){
 
             boton = <button onClick={()=>this.actualizar_cita(this.props.id_cita)} className="btn btn-primary">Actualizar</button>;
-        }
+        }else if(this.state.control=="cargar_paciente"){
+
+            return <PerfilPaciente id_paciente={this.props.id_paciente}/>
+        }   
 
         return (<div className="card">
                 <div className="card-body"><hr/>
