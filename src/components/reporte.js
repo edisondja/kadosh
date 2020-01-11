@@ -56,7 +56,9 @@ class Reporte extends React.Component{
                         <strong>Fecha Inicial</strong>&nbsp;
                         <input id="fecha_inicial"  type="date"/>&nbsp;
                         <strong>Fecha Final</strong>&nbsp;
-                        <input id="fecha_final" type="date"/>&nbsp;
+                        <input id="fecha_final" type="date"/>&nbsp;<br/>
+                        <br/><strong>ID PACIENTE</strong>&nbsp;
+                        <input type="text" id="codigo_paciente" /><hr/>
                         <button className="btn btn-primary" onClick={this.reportes}>Buscar</button>&nbsp;
                         <button className="btn btn-info" onClick={this.Imprimir}>Imprimir</button><br/><br/>
                         <div id="reportes" className="card interfaz_reporte">

@@ -94,15 +94,15 @@ class BuscarDoctor extends React.Component{
 						{this.state.doctores.map(data=>(
 								<div><br/>
 									<div class="card">
-									<div class="card-header"><strong>{data.nombre}</strong></div>
-									<div class="card-body"><p>Doctores Registrados</p></div> 
-									<div class="card-footer"></div>
+										
+										<div class="card-body"><hr/><strong>{data.nombre} {data.apellido}</strong><hr/>
+												<div style={estilo_botones}>
+													<button class="btn btn-primary" onClick={()=>this.actualizar_doctor(data.id)}>Actualizar</button>
+													<button class="btn btn-secondary" onClick={()=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
+											    </div>
+										</div> 
 									</div>
-									<div style={estilo_botones}>
-											<button class="btn btn-primary" onClick={()=>this.actualizar_doctor(data.id)}>Actualizar</button>
-								  			<button class="btn btn-secondary" onClick={()=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
-									</div>
-									
+								
 								</div>
 						))}
 						</div>

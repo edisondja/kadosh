@@ -76,6 +76,7 @@ class  Cita extends React.Component{
 		return (<div className="col-md-8"><br/>
 					<strong>Buscar paciente</strong><br/>
 					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+					
 					<br/>
 					{
 						this.state.clientes.map(data=>(
@@ -83,9 +84,9 @@ class  Cita extends React.Component{
 							<div className="card">
 								<div className="container"><br/>
 									<img src={Logo} width="30"/>
-									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p>
-									<button className="btn-primary" onClick={()=>this.cargar(data.id)}>Ver perfil</button>
-									<button className="btn-success" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>
+									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p><hr/>
+									<button className="btn btn-secondary" onClick={()=>this.cargar(data.id)}>Ver perfil</button>&nbsp;
+									<button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>
 								</div>
 							</div><br/>
 							</div>

@@ -54,7 +54,7 @@ class PacienteAdmin extends  React.Component{
 		}
 
 		return(<div className="col-md-8"><br/><h1>Agregar Paciente</h1>
-					<div><button className="btn btn-info" style={{marginLeft:'80%'}} onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>
+					<div><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>
 						
 						<strong>Nombre</strong><br/>
 

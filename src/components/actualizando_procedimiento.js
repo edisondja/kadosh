@@ -51,7 +51,7 @@ class ActualizandoProcedmiento extends React.Component{
 
     render(){
 
-        return (<div>
+        return (<div><hr/>
                 <div className="card">
                     <div className="card-body">
                         <strong>Nombre</strong><br/>

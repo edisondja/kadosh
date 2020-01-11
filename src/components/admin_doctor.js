@@ -4,6 +4,7 @@ import BuscarDoctor from './buscar_doctor';
 import Axios from 'axios';
 import Core from './funciones_extras';
 import Alertify from 'alertifyjs';
+import '../css/dashboard.css';
 class DoctorFormulario extends React.Component{
 
 
@@ -57,7 +58,7 @@ class DoctorFormulario extends React.Component{
 
 			return (<div className="col-md-8">
 					<br/><h1>Agregar Doctor</h1>
-					<button className="btn btn-success" style={{marginLeft:'80%'}} onClick={this.opciones}>Buscar Doctor</button><br/>
+					<button className="btn btn-success" className="btn btn-primary boton_doctor" onClick={this.opciones}>Buscar Doctor</button><br/>
 					<strong>Nombre</strong><br/>
 					<input type="text" className="form-control" id="nombre" /><br/>
 					<strong>Apellido</strong><br/>

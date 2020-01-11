@@ -73,6 +73,7 @@ class PerfilPaciente extends React.Component{
 
 				Axios.get(`${Verficar.url_base}/api/eliminar_cita/${id}`).then(data=>{
 							Alertify.success("cita eliminada correctamente");
+							document.getElementById("cargar_pacientes").click();
 	
 				}).catch(error=>{
 					Alertify.success("Error al eliminar la cita");
@@ -126,8 +127,9 @@ class PerfilPaciente extends React.Component{
 							<strong>Nombre: {this.state.paciente.nombre} {this.state.paciente.apellido}</strong><br/>
 							<strong>Cedula: {this.state.paciente.cedula}</strong><br/>
 							<strong>Telefono: {this.state.paciente.telefono}</strong><br/>
-							<strong>Ingrasado por el Dr: Naiel Sanchez</strong><br/><hr/>
-							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
+							<strong>Fecha de ingreso: {this.state.paciente.fecha_de_ingreso}</strong><br/>
+							<strong>Ingrasado por el Dr loading</strong><br/><hr/>
+							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>
 							<strong>Lista de citas</strong>
 							{
