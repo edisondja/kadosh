@@ -12,16 +12,25 @@ class PerfilPaciente extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state={doctor:{nombre:'Noelia',apellido:'Felix'},paciente:{nombre:null,apellido:null},select:false,lista_citas:[],cita:"",id_cita:"",eliminar:0};
+			this.state={deuda_total:0,doctor:{nombre:'Noelia',apellido:'Felix'},paciente:{nombre:null,apellido:null},select:false,lista_citas:[],cita:"",id_cita:"",eliminar:0};
 		}
 		componentDidMount(){
 
 			//alert(this.props.id_paciente);
 			this.consultarPaciente(this.props.id_paciente);
 			this.cargar_citas_paciente(this.props.id_paciente);
-			Verficar.cargar_doctor(this,this.state.paciente.id_doctor);
+			Verficar.cargar_doctor(this.state,this.state.paciente.id_doctor);
+			this.consultar_deuda_paciente(this.props.id_paciente);
 		}
 
+		consultar_deuda_paciente(id_paciente){
+			
+					Axios.get(`${Verficar.url_base}/api/consultar_deuda/${id_paciente}`).then(data=>{
+							this.setState({deuda_total:data.data.deuda_total});
+					}).catch(error=>{
+						Alertify.error("No se pudo cargar la deuda del paciente");
+					})
+	    }
 		eliminar_paciente(id_paciente){
 
 			Alertify.prompt("Eliminar paciente","Digite su clave admin para eliminar este paciente","",function(event,value){
@@ -125,11 +134,31 @@ class PerfilPaciente extends React.Component{
 
 				return (<div className="col-md-8">
 							<h1>Perfil de paciente</h1><br/>
-							<strong>Nombre: {this.state.paciente.nombre} {this.state.paciente.apellido}</strong><br/>
-							<strong>Cedula: {this.state.paciente.cedula}</strong><br/>
-							<strong>Telefono: {this.state.paciente.telefono}</strong><br/>
-							<strong>Fecha de ingreso: {this.state.paciente.fecha_de_ingreso}</strong><br/>
-							<strong>Ingrasado por el Dr {this.state.doctor.nombre} {this.state.doctor.apellido}</strong><br/><hr/>
+					
+							<table class="table">
+								<thead>
+									<tr>
+									<th scope="col">Nombre</th>
+									<th scope="col">Cedula</th>
+									<th scope="col">Telefono</th>
+									<th scope="col">Fecha de ingreso</th>
+									<th scope="col">Ingresado por DR</th>
+									<th scope="col">Deuda Tatal</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
+										<td>{this.state.paciente.cedula}</td>
+										<td>{this.state.paciente.telefono}</td>
+										<td>{this.state.paciente.fecha_de_ingreso}</td>
+										<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
+										<td>{this.state.deuda_total}</td>		
+									</tr>
+								</tbody>
+							</table>
+
+							<hr/>
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>
 							<strong>Lista de citas</strong>
