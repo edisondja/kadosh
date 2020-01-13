@@ -72,7 +72,7 @@ class VerFacturas extends React.Component{
 
         }else{
         
-            return (<div>
+            return (<div className="col-md-8">
                     <div className="card"><br/><br/>
                     <h2>Facturas de paciente {this.props.paciente}</h2><hr/>
                     {

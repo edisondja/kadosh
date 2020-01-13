@@ -134,15 +134,15 @@ class PerfilPaciente extends React.Component{
 
 				return (<div className="col-md-8">
 							<h1>Perfil de paciente</h1><br/>
-					
+							<div className="interfaz_perfil">
 							<table class="table">
 								<thead>
 									<tr>
 									<th scope="col">Nombre</th>
 									<th scope="col">Cedula</th>
 									<th scope="col">Telefono</th>
-									<th scope="col">Fecha de ingreso</th>
-									<th scope="col">Ingresado por DR</th>
+									<th scope="col">Ingreso</th>
+									<th scope="col">Doctor</th>
 									<th scope="col">Deuda Tatal</th>
 									</tr>
 								</thead>
@@ -153,11 +153,11 @@ class PerfilPaciente extends React.Component{
 										<td>{this.state.paciente.telefono}</td>
 										<td>{this.state.paciente.fecha_de_ingreso}</td>
 										<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
-										<td>{this.state.deuda_total}</td>		
+										<td>$RD {this.state.deuda_total}</td>		
 									</tr>
 								</tbody>
 							</table>
-
+							</div>
 							<hr/>
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-danger espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<hr/>

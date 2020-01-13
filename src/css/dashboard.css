@@ -51,7 +51,9 @@ li:hover{
 	overflow-y:scroll;
 	height: 400px;
 }
+.interfaz_perfil{
 
+}
 .tableflow{
 	overflow-y: scroll;
 	height: 250px;
@@ -69,6 +71,12 @@ li:hover{
 .boton_paciente{
 		margin-left: 84%;
 }	
+
+.logo_flow{
+	WIDTH: 500PX;
+    HEIGHT: 500PX;
+    margin-left: 170px;
+}
 @media (min-width: 320px) and (max-width: 480px) {
 
 	.boton_pos{
@@ -83,5 +91,10 @@ li:hover{
 	}
 	.boton_paciente{
 		margin-left: 58%;
+	}
+
+	.interfaz_perfil{
+		overflow-x:scroll;
+		width: 330px;
 	}
 }

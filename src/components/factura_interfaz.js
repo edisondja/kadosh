@@ -152,7 +152,7 @@ class FacturaInterfaz extends React.Component{
                return  <ImprimirRecibo data_recibo={this.state.data_factura} procedimientos_i={this.state.procedimientos_imprimir}/>
         }
 
-        return (<div className="col-md-4"> 
+        return (<div className="col-md-8"> 
           
                 <h2>Factura y sus detalles</h2>
                 <h3>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h3><hr/>

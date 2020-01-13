@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import '../css/bootstrap.css';
 import Logo from '../logo.jpg';
+import Loading from '../loading.gif';
 import PerfilPaciente from './perfil_paciente';
 import AgregarCita from './agregar_cita';
 import Url from './funciones_extras';
@@ -71,7 +72,11 @@ class  Cita extends React.Component{
 
 			return <AgregarCita paciente={this.state.nombre_paciente} id_paciente={this.state.id_cliente}/>;
 
+		}else if(this.state.clientes==""){
+
+			return <img src={Loading}/>;
 		}
+
 
 		return (<div className="col-md-8"><br/>
 					<strong>Buscar paciente</strong><br/>

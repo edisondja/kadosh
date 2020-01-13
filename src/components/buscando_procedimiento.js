@@ -5,6 +5,7 @@ import alertify from 'alertifyjs';
 import '../css/dashboard.css';
 import Actualizar from './actualizando_procedimiento';
 import cargar_doctores from './funciones_extras';
+import Loading from '../loading2.gif';
 
 
 class BuscandoProcedimiento extends  React.Component{
@@ -62,6 +63,10 @@ class BuscandoProcedimiento extends  React.Component{
         if(this.state.actualizar==true){
 
                 return <Actualizar id_procedimiento={this.state.id_procedimiento}/>;
+        
+        }else if(this.state.procedimientos==""){
+
+            return <img src={Loading}/>;
         }
 
         return (

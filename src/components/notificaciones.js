@@ -4,6 +4,10 @@ import React from 'react';
 import Alertify from 'alertifyjs';
 import PerfilPaciente from './perfil_paciente';
 import HDB from '../hbd.png';
+import Loading from '../loading.gif';
+import okay from '../okay.png';
+
+
 
 class  Notificacion extends React.Component{
 
@@ -39,6 +43,11 @@ class  Notificacion extends React.Component{
 
             if(this.state.config=="ver_paciente"){
                     return <PerfilPaciente id_paciente={this.state.id_paciente}/>
+            }else if(this.state.notificaciones==""){
+            return (<div className="col-md-8"><br/><br/><hr/><div className="card"><p className="h4">No hay notificaciones en este momento  <img src={okay} width="64"/></p>
+                           
+                    </div>
+               </div>);
             }
 
             return (
