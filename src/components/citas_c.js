@@ -7,6 +7,8 @@ import Loading from '../loading.gif';
 import PerfilPaciente from './perfil_paciente';
 import AgregarCita from './agregar_cita';
 import Url from './funciones_extras';
+import ActualizarPerfil from './actualizar_paciente';
+
 class  Cita extends React.Component{
 
 	constructor(props){
@@ -61,6 +63,11 @@ class  Cita extends React.Component{
 
 	}
 
+	actualizar_paciente(id){
+
+		this.setState({perfil_selec:'actualizar_paciente',id_paciente:id});
+	}
+
 
 	render(){
 
@@ -75,6 +82,10 @@ class  Cita extends React.Component{
 		}else if(this.state.clientes==""){
 
 			return <img src={Loading}/>;
+
+		}else if(this.state.perfil_selec=="actualizar_paciente"){
+
+				return <ActualizarPerfil IdPaciente={this.state.id_paciente}/>;
 		}
 
 
@@ -91,7 +102,9 @@ class  Cita extends React.Component{
 									<img src={Logo} width="30"/>
 									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p><hr/>
 									<button className="btn btn-secondary" onClick={()=>this.cargar(data.id)}>Ver perfil</button>&nbsp;
-									<button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>
+									<button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;
+									<button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button>
+
 								</div>
 							</div><br/>
 							</div>

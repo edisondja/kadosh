@@ -89,7 +89,7 @@ class MenuDashboard extends React.Component{
 				<br/><div className="card">
 					<table>
 						<tr>
-							<td onClick={()=>this.menu_select('cargar_pacientes')}><img src={Logo} width="50" className="img-responsive" style={{marginLeft:'10px;'}} /></td>
+							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="50" className="img-responsive" style={{marginLeft:'10px;'}} /></td>
 							<td><strong>Kadosh Dental</strong></td>
 						</tr>
 					</table>

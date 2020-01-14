@@ -12,7 +12,7 @@ class BuscandoProcedimiento extends  React.Component{
 
     constructor(props){
         super(props);
-        this.state = {procedimientos:[],actualizar:false,id_procedimiento:0};
+        this.state = {procedimientos:[],actualizar:false,id_procedimiento:0,change:false};
     }
 
     componentDidMount(){
@@ -27,21 +27,25 @@ class BuscandoProcedimiento extends  React.Component{
         this.setState({actualizar:true,id_procedimiento:id});
     }
 
-    eliminar(id){
+    eliminar=(id)=>{
 
         alertify.confirm("Deseas eliminar este procedimiento",()=>{
 
             Axios.get(`${cargar_doctores.url_base}/api/eliminar_procedimiento/${id}`).then(data=>{
                 
                     alertify.message("Procedimiento borrado correctamente!");
-                    this.cargar_procedimientos();
+                    document.getElementById(id).remove();
+                    if(this.state.change==false){
+                         this.setState({change:true});
+                    }else{
+                        this.setState({change:false});
+                    }
+                   // this.cargar_procedimientos();
 
             }).catch(error=>{
                     alertify.error("no se pudo eliminar el procedimiento");
             });
                 
-        },()=>{
-
         });
 
     }
@@ -66,14 +70,15 @@ class BuscandoProcedimiento extends  React.Component{
         
         }else if(this.state.procedimientos==""){
 
-            return <img src={Loading}/>;
+        return (<div><br/><input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
+                <img src={Loading}/></div>);
         }
 
         return (
             <div className="tableflow"><br/>
                 <input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
                 {this.state.procedimientos.map(data=>(                
-                        <div className="card">
+                        <div className="card" id={data.id}>
                             <div className="card-body">
                                 Nombre: {data.nombre}<br/>
                                  Precio: {data.precio}<br/>

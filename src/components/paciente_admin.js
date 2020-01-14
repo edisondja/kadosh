@@ -32,8 +32,9 @@ class PacienteAdmin extends  React.Component{
 			var telefono = document.getElementById("telefono").value;
 			var id_doctor = document.getElementById("doctores_select").value;
 			var fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
+			var sexo = document.getElementById("sexo").value
 
-			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/${fecha_nacimiento}`).then(data=>{
+			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/${fecha_nacimiento}/${sexo}`).then(data=>{
 
 					this.setState({ver_paciente:true});
 
@@ -68,6 +69,14 @@ class PacienteAdmin extends  React.Component{
 
 						<input type='text' id="cedula" className="form-control"/><br/>
 
+						<strong>Sexo</strong><br/>
+							<select id="sexo" className="form-control">
+								<option value="h">Hombre</option>
+								<option value="m">Mujer</option>
+								<option value="hm">Hombre moderno</option>
+								<option value="mm">Mujer moderna</option>
+								<option value="d">Desconocido</option>
+							</select><br/>
 						<strong>FECHA DE NACIMIENTO</strong><br/>
 
 						<input type='date' id="fecha_nacimiento" className="form-control"/><br/>

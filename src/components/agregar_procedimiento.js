@@ -13,15 +13,14 @@ class ProcedimientoForm extends React.Component{
 
 		}
 
-		guardar_datos(){
+		guardar_datos=()=>{
 			var nombre = document.getElementById("nombre_procedimiento").value;
 			var precio = document.getElementById("precio").value;
 
 			Axios.get(`${core.url_base}/api/guardar_procedimiento/${nombre}/${precio}`).then(data=>{
 
 					alertify.message("Procedimiento guardado con exito");
-					document.getElementById("procedimiento").click();
-					this.setState({estado:'se guardo correctamente'});
+					this.setState({estado:'saved_success'});
 
 			}).catch(error=>{
 
@@ -34,8 +33,7 @@ class ProcedimientoForm extends React.Component{
 
 
 		render(){
-
-
+	
 			return (<div className="col-md-8">
 					    <br/><h1>Agregar Procedimiento</h1><br/>
 						<strong>Nombre</strong><br/>

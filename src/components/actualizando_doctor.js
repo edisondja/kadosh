@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import ReactToast from 'react-toasts';
 import Alertify from 'alertifyjs';
+import Core from './funciones_extras';
 import { BrowserRouter, Route} from "react-router-dom";
 
 
@@ -22,7 +23,7 @@ class ActualizarDoctor extends React.Component{
     cargar_doctor=(id)=>{
 
 
-        Axios.get(`http://localhost:8000/api/cargar_doctor/${id}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/cargar_doctor/${id}`).then(data=>{
 
             this.setState({doctor:data.data});
 
@@ -37,34 +38,38 @@ class ActualizarDoctor extends React.Component{
     editando_campo(e){
 
         if(e.target.id=="nombre"){
-            
-            this.setState({doctor:{nombre:e.target.value}});
+            let doctor  = this.state.doctor;
+            doctor.nombre =e.target.value;
+            this.setState({doctor:doctor});
 
         }else if(e.target.id=="apellido"){
 
-            this.setState({doctor:{apellido:e.target.value}});
+            let doctor  = this.state.doctor;
+            doctor.apellido =e.target.value;
+            this.setState({doctor:doctor});
 
         }else if(e.target.id=="telefono"){  
 
-            this.setState({doctor:{telefono:e.target.value}});
+            let doctor  = this.state.doctor;
+            doctor.numero_telefono =e.target.value;
+            this.setState({doctor:doctor});
 
         }else if(e.target.id=="dni"){
-
-             this.setState({doctor:{dni:e.target.value}});
+            let doctor  = this.state.doctor;
+            doctor.dni =e.target.value;
+            this.setState({doctor:doctor});
         }
 
     }
 
     actualizar_doctor=()=>{
 
-        var nombre = document.getElementById("nombre").value;
-        var apellido = document.getElementById("apellido").value;
-        var telefono = document.getElementById("telefono").value;
-        var dni = document.getElementById("dni").value;
+  
 
-        Axios.get(`http://localhost:8000/api/actualizar_doctor/${nombre}/${apellido}/${telefono}/${dni}/${this.props.id_doctor}`).then(data=>{
+        Axios.get(`${Core.url_base}/api/actualizar_doctor/${this.state.doctor.nombre}/${this.state.doctor.apellido}
+        /${this.state.doctor.telefono}/${this.state.doctor.dni}/${this.props.id_doctor}`).then(data=>{
 
-            Alertify.message(`Se actualizo correctamente`)
+            Alertify.message("Se actualizo correctamente")
 
         }).catch(error=>{
 
@@ -77,7 +82,7 @@ class ActualizarDoctor extends React.Component{
     render(){
 
         return(
-            <div>
+            <div className="col-md-8">
                 <div> <br/><br/>
                     <h2>Actualizar doctor</h2>
                     <strong>Nombre</strong><br/>
