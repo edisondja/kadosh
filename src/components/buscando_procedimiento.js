@@ -81,7 +81,7 @@ class BuscandoProcedimiento extends  React.Component{
                         <div className="card" id={data.id}>
                             <div className="card-body">
                                 Nombre: {data.nombre}<br/>
-                                 Precio: {data.precio}<br/>
+                                 Precio: {new Intl.NumberFormat().format(data.precio)}<br/>
                                 <button className="btn-primary"onClick={()=>this.actualizar(data.id)}>Actualizar</button>
                                 <button className="btn-danger" onClick={()=>this.eliminar(data.id)}>Eliminar</button>
 

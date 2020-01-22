@@ -5,6 +5,8 @@ import Alertify from 'alertifyjs';
 import ReactPrint from 'react-to-print';
 import ImprimirRecibo from './imprimir_recibo';
 import Url_base from './funciones_extras';
+import SweetAlert from 'sweetalert2-react';
+
 import '../css/dashboard.css';
 
 class FacturaInterfaz extends React.Component{
@@ -98,11 +100,14 @@ class FacturaInterfaz extends React.Component{
         });
     }
 
+
+
     procesar_pago=(id_factura,precio_estatus)=>{
 
             Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
                             
-                    Alertify.prompt("Pagando factura","<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>","$RD 00.00",(event,value)=>{
+                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
+                        
                         
                         let option = document.getElementById("seleccionar_pago").value;
 
@@ -118,7 +123,21 @@ class FacturaInterfaz extends React.Component{
                             });
                             
                         }else if(option==2){
-                            Alertify.message("has seleccionado pago en tarjeta");
+                            let codigo_targeta =prompt("Digite el codigo","x-x-x-x-x");
+
+                                Alertify.message("Este es su codigo "+codigo_targeta);
+                                
+                                let cantidad_pagada = prompt("Ingrese la cantidad que se pago","$RD 0.00");
+
+                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${cantidad_pagada}/tarjeta/${precio_estatus}/${codigo_targeta}`).then(data=>{
+                                    Alertify.success("Pago realizado con exito");
+                                    this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
+                                    this.cargar_recibos(this.props.id_factura);
+                                }).catch(error=>{
+                                    Alertify.error("No se pudo procesar el pago correctamente");
+                                    this.setState({mensaje:error});
+                                });
+
 
                         }else if(option==3){
                             Alertify.message("has seleccionado pago para cheques");
@@ -153,7 +172,6 @@ class FacturaInterfaz extends React.Component{
         }
 
         return (<div className="col-md-8"> 
-          
                 <h2>Factura y sus detalles</h2>
                 <h3>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h3><hr/>
                 <h4>Ingresado por: ({this.state.factura.nombre} {this.state.factura.apellido})</h4>
@@ -169,7 +187,7 @@ class FacturaInterfaz extends React.Component{
                             <tr>
                                 <td>{data.nombre}</td>
                                 <td>{data.cantidad}</td>
-                                <td>$RD {data.total}</td>
+                                <td>$RD {new Intl.NumberFormat().format(data.total)}</td>
                                 <td style={{display:'none'}}>{this.state.total+= data.total/2} </td>
                             </tr>
                       )))     
@@ -177,7 +195,7 @@ class FacturaInterfaz extends React.Component{
                     </table>
                     <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
                     <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
-                    <button className="btn btn-dark">X</button><strong>&nbsp;&nbsp;&nbsp;TOTAL $RD {this.state.total}</strong> <hr/>
+                    <button className="btn btn-dark">X</button><strong>&nbsp;&nbsp;&nbsp;TOTAL $RD {new Intl.NumberFormat().format(this.state.total)}</strong> <hr/>
                     <h2>Pagos Realizados</h2>
                     <div className="tableflow">
                     <table className="table boxslider">
@@ -190,9 +208,10 @@ class FacturaInterfaz extends React.Component{
                         </tr>
                            {
                                this.state.recibos.map((data=>(
+                                   
 
                                     <tr id={data.id}>
-                                        <td>{data.monto}</td>
+                                        <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
                                         <td>{data.concepto_pago}</td>
                                         <td>{data.tipo_de_pago}</td>
                                         <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>

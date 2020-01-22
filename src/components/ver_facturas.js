@@ -79,7 +79,7 @@ class VerFacturas extends React.Component{
                         this.state.facturas.map((data=>(
 
                             <div className="card-body" id={data.id}>
-                                <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info" onClick={()=>this.eliminar_factura(data.id)}>Eliminar</button><strong>Total a pagar:</strong>RD${data.precio_estatus}<hr/>
+                                <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info" onClick={()=>this.eliminar_factura(data.id)}>Eliminar</button><strong> Total a pagar:</strong> RD$ {new Intl.NumberFormat().format(data.precio_estatus)}<hr/>
                             </div>
                         )))
                         

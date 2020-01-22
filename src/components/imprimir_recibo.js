@@ -52,7 +52,7 @@ class ImprimirRecibo extends React.Component{
                                         }
                                     <tr>
                                         <td><strong>TOTAL</strong></td>
-                                        <td><strong>{this.state.monto_total}</strong></td>
+                                        <td><strong>{new Intl.NumberFormat().format(this.state.monto_total)}</strong></td>
                                     </tr>
                                 </table><hr/>
                                 <table className="table">
