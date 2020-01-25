@@ -17,10 +17,9 @@ class PacienteAdmin extends  React.Component{
 			FuncionesExtras.cargar_doctores(this);
 	}
 
-	ver_pacientes=()=>{
+	ver_pacientes(){
 
-			this.setState({ver_paciente:true});
-
+			document.getElementById("cargar_pacientes").click();
 	}
 
 
@@ -35,9 +34,7 @@ class PacienteAdmin extends  React.Component{
 			var sexo = document.getElementById("sexo").value
 
 			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/2/${dni}/${fecha_nacimiento}/${sexo}`).then(data=>{
-
-					this.setState({ver_paciente:true});
-
+					document.getElementById("cargar_pacientes").click();
 			}).catch(error=>{
 
 					alert("error");
@@ -47,12 +44,6 @@ class PacienteAdmin extends  React.Component{
 	}
 
 	render(){
-
-		if(this.state.ver_paciente==true){
-
-			return <Citas/>;
-
-		}
 
 		return(<div className="col-md-8"><br/><h1>Agregar Paciente</h1>
 					<div><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>

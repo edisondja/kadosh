@@ -4,7 +4,7 @@ import Alertify from 'alertifyjs';
 import FuncionesExtras from './funciones_extras';
 import FacturaInterfaz from './factura_interfaz';
 import '../css/dashboard.css';
-import { Doughnut,Line} from 'react-chartjs-2';
+import { Doughnut,Bar} from 'react-chartjs-2';
 
 
 class Reporte extends React.Component{ds
@@ -29,9 +29,20 @@ class Reporte extends React.Component{ds
                // console.log(this.state.recibos_semana);
         }
 
-       
-        consultarDataSemana=()=>{
-                Axios.get(`${FuncionesExtras.url_base}/api/ingresos_de_semana/`).then(data=>{  
+    
+        consultarDataSemana=(config='hoy')=>{
+            let url= "";
+                if(config=='hoy'){
+                        
+                    url =  `${FuncionesExtras.url_base}/api/ingresos_de_semana/hoy`;
+                
+                }else{
+                    let fecha_semana = document.getElementById("fecha_semana").value;
+                    url =  `${FuncionesExtras.url_base}/api/ingresos_de_semana/${fecha_semana}`;
+
+                }
+
+                Axios.get(`${url}`).then(data=>{  
                  //  this.setState({Lunes:data.data.Monday[0].monto});
                  this.setState({
                     Lunes:data.data.lunes,
@@ -108,8 +119,14 @@ class Reporte extends React.Component{ds
 
             return (
                    <div className="col-md-8"><br/><br/>
-                  
-                        <Line  data={data}/>
+                        <pre><input type="date" className="form-control col-md-3" id="fecha_semana"/>
+                            <strong>Ingrese la fecha de la semana que quieres consultar los ingreso</strong>
+                           
+                        </pre>
+                        <button className="btn btn-primary" onClick={()=>this.consultarDataSemana(true)}>Buscar</button>
+                        <strong style={{float:'right'}}>Ingresos de hoy $RD  {new Intl.NumberFormat().format(this.state.monto_total)}</strong>
+
+                        <Bar  data={data}/>
                         <hr/><button className="btn btn-primary">Consultar semana por fecha</button>
                         &nbsp;<button className="btn btn-primary">Pacientes</button>
                         &nbsp;<button className="btn btn-primary">Ingreos del año</button>

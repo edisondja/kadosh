@@ -113,7 +113,7 @@ class FacturaInterfaz extends React.Component{
 
                         if(option==1){
 
-                            Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}`).then(data=>{
+                            Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/tt`).then(data=>{
                                             Alertify.success("Pago realizado con exito");
                                             this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                             this.cargar_recibos(this.props.id_factura);

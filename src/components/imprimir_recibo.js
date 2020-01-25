@@ -10,6 +10,7 @@ class ImprimirRecibo extends React.Component{
     }
 
     componentDidMount(){
+
     }
 
     Imprimir(){
@@ -23,64 +24,39 @@ class ImprimirRecibo extends React.Component{
 
     }
 
+
     render(){
         
         return (<div><hr/>
                     <div className="card" id="recibo">
-                            <h4>#{this.props.data_recibo.codigo_recibo}</h4>
-                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH</strong>
+                            <strong>#{this.props.data_recibo.codigo_recibo}</strong><br/>
+                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR</strong>
                                 <p>RL C/San Antonio #33A Los Alcarrizos Santo Domingo,R.D TEL: 809-620-864 RNC: 131-76629-3</p>
-                                <table className="table">
-                                    <tr>
-                                        <td>Procedimiento</td>
-                                        <td>Precio</td>
-                                        <td>Cantidad</td>
-                                        <td>Total</td>
-                                    </tr>
+                                   
+                                   <strong>Lista de procedimientos</strong><br/><br/>
                                 
                                         {
                                             this.props.procedimientos_i.map((data=>( 
-                                                <tr>
-                                                    <td>{data.nombre}</td>
-                                                    <td>{data.precio}</td>
-                                                    <td>{data.cantidad}</td>
-                                                    <td>{data.total}</td>
-                                                    <td style={{display:'none'}}><strong>{this.state.monto_total+=data.total}</strong></td>
-                                                </tr>
+                                                    <strong style={{display: 'block'}}>{data.nombre} x{data.cantidad} $RD {new Intl.NumberFormat().format(data.total)}
+                                                    <div style={{display:'none'}}>{this.state.monto_total+=data.total}</div>
+                                                    </strong>          
                                             )))
-
+                                            
                                         }
-                                    <tr>
-                                        <td><strong>TOTAL</strong></td>
-                                        <td><strong>{new Intl.NumberFormat().format(this.state.monto_total)}</strong></td>
-                                    </tr>
-                                </table><hr/>
-                                <table className="table">
-                                    <tr>
-                                        <td>Doctor</td>
-                                        <td>Paciente</td>
-                                        <td>Monto Pagado</td>
-                                        <td>Resto a pagar</td>
-                                    </tr>
-                                    <tr><td>{this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</td>
-                                        <td>{this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</td>
-                                        <td>RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</td>
-                                        <td>RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Concepto de pago</td>
-                                        <td>Tipo de pago</td>
-                                        <td>RNC</td>
-                                        <td>Fecha de pago</td>
-                                    </tr>
-                                    <tr>
-                                        <td>ABONO</td>
-                                        <td>EFECTIVO</td>
-                                        <td>131-76629-3</td>
-                                        <td>{this.props.data_recibo.fecha_pago}</td>
-                                    </tr>
+                                        <br/><br/><br/><strong>TOTAL $RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong><br/>
+                                        <strong>Tipo de pago: {this.props.data_recibo.tipo_de_pago}</strong><br/>
+                                        <strong>Doctor: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
+                                        <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
+                                        <strong>Monto Pagado RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</strong><br/>
+                                        <strong>Resto a pagar RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</strong><br/>
+                                
+                                
+                                        <br/>
+                                        <strong>Fecha de pago: {this.props.data_recibo.fecha_pago}</strong><br/>
+                                
+                                    
+                                        
                                    
-                                </table>    
 
                                 <strong>Ref: {this.props.data_recibo.id_factura}</strong>
                                 <strong style={{float:'rigth'}}>   Firma _______________________________</strong>

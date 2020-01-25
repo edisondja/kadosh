@@ -14,7 +14,7 @@ class Login extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state= {login:true,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
+			this.state= {login:false,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]};
 			this.color_notifiacion = {
 					color:'blue'
 			}
