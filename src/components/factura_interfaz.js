@@ -6,6 +6,7 @@ import ReactPrint from 'react-to-print';
 import ImprimirRecibo from './imprimir_recibo';
 import Url_base from './funciones_extras';
 import SweetAlert from 'sweetalert2-react';
+import VerFacturas from './ver_facturas';
 
 import '../css/dashboard.css';
 
@@ -13,7 +14,7 @@ class FacturaInterfaz extends React.Component{
 
     constructor(props){
         super(props);
-        this.state={procedimientos_imprimir:[],config:'normal',data_factura:[],valor:true,factura:{precio_estatus:0,id:0},procedimientos:[],total:0,recibos:[],mensaje:""};
+        this.state={paciente:{},procedimientos_imprimir:[],config:'normal',data_factura:[],valor:true,factura:{precio_estatus:0,id:0},procedimientos:[],total:0,recibos:[],mensaje:""};
     }
 
     componentDidMount(){
@@ -21,6 +22,7 @@ class FacturaInterfaz extends React.Component{
         this.cargar_factura(this.props.id_factura);
         this.cargar_procedimientos(this.props.id_factura);
         this.cargar_recibos(this.props.id_factura);
+        Url_base.cargar_paciente(this,this.props.id_paciente);
     }
 
     cargar_procedimientos=(id_factura)=>{
@@ -113,7 +115,7 @@ class FacturaInterfaz extends React.Component{
 
                         if(option==1){
 
-                            Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/tt`).then(data=>{
+                            Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/ef`).then(data=>{
                                             Alertify.success("Pago realizado con exito");
                                             this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                             this.cargar_recibos(this.props.id_factura);
@@ -165,20 +167,29 @@ class FacturaInterfaz extends React.Component{
             });
     }   
 
+    retroceder=()=>{
+
+        this.setState({config:'ver_facturas'});
+    }
+
     render(){
-        if(this.state.config=='imprimir_recibo'){
+            if(this.state.config=='imprimir_recibo'){
         
                return  <ImprimirRecibo data_recibo={this.state.data_factura} procedimientos_i={this.state.procedimientos_imprimir}/>
-        }
+        
+            }else if(this.state.config=="ver_facturas"){
 
-        return (<div className="col-md-8"> 
-                <h2>Factura y sus detalles</h2>
-                <h3>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h3><hr/>
-                <h4>Ingresado por: ({this.state.factura.nombre} {this.state.factura.apellido})</h4>
+                return <VerFacturas id_paciente={this.props.id_paciente} />
+            }
+
+        return (<div className="col-md-8"><br/> 
+                <h4>Factura y sus detalles</h4><button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
+                <h4>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h4><hr/>
+                <h5>Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
                 <div>
                     <table className="table">
                         <tr>
-                            <td>Nombre</td>
+                            <td>Procedimiento</td>
                             <td>Cantidad</td>
                             <td>Total</td>
                         </tr>
@@ -196,7 +207,7 @@ class FacturaInterfaz extends React.Component{
                     <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
                     <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
                     <button className="btn btn-dark">X</button><strong>&nbsp;&nbsp;&nbsp;TOTAL $RD {new Intl.NumberFormat().format(this.state.total)}</strong> <hr/>
-                    <h2>Pagos Realizados</h2>
+                        <hr/><br/><br/><h2>Pagos Realizados</h2>
                     <div className="tableflow">
                     <table className="table boxslider">
                         <tr>

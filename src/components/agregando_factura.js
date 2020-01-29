@@ -4,12 +4,14 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import FacturaInterfaz from './factura_interfaz';
 import cargar_doctores from './funciones_extras';
+import VerFacturas from './ver_facturas';
+import PerfilPaciente from './perfil_paciente';
 
 class  AgregarFactura extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[]};
+        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:''};
         this.removeTodo = this.removeTodo.bind(this);
 
     }
@@ -52,7 +54,7 @@ class  AgregarFactura extends React.Component{
             Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
 
                     console.log(data.data);
-                    this.setState({total:0,lista_procedimiento:[]});
+                    this.setState({total:0,lista_procedimiento:[],factura:'ready'});
                     Alertify.success("Factura generada correctamente, puede ir al perfil del paciente y verla");
                    // document.getElementById("agregar_paciente").click();
 
@@ -68,6 +70,10 @@ class  AgregarFactura extends React.Component{
                     
     }
 
+    retroceder=()=>{
+
+        this.setState({factura:'perfil_paciente'});
+    }
 
 
     buscar_procedimiento=()=>{ 
@@ -87,8 +93,23 @@ class  AgregarFactura extends React.Component{
 
     render(){
          var indice_procedimiento = 0;
+
+         if(this.state.factura=='ready'){
+
+                return <VerFacturas id_paciente={this.props.IDpaciente}/>;
+
+         }else if(this.state.factura=='perfil_paciente'){
+
+            return <PerfilPaciente id_paciente={this.props.IDpaciente}  />
+         }else{
+
+            
+         }
+
+
         return (<div className="col-md-8">
                 <div><br/>
+                    <button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
                     <h2>CREACCION DE FACTURA</h2><hr/>
                     <strong>Lista de procedimientos</strong><br/>
                     <table className="table">

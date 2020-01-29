@@ -29,10 +29,18 @@ class ImprimirRecibo extends React.Component{
         
         return (<div><hr/>
                     <div className="card" id="recibo">
-                            <strong>#{this.props.data_recibo.codigo_recibo}</strong><br/>
-                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR</strong>
-                                <p>RL C/San Antonio #33A Los Alcarrizos Santo Domingo,R.D TEL: 809-620-864 RNC: 131-76629-3</p>
+                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR SRL <br/>&nbsp;&nbsp;C/San Antonio #33A Los Alcarrizos<br/>&nbsp;&nbsp;Santo Domingo,R.D</strong>
+                                <p> TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
                                    
+                                   <p>_____________________________</p><br/>
+                                   <p>COMPROBANTE AUTORIZADO POR LA DGII</p><br/>
+                                   <strong>Fecha de pago: {this.props.data_recibo.fecha_pago}</strong><br/>
+                                   <strong>#{this.props.data_recibo.codigo_recibo}</strong><br/>
+
+                                   <p>____________________________</p><br/>
+                                   <strong>FACTURA PARA CONSUMIDOR</strong><br/>
+                                   <p>____________________________</p><br/>
+
                                    <strong>Lista de procedimientos</strong><br/><br/>
                                 
                                         {
@@ -43,23 +51,16 @@ class ImprimirRecibo extends React.Component{
                                             )))
                                             
                                         }
-                                        <br/><br/><br/><strong>TOTAL $RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong><br/>
-                                        <strong>Tipo de pago: {this.props.data_recibo.tipo_de_pago}</strong><br/>
-                                        <strong>Doctor: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
-                                        <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
+                                        <br/><br/><br/><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOTAL $RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong><br/>
                                         <strong>Monto Pagado RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</strong><br/>
                                         <strong>Resto a pagar RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</strong><br/>
-                                
-                                
-                                        <br/>
-                                        <strong>Fecha de pago: {this.props.data_recibo.fecha_pago}</strong><br/>
-                                
-                                    
-                                        
-                                   
+                                        <br/><strong>Tipo de pago: {this.props.data_recibo.concepto_pago}</strong><br/>
 
-                                <strong>Ref: {this.props.data_recibo.id_factura}</strong>
-                                <strong style={{float:'rigth'}}>   Firma _______________________________</strong>
+                                        <br/>
+                                        <p>_______________________________</p><br/>
+                                        <strong>Doctor: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
+                                        <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
+                                        <strong style={{float:'rigth'}}>Firma __________________________________&nbsp;&nbsp;</strong>
                     </div> 
                     <button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
 

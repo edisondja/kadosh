@@ -4,6 +4,7 @@ import Alertify from 'alertifyjs';
 import IconInvoice from '../expediente.png';
 import FacturaInterface from './factura_interfaz';
 import FuncionesExtras from './funciones_extras';
+import PerfilPaciente from './perfil_paciente';
 class VerFacturas extends React.Component{
 
 
@@ -50,6 +51,11 @@ class VerFacturas extends React.Component{
     actualizar_factura(id_factura){
     
     }
+    
+    retroceder=()=>{
+
+        this.setState({option:'perfil_paciente'});
+    }
 
     ver_factura=(id_factura)=>{
 
@@ -65,15 +71,21 @@ class VerFacturas extends React.Component{
     render(){
     
         if(this.state.option=="ver_factura"){
-                return <FacturaInterface id_factura={this.state.id_factura} />
+                return <FacturaInterface id_factura={this.state.id_factura} id_paciente={this.props.id_paciente} />
         }else if(this.state.option=="editar_factura"){
 
         }else if(this.state.option=="imprimir_factura"){
 
+        }else if(this.state.option=="perfil_paciente"){
+
+            return <PerfilPaciente id_paciente={this.props.id_paciente}/>;
+
         }else{
         
             return (<div className="col-md-8">
-                    <div className="card"><br/><br/>
+                    <hr/>
+                    <button className='btn btn-primary' style={{float:'right'}} onClick={this.retroceder}>Retroceder</button><br/>
+                    <br/><div className="card"><br/><br/>
                     <h2>Facturas de paciente {this.props.paciente}</h2><hr/>
                     {
                         this.state.facturas.map((data=>(

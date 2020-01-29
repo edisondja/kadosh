@@ -2,8 +2,8 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 
 var password= "kadosh2019";
-var url_base =  "https://service.clinickadosh.com";
-//var url_base =  "http://localhost:8000";
+//var url_base =  "https://service.clinickadosh.com";
+var url_base =  "http://localhost:8000";
 
 
 function cargar_doctores(el){
@@ -19,17 +19,27 @@ function cargar_doctores(el){
     })
 }
 
-function cargar_doctor(el,id_doctor){
+function cargar_doctor(u,id_doctor){
 
         Axios.get(`${url_base}/api/cargar_doctor/${id_doctor}`).then(data=>{
 
-                el.setState({doctor:data.data});
+                u.setState({doctore:data.data});
 
         }).catch(error=>{
 
             console.log(error);
 
         })
+}
+
+function cargar_paciente(el,id_paciente){
+
+        Axios.get(`${url_base}/api/paciente/${id_paciente}`).then(data=>{
+                    el.setState({paciente:data.data});
+        }).catch(error=>{
+            Alertify.error("No se pudo cargar la informacion del paciente");
+        });
+
 }
 
     function notificar_cumple(el){
@@ -58,5 +68,5 @@ function cargar_procedimientos(el){
 }
 
 
-export default {cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+export default {cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

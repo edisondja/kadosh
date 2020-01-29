@@ -7,20 +7,37 @@ import AgregarFactura from './agregando_factura';
 import AgregarCita from './agregar_cita';
 import VerFacturas from './ver_facturas';
 import Verficar from './funciones_extras';
+import Pacientes from './citas_c';
 
 class PerfilPaciente extends React.Component{
 
 		constructor(props){
 			super(props);
-			this.state={deuda_total:0,doctor:{nombre:'Noelia',apellido:'Felix'},paciente:{nombre:null,apellido:null},select:false,lista_citas:[],cita:"",id_cita:"",eliminar:0};
+			this.state={deuda_total:0,doctor:{nombre:'',apellido:''},paciente:{nombre:null,apellido:null},select:'perfil_paciente',lista_citas:[],cita:"",id_cita:"",eliminar:0};
 		}
 		componentDidMount(){
 
 			//alert(this.props.id_paciente);
 			this.consultarPaciente(this.props.id_paciente);
 			this.cargar_citas_paciente(this.props.id_paciente);
-			Verficar.cargar_doctor(this.state,this.state.paciente.id_doctor);
+			this.cargar_doctor(this.props.IdDoctor);
+			//this.setState({doctor:});
+			//alert(this.props.IdDoctor);
 			this.consultar_deuda_paciente(this.props.id_paciente);
+
+		}
+
+		cargar_doctor=(id_doctor)=>{
+
+			Axios.get(`${Verficar.url_base}/api/cargar_doctor/${id_doctor}`).then(data=>{
+	
+					this.setState({doctor:data.data});
+	
+			}).catch(error=>{
+	
+				console.log(error);
+	
+			})
 		}
 
 		consultar_deuda_paciente(id_paciente){
@@ -47,6 +64,12 @@ class PerfilPaciente extends React.Component{
 
 			}).set("type","password");
 
+		}
+
+		detras=()=>{
+
+			this.setState({select:'ver_pacientes'});
+			
 		}
 		
 		cargar_citas_paciente=(id_paciente)=>{
@@ -130,11 +153,12 @@ class PerfilPaciente extends React.Component{
 
 					return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre}/>;
 
-				}
+				}else if(this.state.select=="perfil_paciente"){
 
 				return (<div className="col-md-8">
 							<h1>Perfil de paciente</h1><br/>
 							<div className="interfaz_perfil">
+							<button className="btn btn-primary" style={{float:'right'}} onClick={this.detras}>Atras</button><br/>
 							<table class="table">
 								<thead>
 									<tr>
@@ -143,7 +167,7 @@ class PerfilPaciente extends React.Component{
 									<th scope="col">Telefono</th>
 									<th scope="col">Ingreso</th>
 									<th scope="col">Doctor</th>
-									<th scope="col">Deuda Tatal</th>
+									<th scope="col">Deuda Total</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -179,6 +203,15 @@ class PerfilPaciente extends React.Component{
 
 							}
 						</div>);
+				}else if(this.state.select=="ver_pacientes"){
+
+					return <Pacientes/>;
+
+				}
+
+
+
+
 		}
 
 

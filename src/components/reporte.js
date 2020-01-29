@@ -6,7 +6,6 @@ import FacturaInterfaz from './factura_interfaz';
 import '../css/dashboard.css';
 import { Doughnut,Bar} from 'react-chartjs-2';
 
-
 class Reporte extends React.Component{ds
 
 
@@ -21,7 +20,7 @@ class Reporte extends React.Component{ds
         componentDidMount(){
                 console.log(this.chartReference);
                 this.consultarDataSemana();
-                this.reportes(null);
+                this.reportes('normal');
                // this.setState({Lunes:this.state.semana[0].monto});
             
                // this.calcular_ingreso_semanal(this.state.recibos_semana);
@@ -73,12 +72,13 @@ class Reporte extends React.Component{ds
             var fecha_final;
 
             if(config=='normal'){
-                fecha_inicial = document.getElementById('fecha_inicial').value;
-                fecha_final = document.getElementById('fecha_final').value;
-            }else {
                 var f = new Date();
-                fecha_inicial = f.getFullYear() + "-" + (f.getMonth() +1) + "-" + f.getDate();
-                fecha_final = f.getFullYear() + "-" + (f.getMonth() +1) + "-" + f.getDate();
+                fecha_inicial = f.getFullYear() + "-" + (f.getMonth() +1) + "-" +f.getDate();
+                fecha_final = fecha_final;
+            }else if(config=='consultar_fechas'){
+                fecha_inicial = document.getElementById('fecha_inicial').value;
+                fecha_final = document.getElementById('fecha_final').value;  
+              
             }
            Axios.get(`${FuncionesExtras.url_base}/api/facturas_reportes/${fecha_inicial}/${fecha_final}`).then(data=>{
 
@@ -135,7 +135,7 @@ class Reporte extends React.Component{ds
                         <input id="fecha_inicial"  type="date"/>&nbsp;
                         <strong>Fecha Final</strong>&nbsp;
                         <input id="fecha_final" type="date"/>&nbsp;<br/><hr/>
-                        <button className="btn btn-primary" onClick={this.reportes}>Buscar</button>&nbsp;
+                        <button className="btn btn-primary" onClick={()=>this.reportes('consultar_fechas')}>Buscar</button>&nbsp;
                         <button className="btn btn-info" onClick={this.Imprimir}>Imprimir</button><br/><br/>
                         <div id="reportes" className="card interfaz_reporte">
                        <table className="table">

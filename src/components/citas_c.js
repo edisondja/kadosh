@@ -15,6 +15,7 @@ class  Cita extends React.Component{
 		super(props);
 		this.id_paciente=0;
 		this.state ={perfil_selec:false,
+					id_doctor:0,
 					nombre_paciente:"",
 					clientes:[
 						  
@@ -56,10 +57,10 @@ class  Cita extends React.Component{
 
 	}
 
-	cargar=(id)=>{
+	cargar=(id,id_doct)=>{
 
 
-				this.setState({perfil_selec:true,id_cliente:id});
+				this.setState({perfil_selec:true,id_cliente:id,id_doctor:id_doct});
 
 	}
 
@@ -73,26 +74,35 @@ class  Cita extends React.Component{
 
 		if(this.state.perfil_selec==true){
 
-				return <PerfilPaciente id_paciente={this.state.id_cliente} nombre="oye esto es un nombre cabron" />;
+				return <PerfilPaciente id_paciente={this.state.id_cliente} IdDoctor={this.state.id_doctor}nombre="oye esto es un nombre cabron" />;
 
 		}else if(this.state.perfil_selec=="agregar_citas"){
 
 			return <AgregarCita paciente={this.state.nombre_paciente} id_paciente={this.state.id_cliente}/>;
 
 		}else if(this.state.clientes==""){
-
-			return <img src={Loading}/>;
-
+			/*
+		return (<div className="col-md-8">
+					<br/><strong>Buscar paciente</strong>
+					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+					<br/><div className="card">
+							<h4>Este paciente no existe</h4>
+					</div>
+					<img src={Loading}/>
+				</div>
+				);
+					*/
 		}else if(this.state.perfil_selec=="actualizar_paciente"){
 
 				return <ActualizarPerfil IdPaciente={this.state.id_paciente}/>;
 		}
 
 
-		return (<div className="col-md-8"><br/>
-					<strong>Buscar paciente</strong><br/>
+
+		return (<div className="col-md-8"><br/><br/>
+					<h3>Buscar paciente</h3><br/>
 					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
-					
+					<div className="interfaz_cliente">
 					<br/>
 					{
 						this.state.clientes.map(data=>(
@@ -101,7 +111,7 @@ class  Cita extends React.Component{
 								<div className="container"><br/>
 									<img src={Logo} width="30"/>
 									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p><hr/>
-									<button className="btn btn-secondary" onClick={()=>this.cargar(data.id)}>Ver perfil</button>&nbsp;
+									<button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;
 									<button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;
 									<button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button>
 
@@ -114,6 +124,7 @@ class  Cita extends React.Component{
 
 					
 					}
+				</div>
 				
 
 

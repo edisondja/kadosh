@@ -51,6 +51,11 @@ li:hover{
 	overflow-y:scroll;
 	height: 400px;
 }
+
+.interfaz_cliente{
+	overflow-y:scroll;
+	height: 500px;
+}
 .interfaz_perfil{
 
 }
