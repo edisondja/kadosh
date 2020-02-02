@@ -66,7 +66,29 @@ function cargar_procedimientos(el){
     });
 
 }
+function cargar_factura(el,id_factura){
+
+              
+    Axios.get(`${url_base}/api/cargar_factura/${id_factura}`).then(data=>{
+        el.setState({factura:data.data[0]});
+    }).catch(error=>{
+            Alertify.message("No se pudo cargar la factura");
+    });
+
+}
+
+function cargar_procedimientos_de_factura(el,id_factura){
+    Axios.get(`${url_base}/api/cargar_procedimientos_de_factura/${id_factura}`).then(data=>{
+
+        el.setState({procedimientos_factura:data.data});
+        console.log(data.data);
+
+    }).catch(error=>{
+            console.log(error);
+    });
 
 
-export default {cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+}
+
+export default {cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

@@ -10,7 +10,8 @@ class VerFacturas extends React.Component{
 
     constructor(props){
             super(props);  
-            this.state= {data:null,facturas:[],id_factura:null};
+            this.state= {data:null,facturas:[],id_factura:null,paciente:{}};
+            FuncionesExtras.cargar_paciente(this,this.props.id_paciente);
     }
 
 
@@ -86,7 +87,7 @@ class VerFacturas extends React.Component{
                     <hr/>
                     <button className='btn btn-primary' style={{float:'right'}} onClick={this.retroceder}>Retroceder</button><br/>
                     <br/><div className="card"><br/><br/>
-                    <h2>Facturas de paciente {this.props.paciente}</h2><hr/>
+                    <h2>Facturas de paciente {this.state.paciente.nombre} {this.state.paciente.apellido}</h2><hr/>
                     {
                         this.state.facturas.map((data=>(
 

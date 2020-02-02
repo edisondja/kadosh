@@ -1,16 +1,21 @@
 import React from 'react';
 import Axios from 'axios';
 import '../css/dashboard.css';
+import PerfilPaciente from './perfil_paciente';
 class ImprimirRecibo extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {monto_total:0};
+        this.state= {monto_total:0,option:''};
 
     }
 
     componentDidMount(){
 
+    }
+
+    retroceder=()=>{
+        this.setState({option:'ver_perfil'})
     }
 
     Imprimir(){
@@ -26,8 +31,14 @@ class ImprimirRecibo extends React.Component{
 
 
     render(){
+
+        if(this.state.option=='ver_perfil'){
+
+            return  <PerfilPaciente id_paciente={this.props.id_paciente}/>
+        }
         
-        return (<div><hr/>
+        return (<div><br/><br/><br/><br/><hr/><button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
+        <button onClick={this.retroceder} className="btn btn-primary" style={{float:'right'}}>Retroceder</button><hr/>
                     <div className="card" id="recibo">
                                 <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR SRL <br/>&nbsp;&nbsp;C/San Antonio #33A Los Alcarrizos<br/>&nbsp;&nbsp;Santo Domingo,R.D</strong>
                                 <p> TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
@@ -62,7 +73,6 @@ class ImprimirRecibo extends React.Component{
                                         <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
                                         <strong style={{float:'rigth'}}>Firma __________________________________&nbsp;&nbsp;</strong>
                     </div> 
-                    <button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
 
             </div>);
 

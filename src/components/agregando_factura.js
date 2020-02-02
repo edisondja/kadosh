@@ -141,7 +141,7 @@ class  AgregarFactura extends React.Component{
                     <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura}>Generar Factura</button><br/><br/>
              
                     <input type="text" className="form-control" id="buscando" onKeyUp={this.buscar_procedimiento} placeholder="Escriba el procedimiento"/><br/>
-
+                    <div className="interfaz_cliente">
                     {
                         this.state.procedimientos.map(data=>(
                             <div className="card">
@@ -158,6 +158,7 @@ class  AgregarFactura extends React.Component{
 
                     )
                     }
+                    </div>
                 </div>
         </div>
 
