@@ -39,7 +39,7 @@ class FacturaEd extends React.Component{
                 let id_factura = this.props.id_factura;
                 Axios.get(`${Core.url_base}/api/agregar_procedimiento_lista/${id_factura}/${id_procedimiento}/${total}/${cantidad}`).then(data=>{
                     Alertify.success("Procedimiento agregado con exito..");
-                    Core.cargar_procedimientos(this,this.props.id_factura);
+                    this.componentDidMount();
                 }).catch(error=>{
                     Alertify.error("Error no se pudo agregar el procedimiento a la factura");
                 });
@@ -50,18 +50,16 @@ class FacturaEd extends React.Component{
 
 
         }
-        eliminar_procedimiento(id_procedimiento,id_factura,totalidad){
+        eliminar_procedimiento=(id_procedimiento,id_factura,totalidad)=>{
 
             Alertify.confirm("Eliminar procedimiento","Seguro que deseas eliminar este procedimiento de esta factura?",()=>{
 
               //  Alertify.success(`procedimiento borrado con  exito ${totalidad}`);
                     
                 Axios.get(`${Core.url_base}/api/eliminar_procedimiento/lista/${id_procedimiento}/${id_factura}/${totalidad}`).then(data=>{
-                            Alertify.message("Procedimiento borrado con exito!",()=>{
-                                    document.querySelector(`#${id_procedimiento}`).remove();
-                            });
-                            
-                    }).catch(error=>{
+                            Alertify.message("Procedimiento borrado con exito!");
+                            this.componentDidMount();
+                        }).catch(error=>{
                         Alertify.error("Error al borrar procedimiento");
                     })
             },()=>{
@@ -103,7 +101,6 @@ class FacturaEd extends React.Component{
                                     <td>{data.nombre}</td>
                                     <td>{data.cantidad}</td>
                                     <td>$RD {new Intl.NumberFormat().format(data.total)}</td>
-                                    <div style={{display:'none'}}>{this.state.total+=data.total}</div>
                                     <td><button onClick={()=>this.eliminar_procedimiento(data.id_historial,data.id_factura,data.total)} className="btn btn-danger">X</button></td>
                                 </tr>
                                 )))     
@@ -111,11 +108,10 @@ class FacturaEd extends React.Component{
                                 <tr>
                                     <td></td>
                                     <td></td>
-                                    <td><h4>TOTAL $RD {new Intl.NumberFormat().format(this.state.total)}</h4></td>
                                 </tr>
                         </table>
                         <strong>Agregar Procedimiento</strong><br/>
-                        <input type='text' id="buscando"  onChange={this.cargar_procedimientos} className="form-control"/><br/>
+                        <input type='text' id="buscando"  onChange={this.buscar_procedimiento} className="form-control"/><br/>
                         <table className="table"> 
                         <tr>
                             <th>Procedimiento</th>

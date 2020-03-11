@@ -60,6 +60,10 @@ class  AgregarCita extends React.Component{
 
     }
 
+    retroceder=()=>{
+        this.setState({control:'cargar_paciente'});
+    }
+
     eliminar_cita(id){
 
         Axios.get("").then(
@@ -93,7 +97,7 @@ class  AgregarCita extends React.Component{
         }else if(this.state.control=="cargar_paciente"){
 
             return <PerfilPaciente id_paciente={this.props.id_paciente}/>
-        }   
+        }
 
         return (<div className="card">
                 <div className="card-body"><hr/>
@@ -102,7 +106,8 @@ class  AgregarCita extends React.Component{
                     <input type="time" className="form-control" id="hora" /><br/>
                     <strong>Dia</strong>
                     <input type="date" id="dia"  className="form-control"/><br/>
-                    {boton}                    
+                    {boton}&nbsp;
+                    <button className="btn btn-primary" onClick={this.retroceder}>Retroceder</button>
                 </div>
             </div>);
 

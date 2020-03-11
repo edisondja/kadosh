@@ -6,10 +6,6 @@ import Verificar from './funciones_extras';
 import Axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
 
-
-
-
-
 class Login extends React.Component{
 
 		constructor(props){
