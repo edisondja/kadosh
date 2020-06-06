@@ -8,6 +8,7 @@ import Url_base from './funciones_extras';
 import SweetAlert from 'sweetalert2-react';
 import VerFacturas from './ver_facturas';
 import EditarFactura from './editar_factura';
+import ReactDOMServer from 'react-dom/server';
 import '../css/dashboard.css';
 
 class FacturaInterfaz extends React.Component{
@@ -27,15 +28,7 @@ class FacturaInterfaz extends React.Component{
     }
 
     cargar_monto=()=>{
-
-
-        this.state.procedimientos.map((data=>(
-
-                this.setState({monto_total:this.state.monto_total+data.monto_total})
-
-        )));
-
-        
+       this.setState({monto_total:894984});
 
     }
 
@@ -91,6 +84,42 @@ class FacturaInterfaz extends React.Component{
         }).catch(error=>{
                 Alertify.error("No se pudo imprimir el recibo");
         });
+
+    }
+
+    cargar_descuentos_de_facutra(id_factura){
+
+        Axios.get(`${Url_base.url_base}/api/consultar_descuentos/${id_factura}`).then(data=>{
+            let descuentos="";
+            
+            data.data.forEach(data=>{
+
+                    descuentos+=ReactDOMServer.renderToStaticMarkup(
+                        <tr>
+                            <td>{data.monto}</td>
+                            <td>{data.created_at}</td>
+                            <td><button class='btn btn-danger' onClick={()=>this.eliminar_descuento(data.id)}>Eliminar</button></td>
+                    </tr>);
+                        
+            });
+
+            Alertify.confirm("Descuentos en esta factura",`<p>Descuentos aplicados</p>
+            <table class="table">
+                <tr>
+                    <th>Descuento</th>
+                    <th>Fecha</th>
+                    <th>Eliminar</th>
+                </tr>
+                ${descuentos}
+            </table>
+            `,function(){},function(){});
+            
+        }).catch(error=>{
+ 
+            Alertify.error("Error al cargar descuentos de la factura");
+
+        });
+
 
     }
 
@@ -195,6 +224,24 @@ class FacturaInterfaz extends React.Component{
         this.setState({config:'editar_factura'});
     }
 
+    eliminar_descuento(id_descuento){
+    
+       console.log(id_descuento);
+        Axios.post({
+            url:`${Url_base.url_base}/eliminar_descuento/`,
+            method:'post',
+            data:{
+                id_descuento:id_descuento
+            }
+        }).then(data=>{
+                Alertify.message("Descuento borrado con exito");
+        }).catch(error=>{
+                Alertify.error("Error al eliminar descuento");
+        });
+
+
+    }
+
     cargar_factura=(id_factura)=>{
             
             Axios.get(`${Url_base.url_base}/api/cargar_factura/${id_factura}`).then(data=>{
@@ -247,12 +294,13 @@ class FacturaInterfaz extends React.Component{
                         <th></th>
                         <th></th>
                         <th></th>
-                        <th>TOTAL {this.monto_total}</th>
+                        <th>TOTAL {this.state.monto_total}</th>
                     </tr>
                     </table>
                     <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
                     <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
-                    <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button><strong>&nbsp;&nbsp;&nbsp;</strong> <hr/>
+                    <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button><strong>&nbsp;&nbsp;&nbsp;</strong>
+                    <button className="btn btn-dark" onClick={()=>this.cargar_descuentos_de_facutra(this.props.id_factura)}>Ver descuentos</button>  <hr/>
                         <hr/><br/><br/><h2>Pagos Realizados</h2>
                     <div className="tableflow">
                     <table className="table boxslider">

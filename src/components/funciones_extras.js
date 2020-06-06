@@ -4,7 +4,8 @@ import Alertify from 'alertifyjs';
 var password= "kadosh2019";
 //var url_base =  "https://service.clinickadosh.com";
 var url_base =  "http://localhost:8000";
-
+var login_status = true;
+var clave_secreta ="kadoshor2020";
 
 function cargar_doctores(el){
 
@@ -90,5 +91,5 @@ function cargar_procedimientos_de_factura(el,id_factura){
 
 }
 
-export default {cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+export default {clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 
