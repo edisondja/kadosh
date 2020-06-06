@@ -98,7 +98,6 @@ class FacturaInterfaz extends React.Component{
                         <tr>
                             <td>{data.monto}</td>
                             <td>{data.created_at}</td>
-                            <td><button class='btn btn-danger' onClick={()=>this.eliminar_descuento(data.id)}>Eliminar</button></td>
                     </tr>);
                         
             });
@@ -108,7 +107,6 @@ class FacturaInterfaz extends React.Component{
                 <tr>
                     <th>Descuento</th>
                     <th>Fecha</th>
-                    <th>Eliminar</th>
                 </tr>
                 ${descuentos}
             </table>
