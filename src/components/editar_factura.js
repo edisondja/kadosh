@@ -13,7 +13,7 @@ class FacturaEd extends React.Component{
 
         componentDidMount(){
                 Core.cargar_factura(this,this.props.id_factura);
-                Core.cargar_procedimientos_de_factura(this,this.props.id_factura);
+                Core.cargar_procedimientos_de_factura(this,this.props.id_factura,"");
                 Core.cargar_procedimientos(this,this.props.id_factura);
         }
 

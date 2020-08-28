@@ -24,11 +24,12 @@ class FacturaInterfaz extends React.Component{
         this.cargar_procedimientos(this.props.id_factura);
         this.cargar_recibos(this.props.id_factura);
         Url_base.cargar_paciente(this,this.props.id_paciente);
-        this.cargar_monto();
+       // this.cargar_monto();
+        Url_base.cargar_procedimientos_de_factura(this,this.props.id_factura);
     }
 
     cargar_monto=()=>{
-       this.setState({monto_total:894984});
+       this.setState({monto_total:0});
 
     }
 
@@ -292,7 +293,7 @@ class FacturaInterfaz extends React.Component{
                         <th></th>
                         <th></th>
                         <th></th>
-                        <th>TOTAL {this.state.monto_total}</th>
+                        <th>$RD {new Intl.NumberFormat().format(this.state.monto_total)}</th>
                     </tr>
                     </table>
                     <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
