@@ -62,11 +62,9 @@ class PacienteAdmin extends  React.Component{
 
 						<strong>Sexo</strong><br/>
 							<select id="sexo" className="form-control">
-								<option value="h">Hombre</option>
-								<option value="m">Mujer</option>
-								<option value="hm">Hombre moderno</option>
-								<option value="mm">Mujer moderna</option>
-								<option value="d">Desconocido</option>
+								<option value="h">Masculino</option>
+								<option value="m">Femenino</option>
+								<option value="hm">Otros</option>
 							</select><br/>
 						<strong>FECHA DE NACIMIENTO</strong><br/>
 

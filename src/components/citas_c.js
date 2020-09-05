@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import '../css/bootstrap.css';
+import '../css/dashboard.css';
 import Logo from '../logo.jpg';
 import Loading from '../loading.gif';
 import PerfilPaciente from './perfil_paciente';
@@ -98,32 +99,42 @@ class  Cita extends React.Component{
 		}
 
 
-
 		return (<div className="col-md-8"><br/><br/>
 					<h3>Buscar paciente</h3><br/>
 					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
 					<div className="interfaz_cliente">
-					<br/>
+					<table className='table table-hover'>
+					<thead>
+					<tr className="fijar_columnas">
+						<th  scope="col">Nombre</th>
+						<th  scope="col">Apellido</th>
+						<th  scope="col">Cedula</th>
+						<th  scope="col">Telefono</th>
+						<th  scope="col">Ver Perfil</th>
+						<th  scope="col">Asignar Cita</th>
+						<th  scope="col">Actualizar</th>
+					</tr>
+					</thead>
 					{
 						this.state.clientes.map(data=>(
-							<div>
-							<div className="card">
-								<div className="container"><br/>
-									<img src={Logo} width="30"/>
-									<p>{data.nombre} {data.apellido} {this.state.perfil_select}</p><hr/>
-									<button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;
-									<button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;
-									<button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button>
+							<tbody>
+							<tr>
+								<td>{data.nombre}</td>
+								<td>{data.apellido}</td>
+								<td>{data.cedula}</td>
+								<td>{data.telefono}</td>
+								<td><button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;</td>
+								<td><button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;</td>
+								<td><button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button></td>
 
-								</div>
-							</div><br/>
-							</div>
-
+							</tr>
+							</tbody>
 						))
 
 
 					
 					}
+					</table>
 				</div>
 				
 
