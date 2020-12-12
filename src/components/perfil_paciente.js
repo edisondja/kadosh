@@ -155,7 +155,7 @@ class PerfilPaciente extends React.Component{
 
 				}else if(this.state.select=="perfil_paciente"){
 
-				return (<div className="col-md-8">
+				return (<div className="col-md-10">
 							<h1>Perfil de paciente</h1><br/>
 							<div className="interfaz_perfil">
 							<button className="btn btn-primary" style={{float:'right'}} onClick={this.detras}>Atras</button><br/>

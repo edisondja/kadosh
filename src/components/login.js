@@ -5,6 +5,7 @@ import Dashboard from './dashboard';
 import Verificar from './funciones_extras';
 import Axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
+import alertify from 'alertifyjs';
 
 class Login extends React.Component{
 
@@ -15,13 +16,27 @@ class Login extends React.Component{
 					color:'blue'
 			}
 			this.logo_stilo ={
-				marginLeft:'39%'
+				marginLeft:'35%'
 			}	
-
+			
 
 		}
-		
+		onKeyUp(event) {
+			if (event.charCode === 13) {
+				document.getElementById("boton_login").click();
+			}
+		}
 		componentDidMount(){
+			if (localStorage.getItem("login") === null) {
+
+				this.setState({login:false});
+
+				
+		   	}else{
+
+				this.setState({login:true});
+
+			}
 			
 		}
 
@@ -34,10 +49,13 @@ class Login extends React.Component{
 					this.setState({login:true});
 					this.setState({mensaje:" Creedenciales correcto"});
 					this.color_notifiacion={color:"green"}
+					localStorage.setItem('login', data.data.nombre+" "+data.data.apellido);
+
 				}
 			}).catch(error=>{
 				this.setState({mensaje:" usuario y Contraseña no validos"});
 				this.color_notifiacion={color:"red"}
+				alertify.message("Usuario y contraseña no son correctos")
 			});
 
 		
@@ -52,16 +70,19 @@ class Login extends React.Component{
 			}else{	
 
 					dashboard=<div className="row">
-					<div className="col-md-3"></div>
-						<div className="col-md-6"><br/><br/>
-						<h2>Iniciar Sesion</h2> 
-						   <img src={Logo} width="110" style={this.logo_stilo}  /><br/>
+					<div className="col-md-4"></div>
+		
+						<div className="col-md-4 stilo_login"  onKeyPress={this.onKeyUp}><br/><br/>
+						   <img src={Logo} width="110" style={this.logo_stilo}  /><br/> 
 							<storng>Usuario</storng><br/>
-							<input type='text' className="form-control" id="usuario" /><br/>
-							<storng>Contraseña</storng><br/>
-							<input type='password' className="form-control" id="clave" /><br/>
-							<button className="btn btn-primary" onClick={this.iniciar_sesion}>Login</button>
-							  <p style={this.color_notifiacion}>{this.state.mensaje}</p>
+							<input type='text' placeholder="&#9670; Usuario" className="form-control" id="usuario" /><br/>
+							<storng className="padding_text">Contraseña</storng><br/>
+							<input type='password' placeholder="&#9673; Clave" className="form-control" id="clave" /><br/>
+							<button className="btn btn-primary boton_login" onClick={this.iniciar_sesion} id="boton_login">Login</button>
+							<hr/>
+							 <p>Copyright © 2020 Clinica Kadosh. All Rights Reserved.</p>
+						</div>
+						<div>
 						</div>
 						</div>
 						;

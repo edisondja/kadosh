@@ -8,18 +8,30 @@ class PacienteAdmin extends  React.Component{
 
 	constructor(props){
 			super(props);
-			this.state={estados:true,ver_paciente:false,doctores:[]};
+			this.state={estados:true,ver_paciente:false,doctores:[],boton_estado:true};
 			
 
 	}
 
 	componentDidMount(){
 			FuncionesExtras.cargar_doctores(this);
+		
 	}
 
 	ver_pacientes(){
 
 			document.getElementById("cargar_pacientes").click();
+	}
+
+	seleccionar_doctor=()=>{
+
+		let doctores = document.getElementById("doctores_select").value;
+		if(doctores!=="seleccionar"){
+		this.setState({boton_estado:false});
+		}else{
+			this.setState({boton_estado:true});
+
+		}
 	}
 
 
@@ -35,6 +47,7 @@ class PacienteAdmin extends  React.Component{
 
 			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/${id_doctor}/${dni}/${fecha_nacimiento}/${sexo}`).then(data=>{
 					document.getElementById("cargar_pacientes").click();
+					this.setState({boton_estado:true});
 			}).catch(error=>{
 
 					alert("error");
@@ -45,7 +58,7 @@ class PacienteAdmin extends  React.Component{
 
 	render(){
 
-		return(<div className="col-md-8"><br/><h1>Agregar Paciente</h1>
+		return(<div className="col-md-10"><br/><h1>Agregar Paciente</h1>
 					<div><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>
 						
 						<strong>Nombre</strong><br/>
@@ -75,12 +88,13 @@ class PacienteAdmin extends  React.Component{
 						<input type='tel'  id="telefono" className="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
 						
 						<strong>Ingresado por doctor</strong><br/>
-						<select id="doctores_select" className="form-control">
+						<select id="doctores_select" className="form-control" onChange={this.seleccionar_doctor}>
+							<option value="seleccionar">Seleccioné el doctor</option>
 							{this.state.doctores.map((data=>(
 										<option value={data.id}>{data.nombre} {data.apellido}</option>
 							)))}
 						</select><br/>
-						<button className="btn btn-primary" onClick={this.guardar_paciente}>Guardar</button>
+						<button className="btn btn-primary" disabled={this.state.boton_estado} onClick={this.guardar_paciente}>Guardar</button>
 					</div>
 				</div>); 
 

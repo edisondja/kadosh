@@ -166,7 +166,7 @@ class FacturaInterfaz extends React.Component{
 
             Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
                             
-                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
+                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='3'>TRANSFERENCIA</option><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
                         
                         
                         let option = document.getElementById("seleccionar_pago").value;
@@ -203,7 +203,25 @@ class FacturaInterfaz extends React.Component{
                                     });
                                 }
                         }else if(option==3){
-                            Alertify.message("has seleccionado pago para cheques");
+
+                            Alertify.message("Usted selecciono pago por transferencia");
+
+                            let pay = this.validar_pago(this.state.factura.precio_estatus,value);
+
+                            if(pay==true){
+                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/transferencia/${precio_estatus}/ts`).then(data=>{
+                                                Alertify.success("Pago realizado con exito");
+                                                this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
+                                                this.cargar_recibos(this.props.id_factura);
+                                }).catch(error=>{
+                                    Alertify.error("No se pudo procesar el pago correctamente");
+                                    this.setState({mensaje:error});
+                                });
+                            }
+
+
+
+
                         }else{
                             
                             Alertify.error("Numeracion de pago incorrecta");
@@ -269,7 +287,7 @@ class FacturaInterfaz extends React.Component{
                 return <EditarFactura id_factura={this.props.id_factura}/>
             }
 
-        return (<div className="col-md-8"><br/> 
+        return (<div className="col-md-10"><br/> 
                 <h4>Factura y sus detalles</h4><button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
                 <h4>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h4><hr/>
                 <h5>Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
@@ -307,8 +325,8 @@ class FacturaInterfaz extends React.Component{
                             <td>Monto</td>
                             <td>Concepto de pago</td>
                             <td>Tipo de pago</td>
-                            <td>Eliminar</td>
                             <td>Imprimir</td>
+                            <td>Eliminar</td>
                         </tr>
                            {
                                this.state.recibos.map((data=>(
@@ -318,8 +336,8 @@ class FacturaInterfaz extends React.Component{
                                         <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
                                         <td>{data.concepto_pago}</td>
                                         <td>{data.tipo_de_pago}</td>
-                                        <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
                                         <td><button class="btn btn" onClick={()=>this.imprimir_factura(data.id,this.props.id_factura)}>Imprimir</button></td>
+                                        <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
                                     </tr> 
 
                                )))

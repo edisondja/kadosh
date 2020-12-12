@@ -101,3 +101,28 @@ li:hover{
 
 
 }
+
+.stilo_login{
+    margin-top: 120px;
+    border: solid 2px;
+    border-color: #e5e1e1;
+    /* box-shadow: 2px 1px 1px 0.5px; */
+    background: #f9fafb;
+}
+
+body{
+	background:#eff1f2;
+}
+
+.boton_login{
+	width: 100%;
+}
+
+.padding_text{
+	padding: 2px;
+}
+
+.img_estilo{
+	height: 40px;
+	width: 40px;
+}

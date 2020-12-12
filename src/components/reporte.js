@@ -118,7 +118,7 @@ class Reporte extends React.Component{ds
               };
 
             return (
-                   <div className="col-md-8"><br/><br/>
+                   <div className="col-md-10"><br/><br/>
                         <pre><input type="date" className="form-control col-md-3" id="fecha_semana"/>
                             <strong>Ingrese la fecha de la semana que quieres consultar los ingreso</strong>
                            

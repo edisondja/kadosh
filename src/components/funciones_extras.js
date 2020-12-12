@@ -2,9 +2,9 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 
 var password= "kadosh2019";
-var url_base =  "https://service.clinickadosh.com";
-//var url_base =  "http://localhost:8000";
-var login_status = false;
+//var url_base =  "https://service.clinickadosh.com";
+var url_base =  "http://localhost:8000";
+var login_status = true;
 var clave_secreta ="kadoshor2020";
 
 
@@ -79,6 +79,24 @@ function cargar_factura(el,id_factura){
 
 }
 
+ function Consultar_deuda_de_paciente(id_paciente){
+   
+    Axios.get(`${url_base}/api/consultar_deuda/${id_paciente}`).then(data=>{
+        if(parseInt(data.data.deuda_total)>0){
+            document.getElementById(`interfaz${id_paciente}`).style.color="red";
+        }else{
+            document.getElementById(`interfaz${id_paciente}`).style.color="green";
+        }
+        document.getElementById(`interfaz${id_paciente}`).innerHTML="$"+data.data.deuda_total;
+
+        
+    }).catch(error=>{
+        console.log("raios tenemos un error");
+    })
+
+
+}
+
 function cargar_procedimientos_de_factura(el,id_factura,config=null){
     
         if(config==null){
@@ -114,5 +132,5 @@ function cargar_procedimientos_de_factura(el,id_factura,config=null){
 }
 
 
-export default {clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+export default {Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

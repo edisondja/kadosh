@@ -30,7 +30,7 @@ class CitaPendiente extends React.Component{
         }
 
         render(){
-            return (<div className="col-md-8">
+            return (<div className="col-md-10">
             <br/><br/>
                 <h3>Lista de  citas</h3><hr/>
                 <div className="interfaz_reporte">

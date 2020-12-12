@@ -9,6 +9,7 @@ import PerfilPaciente from './perfil_paciente';
 import AgregarCita from './agregar_cita';
 import Url from './funciones_extras';
 import ActualizarPerfil from './actualizar_paciente';
+import alertify from 'alertifyjs';
 
 class  Cita extends React.Component{
 
@@ -21,7 +22,8 @@ class  Cita extends React.Component{
 					clientes:[
 						  
 					    ],
-					    id_paciente:0
+						id_paciente:0,
+						estado_busqueda:"paciente_por_nombre"
 					};
 	}
 
@@ -29,6 +31,42 @@ class  Cita extends React.Component{
 	componentDidMount(){
 
 		this.cargar_citas();
+
+	}
+
+	CheckSeleccion=()=>{
+
+		let busqueda = document.getElementById("select_busqueda").value;
+	
+		if(busqueda=="paciente_por_nombre"){
+
+			alertify.message("Has seleccionado búsqueda por nombre");
+			this.setState({estado_busqueda:"paciente_por_nombre"});
+
+
+		}else if(busqueda=="paciente_por_telefono"){
+			
+			alertify.message("Has seleccionado búsqueda por teléfono");
+			this.setState({estado_busqueda:"paciente_por_telefono"});
+
+		}else if(busqueda=="paciente_por_procedimiento"){
+
+			alertify.message("Has seleccionado búsqueda por procedimiento");
+			this.setState({estado_busqueda:"paciente_por_procedimiento"});
+
+		}else if(busqueda=="paciente_por_apellido"){
+
+			alertify.message("Has seleccionado búsqueda por apellido");
+			this.setState({estado_busqueda:"paciente_por_apellido"});
+		
+		}else{
+
+			alertify.message("Has seleccionado búsqueda por cedula");
+			this.setState({estado_busqueda:"paciente_por_cedula"});
+
+		}
+
+		
 
 	}
 
@@ -49,7 +87,8 @@ class  Cita extends React.Component{
 
 	buscarPaciente=(e)=>{
 
-		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}`).then(data=>{
+
+		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}/${this.state.estado_busqueda}`).then(data=>{
 			this.setState({clientes:data.data});
 		}).catch(error=>{
 				console.log(error);
@@ -72,6 +111,8 @@ class  Cita extends React.Component{
 
 
 	render(){
+		//let cargar_deudas =<td id={"interfaz"+data.id}>Url.Consultar_deuda_de_paciente(data.id)</td>;
+
 
 		if(this.state.perfil_selec==true){
 
@@ -99,9 +140,10 @@ class  Cita extends React.Component{
 		}
 
 
-		return (<div className="col-md-8"><br/><br/>
+		return (<div className="col-md-10"><br/><br/>
 					<h3>Buscar paciente</h3><br/>
-					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+					<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+					<hr/>
 					<div className="interfaz_cliente">
 					<table className='table table-hover'>
 					<thead>
@@ -126,7 +168,6 @@ class  Cita extends React.Component{
 								<td><button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;</td>
 								<td><button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;</td>
 								<td><button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button></td>
-
 							</tr>
 							</tbody>
 						))

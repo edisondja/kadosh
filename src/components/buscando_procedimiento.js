@@ -75,7 +75,7 @@ class BuscandoProcedimiento extends  React.Component{
         }
 
         return (
-            <div className="tableflow"><br/>
+            <div className="tableflow col-md-10"><br/>
                 <input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
                 {this.state.procedimientos.map(data=>(                
                         <div className="card" id={data.id}>

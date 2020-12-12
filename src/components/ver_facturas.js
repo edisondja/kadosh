@@ -83,7 +83,7 @@ class VerFacturas extends React.Component{
 
         }else{
         
-            return (<div className="col-md-8">
+            return (<div className="col-md-10">
                     <hr/>
                     <button className='btn btn-primary' style={{float:'right'}} onClick={this.retroceder}>Retroceder</button><br/>
                     <br/><div className="card"><br/><br/>

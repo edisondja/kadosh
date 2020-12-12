@@ -84,7 +84,7 @@ class FacturaEd extends React.Component{
                 return <FacturaInterfaz id_factura={this.props.id_factura} />
             }
 
-            return(<div className="col-md-8">
+            return(<div className="col-md-10">
                         <br/><br/><h5>Editar Factura</h5>
                         <strong>Lista de procedimientos</strong>
                         <button onClick={this.retroceder} style={{float:'right'}} className='btn btn-primary'>Retroceder</button>

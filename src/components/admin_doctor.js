@@ -56,7 +56,7 @@ class DoctorFormulario extends React.Component{
 
 
 
-			return (<div className="col-md-8">
+			return (<div className="col-md-10">
 					<br/><h1>Agregar Doctor</h1>
 					<button className="btn btn-success" className="btn btn-primary boton_doctor" onClick={this.opciones}>Buscar Doctor</button><br/>
 					<strong>Nombre</strong><br/>

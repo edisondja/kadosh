@@ -11,7 +11,7 @@ class  AgregarFactura extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:''};
+        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:'',boton_estado:false};
         this.removeTodo = this.removeTodo.bind(this);
 
     }
@@ -138,7 +138,7 @@ class  AgregarFactura extends React.Component{
                              <option value={data.id}>{data.nombre} {data.apellido}</option>
                         ))}
                     </select>
-                    <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura}>Generar Factura</button><br/><br/>
+                    <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura} disabled={this.state.boton_estado}>Generar Factura</button><br/><br/>
              
                     <input type="text" className="form-control" id="buscando" onKeyUp={this.buscar_procedimiento} placeholder="Escriba el procedimiento"/><br/>
                     <div className="interfaz_cliente">
