@@ -6,6 +6,7 @@ import FacturaInterfaz from './factura_interfaz';
 import cargar_doctores from './funciones_extras';
 import VerFacturas from './ver_facturas';
 import PerfilPaciente from './perfil_paciente';
+import alertify from 'alertifyjs';
 
 class  AgregarFactura extends React.Component{
 
@@ -51,6 +52,7 @@ class  AgregarFactura extends React.Component{
     generar_factura=()=>{
             //accion a ajecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
+            if(this.state.boton_estado==false){
             Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
 
                     console.log(data.data);
@@ -61,6 +63,12 @@ class  AgregarFactura extends React.Component{
                 }).catch(error=>{
                     Alertify.error("Error al crear factura");
             });
+
+            this.state.boton_estado=true;
+        }else{
+        
+            alertify.message("ya generaste una factura!!!!");
+        }
 
     }
     

@@ -74,7 +74,8 @@ class  Cita extends React.Component{
 	cargar_citas()
 	{
 			Axios.get(`${Url.url_base}/api/paciente`).then(data=>{
-			    this.setState({clientes:data.data});
+				this.setState({clientes:data.data});
+				console.log(data.data);
 			}).catch(error=>{
 					console.log(error);
 			});
@@ -90,6 +91,16 @@ class  Cita extends React.Component{
 
 		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}/${this.state.estado_busqueda}`).then(data=>{
 			this.setState({clientes:data.data});
+			let NuevaData =[];
+			data.data.forEach(key => {
+				
+				key.precio_estatus = key.estatus.precio_estatus;
+				NuevaData.push(key);
+			
+			});
+
+			console.log(NuevaData);
+
 		}).catch(error=>{
 				console.log(error);
 		});
@@ -107,6 +118,22 @@ class  Cita extends React.Component{
 	actualizar_paciente(id){
 
 		this.setState({perfil_selec:'actualizar_paciente',id_paciente:id});
+	}
+
+	leer_deuda(deuda){
+
+		
+		if(deuda>0){
+			
+			return {color:"#ef0808"}
+		
+		}else{
+
+			return {color:"#6096e6"}
+
+		}
+
+		
 	}
 
 
@@ -152,6 +179,7 @@ class  Cita extends React.Component{
 						<th  scope="col">Apellido</th>
 						<th  scope="col">Cedula</th>
 						<th  scope="col">Telefono</th>
+						<th  scope="col">Deuda</th> 
 						<th  scope="col">Ver Perfil</th>
 						<th  scope="col">Asignar Cita</th>
 						<th  scope="col">Actualizar</th>
@@ -159,12 +187,14 @@ class  Cita extends React.Component{
 					</thead>
 					{
 						this.state.clientes.map(data=>(
+							
 							<tbody>
 							<tr>
 								<td>{data.nombre}</td>
 								<td>{data.apellido}</td>
 								<td>{data.cedula}</td>
-								<td>{data.telefono}</td>
+								<td>{data.telefono}</td> 
+								<td><p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}</p></td>
 								<td><button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;</td>
 								<td><button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;</td>
 								<td><button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button></td>
