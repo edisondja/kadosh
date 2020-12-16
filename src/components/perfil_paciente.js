@@ -36,6 +36,8 @@ class PerfilPaciente extends React.Component{
 			}).catch(error=>{
 	
 				console.log(error);
+				Alertify.message("Reconectando...");
+				this.cargar_doctor(id_doctor);
 	
 			})
 		}
@@ -46,6 +48,8 @@ class PerfilPaciente extends React.Component{
 							this.setState({deuda_total:data.data.deuda_total});
 					}).catch(error=>{
 						Alertify.error("No se pudo cargar la deuda del paciente");
+						Alertify.message("Reconectando...");
+						this.consultar_deuda_paciente(id_paciente);
 					})
 	    }
 		eliminar_paciente(id_paciente){
@@ -81,7 +85,9 @@ class PerfilPaciente extends React.Component{
 
 
 			}).catch(error=>{
-				Alertify.error("error no se pudo cargar las citas");		
+				Alertify.error("error no se pudo cargar las citas");
+				Alertify.message("Reconectando...");
+				this.cargar_citas_paciente(id_paciente);		
 			});
 
 		}
@@ -93,8 +99,10 @@ class PerfilPaciente extends React.Component{
 				this.setState({paciente:data.data});
 
 			}).catch(error=>{
-
-				Alertify.error(`${error}`);
+				
+				Alertify.error(`Error al cargar paciente`);
+				Alertify.message("Reconectando..");
+				this.consultarPaciente(id);
 			});
 
 

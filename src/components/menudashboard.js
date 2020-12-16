@@ -100,6 +100,8 @@ class MenuDashboard extends React.Component{
 			}else if(this.state.select_opcion=="cerrar_sesion"){
 
 				localStorage.removeItem('login');
+				localStorage.removeItem('token');
+
 				localStorage.clear();
 				window.location="/";
 			}

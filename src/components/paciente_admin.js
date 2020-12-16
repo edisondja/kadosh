@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Citas from './citas_c';
 import Axios from 'axios';
 import FuncionesExtras from './funciones_extras';
+import alertify from 'alertifyjs';
 
 class PacienteAdmin extends  React.Component{
 
@@ -36,7 +37,9 @@ class PacienteAdmin extends  React.Component{
 
 
 	guardar_paciente=()=>{
-	
+		
+
+		if(this.state.boton_estado==false){
 			var nombre = document.getElementById("nombre").value;
 			var apellido = document.getElementById("apellido").value;
 			var dni = document.getElementById("cedula").value;
@@ -53,7 +56,11 @@ class PacienteAdmin extends  React.Component{
 					alert("error");
 			})
 
+			this.setState({boton_estado:true});
+		}else{
 
+			alertify.message("Ya me registrate");
+		}
 	}
 
 	render(){

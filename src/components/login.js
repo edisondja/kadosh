@@ -50,6 +50,8 @@ class Login extends React.Component{
 					this.setState({mensaje:" Creedenciales correcto"});
 					this.color_notifiacion={color:"green"}
 					localStorage.setItem('login', data.data.nombre+" "+data.data.apellido);
+					localStorage.setItem('token',data.data.token);
+					//alert(data.data.token);
 
 				}
 			}).catch(error=>{

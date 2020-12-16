@@ -31,7 +31,6 @@ class  Cita extends React.Component{
 	componentDidMount(){
 
 		this.cargar_citas();
-
 	}
 
 	CheckSeleccion=()=>{
@@ -71,14 +70,30 @@ class  Cita extends React.Component{
 	}
 
 
-	cargar_citas()
+	 cargar_citas(token)
 	{
-			Axios.get(`${Url.url_base}/api/paciente`).then(data=>{
-				this.setState({clientes:data.data});
-				console.log(data.data);
-			}).catch(error=>{
-					console.log(error);
-			});
+		
+	
+		
+
+		let config = {
+			headers: {
+			  'Authorization': 'Bearer '+localStorage.getItem('token'),
+			  'content-type': 'application/json'
+			}
+		  }
+
+		 Axios.get(`${Url.url_base}/api/paciente`,config)
+		  .then(res => {
+			 // console.log(res.data);
+			 this.setState({clientes:res.data});
+		  }).catch(error=>{
+
+				console.log(error);
+				this.cargar_citas();
+		  });
+
+				
 	}
 
 	asignar_cita=(id,nombre)=>{

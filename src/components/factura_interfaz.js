@@ -42,6 +42,9 @@ class FacturaInterfaz extends React.Component{
 
         }).catch(error=>{
                 console.log(error);
+                Alertify.message("Reconectando...");
+                this.cargar_descuentos_de_facutra(id_factura);
+
         });
 
     }
@@ -52,6 +55,8 @@ class FacturaInterfaz extends React.Component{
                 this.setState({recibos:data.data});
         }).catch(error=>{
                 Alertify.error("error al cargar los recibos");
+                Alertify.message("Reconectando ..");
+                this.cargar_recibos(id_factura);
         });
 
     }
@@ -265,6 +270,8 @@ class FacturaInterfaz extends React.Component{
                     this.setState({factura:data.data[0]});
             }).catch(error=>{
                     Alertify.message("No se pudo cargar la factura");
+                    Alertify.message("Reconectando...");
+                    this.cargar_factura(id_factura);
             });
     }   
 

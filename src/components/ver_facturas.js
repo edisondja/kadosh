@@ -28,6 +28,8 @@ class VerFacturas extends React.Component{
     
         }).catch(error=>{
             Alertify.error("Error al cargar facturas");
+            this.Alertify.message("Reconectando ..");
+            this.cargar_facturas=(id_paciente);
         });
     }
 

@@ -4,7 +4,7 @@ import Alertify from 'alertifyjs';
 var password= "kadosh2019";
 var url_base =  "https://service.clinickadosh.com";
 //var url_base =  "http://localhost:8000";
-var login_status = true;
+var login_status = false;
 var clave_secreta ="kadoshor2020";
 
 
@@ -17,6 +17,7 @@ function cargar_doctores(el){
     }).catch(error=>{
 
         console.log(error);
+        cargar_doctores(el);
 
     })
 }
@@ -30,6 +31,7 @@ function cargar_doctor(u,id_doctor){
         }).catch(error=>{
 
             console.log(error);
+            cargar_doctor(u,id_doctor);
 
         })
 }
@@ -40,6 +42,8 @@ function cargar_paciente(el,id_paciente){
                     el.setState({paciente:data.data});
         }).catch(error=>{
             Alertify.error("No se pudo cargar la informacion del paciente");
+            Alertify.message("Conectando...");
+            cargar_paciente(el,id_paciente);
         });
 
 }
@@ -50,6 +54,8 @@ function cargar_paciente(el,id_paciente){
                 el.setState({notificaciones:data.data});
         }).catch(error=>{
                 Alertify.message("No se pudieron cargar las notificaciones");
+                Alertify.message("Volviendo a conectar las notificacioens");
+                notificar_cumple(el);
         });
 
     }
@@ -65,6 +71,8 @@ function cargar_procedimientos(el){
           //  Alertify.success(data);
     }).catch(error=>{
         Alertify.alert("Problema al cargar procedimientos");
+        Alertify.message("Reconectando...");
+        cargar_procedimientos(el);
     });
 
 }
@@ -75,6 +83,9 @@ function cargar_factura(el,id_factura){
         el.setState({factura:data.data[0]});
     }).catch(error=>{
             Alertify.message("No se pudo cargar la factura");
+            Alertify.message("Reconectando..");
+            cargar_factura(el,id_factura);
+
     });
 
 }
@@ -114,6 +125,8 @@ function cargar_procedimientos_de_factura(el,id_factura,config=null){
 
             }).catch(error=>{
                     console.log(error);
+                    Alertify.message("Reconectando...");
+                    cargar_procedimientos_de_factura(el,id_factura,config=null);
             });
         
         }else{
@@ -125,6 +138,7 @@ function cargar_procedimientos_de_factura(el,id_factura,config=null){
     
                 }).catch(error=>{
                         console.log(error);
+                        cargar_procedimientos_de_factura(el,id_factura,config);
                 });
             
 
