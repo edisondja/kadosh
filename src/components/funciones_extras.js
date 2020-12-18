@@ -1,5 +1,6 @@
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
+import alertify from 'alertifyjs';
 
 var password= "kadosh2019";
 var url_base =  "https://service.clinickadosh.com";
@@ -21,6 +22,8 @@ function cargar_doctores(el){
 
     })
 }
+
+
 
 function cargar_doctor(u,id_doctor){
 

@@ -83,7 +83,7 @@ class  Cita extends React.Component{
 			}
 		  }
 
-		 Axios.get(`${Url.url_base}/api/paciente`,config)
+		 Axios.get(`${Url.url_base}/api/paciente`)
 		  .then(res => {
 			 // console.log(res.data);
 			 this.setState({clientes:res.data});
@@ -104,17 +104,8 @@ class  Cita extends React.Component{
 	buscarPaciente=(e)=>{
 
 
-		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}/${this.state.estado_busqueda}`).then(data=>{
+		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}`).then(data=>{
 			this.setState({clientes:data.data});
-			let NuevaData =[];
-			data.data.forEach(key => {
-				
-				key.precio_estatus = key.estatus.precio_estatus;
-				NuevaData.push(key);
-			
-			});
-
-			console.log(NuevaData);
 
 		}).catch(error=>{
 				console.log(error);
@@ -165,17 +156,9 @@ class  Cita extends React.Component{
 			return <AgregarCita paciente={this.state.nombre_paciente} id_paciente={this.state.id_cliente}/>;
 
 		}else if(this.state.clientes==""){
-			/*
-		return (<div className="col-md-8">
-					<br/><strong>Buscar paciente</strong>
-					<input type="text" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
-					<br/><div className="card">
-							<h4>Este paciente no existe</h4>
-					</div>
-					<img src={Loading}/>
-				</div>
-				);
-					*/
+		
+				console.log("no hay resultados de este paciente");
+
 		}else if(this.state.perfil_selec=="actualizar_paciente"){
 
 				return <ActualizarPerfil IdPaciente={this.state.id_paciente}/>;
