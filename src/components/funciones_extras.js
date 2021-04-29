@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import alertify from 'alertifyjs';
+import Cargar_generos from './funciones_extras.js';
 
 var password= "kadosh2019";
 var url_base =  "https://service.clinickadosh.com";
@@ -149,5 +150,37 @@ function cargar_procedimientos_de_factura(el,id_factura,config=null){
 }
 
 
-export default {Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+
+function cargar_suplidores(contexto){
+
+    Axios.get(url_base+"/api/cargar_suplidores").then(data=>{
+
+        contexto.setState({suplidores:data.data});
+
+    }).catch(error=>{
+
+            Alertify.message(error);
+    });
+
+}
+
+function cargar_generos_paciente(contexto){
+    
+    
+    Axios.get(url_base+"/api/cargar_generos_pacientes").then(data=>{
+        contexto.setState({generos:"riiooo"});
+        console.log(data.data);
+       
+    }).catch(error=>{
+
+            Alertify.message(error);
+    });
+
+
+
+}
+
+
+
+export default {cargar_generos_paciente,cargar_suplidores,Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

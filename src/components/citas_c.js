@@ -10,6 +10,7 @@ import AgregarCita from './agregar_cita';
 import Url from './funciones_extras';
 import ActualizarPerfil from './actualizar_paciente';
 import alertify from 'alertifyjs';
+import { Doughnut,Bar} from 'react-chartjs-2';
 
 class  Cita extends React.Component{
 
@@ -19,23 +20,64 @@ class  Cita extends React.Component{
 		this.state ={perfil_selec:false,
 					id_doctor:0,
 					nombre_paciente:"",
+					procedimientos_hechos:0,
 					clientes:[
 						  
 					    ],
 						id_paciente:0,
-						estado_busqueda:"paciente_por_nombre"
+						estado_busqueda:"paciente_por_nombre",
+						generos:[{hombres:0},{mujeres:0}]
+						
 					};
 	}
+	
 
 
 	componentDidMount(){
 
 		this.cargar_citas();
+		this.Cargar_generos_paciente();
+		this.Procedimientos_realizados();
+
 	}
+	
+	 Cargar_generos_paciente=()=>{
+    
+
+    
+			Axios.get(`${Url.url_base}/api/cargar_generos_pacientes`).then(data=>{
+				this.setState({generos:data.data});
+				
+			}).catch(error=>{
+
+					console.log("error cargando genero de pacientes");
+			});
+
+
+	}
+
+	Procedimientos_realizados=()=>{
+
+		Axios.get(`${Url.url_base}/api/procedimientos_realizados`).then(data=>{
+
+			this.setState({
+				procedimientos_hechos:data.data
+				
+			});
+
+		}).catch(error=>{
+
+			alertify.message("UPS error cargando procedimientos realizados");
+		});	
+
+
+	}
+
 
 	CheckSeleccion=()=>{
 
 		let busqueda = document.getElementById("select_busqueda").value;
+		
 	
 		if(busqueda=="paciente_por_nombre"){
 
@@ -102,7 +144,16 @@ class  Cita extends React.Component{
 	}
 
 	buscarPaciente=(e)=>{
+		
+		/*/if(e.target.value!==""){
+			
+			document.querySelector("#panel").setAttribute("style","display:none");
+		
+		}else{
+			
+		//	document.querySelector("#panel").setAttribute("style","display:in-line");
 
+		}*/
 
 		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}`).then(data=>{
 			this.setState({clientes:data.data});
@@ -163,10 +214,54 @@ class  Cita extends React.Component{
 
 				return <ActualizarPerfil IdPaciente={this.state.id_paciente}/>;
 		}
+		const data = {
+			labels: ['Hombres', 'Mujeres'],
+			datasets: [
+			  {
+				label: 'Detalles de pacientes',
+				fill: false,
+				lineTension: 0.1,
+				backgroundColor: [
+					'#46a9ff',
+					'#ffd7fe'
+				],
+				borderColor: '#5b5b5b',
+				borderCapStyle: 'butt',
+				borderDash: [],
+				borderDashOffset: 0.0,
+				borderJoinStyle: 'miter',
+				pointBorderColor: 'rgba(75,192,192,1)',
+				pointBackgroundColor: '#fff',
+				pointBorderWidth: 1,
+				pointHoverRadius: 5,
+				pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+				pointHoverBorderColor: 'rgba(220,220,220,1)',
+				pointHoverBorderWidth: 2,
+				pointRadius: 1,
+				pointHitRadius: 10,
+				data: [this.state.generos[0].hombres,this.state.generos[1].mujeres]
+			  }
+			]
+		  };
 
 
-		return (<div className="col-md-10"><br/><br/>
-					<h3>Buscar paciente</h3><br/>
+		return (
+		<div className="col-md-10"><br/><br/>
+					<div className="row" id="panel">
+					<div className="col-md-5"><Doughnut  data={data} height={80} /></div>
+						<div className="col-md-5">
+						<table className="table">
+								<tr> 
+									<td style={{color:'#111111'}}>Pacientes registrados</td>             
+									<td style={{color:'#8e79e3'}}>{ new Intl.NumberFormat().format(this.state.generos[0].hombres + this.state.generos[1].mujeres) }</td>
+								</tr>	
+								<tr>
+									<td style={{color:'#111111'}}>Procedimientos realizados</td>
+								 	<td style={{color:'#8e79e3'}}><p>{new Intl.NumberFormat().format(this.state.procedimientos_hechos)}</p></td>
+								</tr>	
+							</table>
+						</div>
+					</div><hr/>
 					<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
 					<hr/>
 					<div className="interfaz_cliente">

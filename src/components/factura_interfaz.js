@@ -332,6 +332,7 @@ class FacturaInterfaz extends React.Component{
                             <td>Monto</td>
                             <td>Concepto de pago</td>
                             <td>Tipo de pago</td>
+                            <td>Fecha de pago</td>
                             <td>Imprimir</td>
                             <td>Eliminar</td>
                         </tr>
@@ -343,8 +344,9 @@ class FacturaInterfaz extends React.Component{
                                         <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
                                         <td>{data.concepto_pago}</td>
                                         <td>{data.tipo_de_pago}</td>
-                                        <td><button class="btn btn" onClick={()=>this.imprimir_factura(data.id,this.props.id_factura)}>Imprimir</button></td>
-                                        <td><button className="btn btn-success" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
+                                        <td>{data.fecha_pago}</td>
+                                        <td><button class="btn btn-success" onClick={()=>this.imprimir_factura(data.id,this.props.id_factura)}>Imprimir</button></td>
+                                        <td><button className="btn btn" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
                                     </tr> 
 
                                )))

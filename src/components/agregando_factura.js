@@ -12,7 +12,7 @@ class  AgregarFactura extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:'',boton_estado:false};
+        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:'',boton_estado:true};
         this.removeTodo = this.removeTodo.bind(this);
 
     }
@@ -84,6 +84,22 @@ class  AgregarFactura extends React.Component{
     }
 
 
+    select_checked=()=>{
+
+        let doctor_id =  document.getElementById('doctor_i').value;
+        if(doctor_id!=="seleccione_doctor"){
+
+            this.setState({boton_estado:false});
+            
+            
+        }else{
+
+            this.setState({boton_estado:true});
+        }
+
+    }
+
+
     buscar_procedimiento=()=>{ 
             
         var buscar = document.getElementById("buscando").value;
@@ -141,7 +157,8 @@ class  AgregarFactura extends React.Component{
                     <h3>Monto total</h3>
                     <strong id="monto_total">$ {this.state.total}</strong>
                     <strong  style={{float:'right',margin:'5px'}}>Seleccione el doctor</strong>
-                    <select className="form-control col-md-3" style={{float:'right'}} id="doctor_i">
+                    <select className="form-control col-md-3" style={{float:'right'}} id="doctor_i" onChange={this.select_checked}>
+                        <option value="seleccione_doctor">Seleccione un doctor</option>
                         {this.state.doctores.map(data=>(
                              <option value={data.id}>{data.nombre} {data.apellido}</option>
                         ))}

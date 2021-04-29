@@ -11,7 +11,7 @@ class Reporte extends React.Component{ds
 
         constructor(props){
             super(props);
-            this.state={data:[],recibos:[],monto_total:0,valor:89,semena:[],Lunes:200,Martes:0,Miercoles:0,Jueves:0,Viernes:0,Sabado:0
+            this.state={data:[],contador:false,recibos:[],monto_total:0,valor:89,semena:[],Lunes:200,Martes:0,Miercoles:0,Jueves:0,Viernes:0,Sabado:0
            }
         }
 
@@ -28,7 +28,22 @@ class Reporte extends React.Component{ds
                // console.log(this.state.recibos_semana);
         }
 
-    
+        ver_reportes=()=>{
+
+            if(this.state.contador==true){
+                document.getElementById('graficos').setAttribute('style','diplay');
+                this.setState({contador:false});
+                document.getElementById('boton_reportes').textContent='Reportes';
+
+
+            }else{
+            document.getElementById('graficos').setAttribute('style','display:none');
+            document.getElementById('boton_reportes').textContent='Graficos';
+            this.setState({contador:true});
+            }
+
+        }
+
         consultarDataSemana=(config='hoy')=>{
             let url= "";
                 if(config=='hoy'){
@@ -118,18 +133,17 @@ class Reporte extends React.Component{ds
               };
 
             return (
-                   <div className="col-md-10"><br/><br/>
+                   <div className="col-md-9"><br/><br/>
                         <pre><input type="date" className="form-control col-md-3" id="fecha_semana"/>
                             <strong>Ingrese la fecha de la semana que quieres consultar los ingreso</strong>
                            
                         </pre>
                         <button className="btn btn-primary" onClick={()=>this.consultarDataSemana(true)}>Buscar</button>
                         <strong style={{float:'right'}}>Ingresos de hoy $RD  {new Intl.NumberFormat().format(this.state.monto_total)}</strong>
-
-                        <Bar  data={data}/>
-                        <hr/><button className="btn btn-primary">Consultar semana por fecha</button>
-                        &nbsp;<button className="btn btn-primary">Pacientes</button>
-                        &nbsp;<button className="btn btn-primary">Ingreos del año</button>
+                        
+                        <button className='btn btn-primary' id="boton_reportes" style={{marginLeft:30}} onClick={this.ver_reportes}>Ver Reportes</button>
+                        <Bar  data={data} id="graficos"/>
+                        
                         <h3>Reportes</h3><hr/>
                         <strong>Fecha Inicial</strong>&nbsp;
                         <input id="fecha_inicial"  type="date"/>&nbsp;

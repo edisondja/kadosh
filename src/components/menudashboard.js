@@ -20,6 +20,7 @@ import CitasImg from '../cuaderno.png';
 import ReporteImg from '../reporte.png';
 import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
+import Contabilidad_template from './contabilidad';
 
 class MenuDashboard extends React.Component{
 
@@ -104,6 +105,10 @@ class MenuDashboard extends React.Component{
 
 				localStorage.clear();
 				window.location="/";
+			
+			}else if(this.state.select_opcion=="contabilidad"){
+
+				ver =  <Contabilidad_template/>;
 			}
 
 
