@@ -27,7 +27,7 @@ class MenuDashboard extends React.Component{
 
 	constructor(props){
 		super(props);
-		this.state= {estado:true,select_opcion:'citas',notificaciones:[],notificado:false}
+		this.state= {estado:true,select_opcion:'citas',notificaciones:[],notificado:false,tiempo:0}
 		this.estilos = {
 					  listStyleType:"none"
 			}	
@@ -38,6 +38,42 @@ class MenuDashboard extends React.Component{
 	componentDidMount(){
 
 		FuncionesExtras.notificar_cumple(this);
+
+		window.setInterval(()=>{
+
+			this.setState({tiempo:+this.state.tiempo+1})
+			console.log(this.state.tiempo);
+			if(this.state.tiempo==3600){
+
+
+				Alertify.confirm('La sesion expiro desea extenderla?','En 10 segundos.. el sistema cerrara si no extiende la sesion',()=>{
+
+					Alertify.message("Sesion extendida..");
+					this.setState({tiempo:0});
+					
+
+				},function(){
+
+
+					Alertify.message("Bye...");
+
+				});
+
+
+			}
+
+			if(this.state.tiempo==3610){
+
+				document.getElementById("cerrar_sesion").click();
+
+			}
+
+
+		},1000);
+
+		
+
+
 
 	}
 
@@ -133,7 +169,7 @@ class MenuDashboard extends React.Component{
 				<li onClick={(e)=>this.menu_select('procedimiento')}><img src={ProcedimientoImg} className="img_estilo" />&nbsp;Agregar Procedimientos</li>
 				<li onClick={(e)=>this.menu_select('reportes')}><img src={ReporteImg} className="img_estilo" />&nbsp;Generar Reportes</li>
 				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
-				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
+				<li onClick={(e)=>this.menu_select('cerrar_sesion')} id="cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
 			
 			}else if(localStorage.getItem("roll")=="Contable"){
 
@@ -149,6 +185,14 @@ class MenuDashboard extends React.Component{
 				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
 				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
 				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
+
+			}else{
+
+
+					 
+				Menu = <ul style={this.estilos} className="menuStilos">
+				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li>
+				</ul>
 
 			}
 

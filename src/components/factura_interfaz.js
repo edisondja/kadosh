@@ -159,7 +159,7 @@ class FacturaInterfaz extends React.Component{
                                             this.cargar_recibos(this.props.id_factura);
                                             this.setState({factura:{precio_estatus:this.state.factura.precio_estatus+monto}});
                                         }).catch(error=>{
-                                        Alertify.error("No se pudo eliminar el recibo..");
+                                    Alertify.error("No se pudo eliminar el recibo..");
                                 });
                     },()=>{
                             Alertify.message("BYE");
