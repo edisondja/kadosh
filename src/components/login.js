@@ -51,6 +51,9 @@ class Login extends React.Component{
 					this.color_notifiacion={color:"green"}
 					localStorage.setItem('login', data.data.nombre+" "+data.data.apellido);
 					localStorage.setItem('token',data.data.token);
+					localStorage.setItem('roll',data.data.roll);
+
+
 					//alert(data.data.token);
 
 				}

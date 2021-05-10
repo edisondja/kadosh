@@ -4,14 +4,19 @@ import Alertify from 'alertifyjs';
 import FuncionesExtras from './funciones_extras';
 import FacturaInterfaz from './factura_interfaz';
 import '../css/dashboard.css';
+import Nomina from './nomina';
 import { Doughnut,Bar} from 'react-chartjs-2';
+import Reporte_grafic from './reporte_grafico';
 
 class Reporte extends React.Component{ds
 
 
         constructor(props){
             super(props);
-            this.state={data:[],contador:false,recibos:[],monto_total:0,valor:89,semena:[],Lunes:200,Martes:0,Miercoles:0,Jueves:0,Viernes:0,Sabado:0
+            this.state={
+                data:[],contador:false,recibos:[],monto_total:0,valor:89,semena:[],
+                Lunes:200,Martes:0,Miercoles:0,
+                Jueves:0,Viernes:0,Sabado:0,menu_select:"reportes_graficos"
            }
         }
 
@@ -30,19 +35,21 @@ class Reporte extends React.Component{ds
 
         ver_reportes=()=>{
 
-            if(this.state.contador==true){
-                document.getElementById('graficos').setAttribute('style','diplay');
-                this.setState({contador:false});
-                document.getElementById('boton_reportes').textContent='Reportes';
-
-
-            }else{
-            document.getElementById('graficos').setAttribute('style','display:none');
-            document.getElementById('boton_reportes').textContent='Graficos';
-            this.setState({contador:true});
-            }
+            this.setState({menu_select:"reportes"})
 
         }
+
+        ver_nominas=()=>{
+
+            this.setState({menu_select:"nominas"})
+
+        }
+
+        ver_reportes_graficos=()=>{
+
+            this.setState({menu_select:"reportes_graficos"})
+        }
+
 
         consultarDataSemana=(config='hoy')=>{
             let url= "";
@@ -105,45 +112,15 @@ class Reporte extends React.Component{ds
         }
         
         render(){
-            const data = {
-                labels: ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'],
-                datasets: [
-                  {
-                    label: 'Detalles de ingreso de la semana',
-                    fill: false,
-                    lineTension: 0.1,
-                    backgroundColor: 'rgba(75,192,192,0.4)',
-                    borderColor: 'rgba(75,192,192,1)',
-                    borderCapStyle: 'butt',
-                    borderDash: [],
-                    borderDashOffset: 0.0,
-                    borderJoinStyle: 'miter',
-                    pointBorderColor: 'rgba(75,192,192,1)',
-                    pointBackgroundColor: '#fff',
-                    pointBorderWidth: 1,
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-                    pointHoverBorderColor: 'rgba(220,220,220,1)',
-                    pointHoverBorderWidth: 2,
-                    pointRadius: 1,
-                    pointHitRadius: 10,
-                    data: [this.state.Lunes, this.state.Martes, this.state.Miercoles, this.state.Jueves, this.state.Viernes,this.state.Sabado]
-                  }
-                ]
-              };
 
-            return (
-                   <div className="col-md-9"><br/><br/>
-                        <pre><input type="date" className="form-control col-md-3" id="fecha_semana"/>
-                            <strong>Ingrese la fecha de la semana que quieres consultar los ingreso</strong>
-                           
-                        </pre>
-                        <button className="btn btn-primary" onClick={()=>this.consultarDataSemana(true)}>Buscar</button>
-                        <strong style={{float:'right'}}>Ingresos de hoy $RD  {new Intl.NumberFormat().format(this.state.monto_total)}</strong>
-                        
-                        <button className='btn btn-primary' id="boton_reportes" style={{marginLeft:30}} onClick={this.ver_reportes}>Ver Reportes</button>
-                        <Bar  data={data} id="graficos"/>
-                        
+            
+            let ver="";
+            if(this.state.menu_select=="reportes")
+            
+            {
+
+                ver = (<div ><br/><br/>
+                      
                         <h3>Reportes</h3><hr/>
                         <strong>Fecha Inicial</strong>&nbsp;
                         <input id="fecha_inicial"  type="date"/>&nbsp;
@@ -180,7 +157,36 @@ class Reporte extends React.Component{ds
                         </div>
                         <h4 style={{float:'right'}}>Ingresos total $RD  {new Intl.NumberFormat().format(this.state.monto_total)}</h4>
 
-                   </div>
+                   </div>);
+
+            }else if(this.state.menu_select=="reportes_graficos"){
+
+                ver =<Reporte_grafic lunes={this.state.Lunes} Martes={this.state.Martes} Miercoles={this.state.Miercoles} Jueves={this.state.jueves} Viernes={this.state.Viernes} Sabado={this.state.Sabado}/>
+
+            }else if(this.state.menu_select=="nominas"){
+
+                ver = <Nomina/>;
+
+            }
+
+
+            return (
+                <div className="col-md-9">
+                        <br/><br/>
+                       <pre><input type="date" className="form-control col-md-3" id="fecha_semana"/>
+                            <strong>Ingrese la fecha de la semana que quieres consultar los ingreso</strong>
+                           
+                        </pre>
+                   
+                        <button className="btn btn-primary" onClick={()=>this.consultarDataSemana(true)}>Buscar</button>
+                        <strong style={{float:'right'}}>Ingresos de hoy $RD  {new Intl.NumberFormat().format(this.state.monto_total)}</strong>
+                        <button className='btn btn-primary' id="boton_reportes" style={{marginLeft:30}} onClick={this.ver_reportes_graficos}>Ver Reportes Graficos</button>       
+                        <button className='btn btn-primary' id="boton_reportes" style={{marginLeft:30}} onClick={this.ver_reportes}>Ver Reportes</button>
+                        <button className='btn btn-primary' id="boton_reportes" style={{marginLeft:30}} onClick={this.ver_nominas}>Ver Nominas</button>       
+
+                        {ver}
+                </div>
+                   
             )
 
         }

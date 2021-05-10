@@ -26,21 +26,34 @@ class  Cita extends React.Component{
 					    ],
 						id_paciente:0,
 						estado_busqueda:"paciente_por_nombre",
-						generos:[{hombres:0},{mujeres:0}]
+						generos:[{hombres:0},{mujeres:0}],
+						cantidad_de_pacientes:0,
+						meses:new Array ("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre")
 						
 					};
 	}
 	
 
 
-	componentDidMount(){
 
+
+	componentDidMount(){
+		
 		this.cargar_citas();
 		this.Cargar_generos_paciente();
 		this.Procedimientos_realizados();
-
+		this.cargar_cantidad_de_pacientes();
 	}
 	
+	dia_actual(){
+
+		var f=new Date();
+		var dia="";
+		dia= f.getDate() + " de " + this.state.meses[f.getMonth()] + " de " + f.getFullYear();
+		return dia;
+	}
+
+
 	 Cargar_generos_paciente=()=>{
     
 
@@ -141,6 +154,23 @@ class  Cita extends React.Component{
 	asignar_cita=(id,nombre)=>{
 
 		this.setState({perfil_selec:'agregar_citas',id_cliente:id,nombre_paciente:nombre});
+	}
+
+
+	cargar_cantidad_de_pacientes=()=>{
+
+
+		
+		Axios.get(`${Url.url_base}/api/cantidad_de_pacientes`).then(data=>{
+
+			this.setState({cantidad_de_pacientes:data.data.cantidad_pacientes});
+			//console.log(data.data.cantidad_pacientes);
+		
+		}).catch(erro=>{
+
+			alertify.message("Error cargando cantidad de pacientes");
+		});
+
 	}
 
 	buscarPaciente=(e)=>{
@@ -248,19 +278,18 @@ class  Cita extends React.Component{
 		return (
 		<div className="col-md-10"><br/><br/>
 					<div className="row" id="panel">
-					<div className="col-md-5"><Doughnut  data={data} height={80} /></div>
-						<div className="col-md-5">
+					<div className="col-md-10">
 						<table className="table">
-								<tr> 
-									<td style={{color:'#111111'}}>Pacientes registrados</td>             
-									<td style={{color:'#8e79e3'}}>{ new Intl.NumberFormat().format(this.state.generos[0].hombres + this.state.generos[1].mujeres) }</td>
-								</tr>	
-								<tr>
-									<td style={{color:'#111111'}}>Procedimientos realizados</td>
-								 	<td style={{color:'#8e79e3'}}><p>{new Intl.NumberFormat().format(this.state.procedimientos_hechos)}</p></td>
-								</tr>	
-							</table>
-						</div>
+							<tr>
+								<td>Cantidad de pacientes registrados</td>
+								<td  style={{color:'rgb(142 141 255)'}}>{this.state.cantidad_de_pacientes}</td>
+								<td>Cantidad de procedimientos realizados</td>
+								<td style={{color:'#51d18a'}}>{this.state.procedimientos_hechos}</td>	
+								<td style={{color:'black'}}>Hoy es {this.dia_actual()}</td>	
+							</tr>
+						
+						</table>
+					</div>
 					</div><hr/>
 					<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
 					<hr/>

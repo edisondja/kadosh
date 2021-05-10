@@ -21,6 +21,7 @@ import ReporteImg from '../reporte.png';
 import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
+import Usuario from './agregar_usuario';
 
 class MenuDashboard extends React.Component{
 
@@ -57,6 +58,9 @@ class MenuDashboard extends React.Component{
 
 
 	render(){
+
+		
+
 		if(this.state.notificaciones!="" && this.state.notificado==false){
 			Alertify.success("Hoy estan de cumple años, revise las notifaciones");
 			this.setState({notificado:true});
@@ -102,15 +106,51 @@ class MenuDashboard extends React.Component{
 
 				localStorage.removeItem('login');
 				localStorage.removeItem('token');
-
+				localStorage.removeItem('roll');
 				localStorage.clear();
 				window.location="/";
 			
 			}else if(this.state.select_opcion=="contabilidad"){
 
 				ver =  <Contabilidad_template/>;
+			
+			}else if(this.state.select_opcion=="agregar_usuario"){
+
+				ver =  <Usuario/>;
+
 			}
 
+			let Menu;
+
+
+			if(localStorage.getItem("roll")=="Administrador"){
+				 
+				 Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
+				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
+				<li onClick={(e)=>this.menu_select('agregar_usuario')}><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar usuario</li>
+				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
+				<li onClick={(e)=>this.menu_select('doctor')}><img src={DoctorImg} className="img_estilo" />&nbsp;Agregar Doctor</li>
+				<li onClick={(e)=>this.menu_select('procedimiento')}><img src={ProcedimientoImg} className="img_estilo" />&nbsp;Agregar Procedimientos</li>
+				<li onClick={(e)=>this.menu_select('reportes')}><img src={ReporteImg} className="img_estilo" />&nbsp;Generar Reportes</li>
+				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
+				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
+			
+			}else if(localStorage.getItem("roll")=="Contable"){
+
+				 
+				Menu = <ul style={this.estilos} className="menuStilos">
+				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
+				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
+
+			}else if(localStorage.getItem("roll")=="Secretaria"){
+
+				 
+				Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
+				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
+				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
+				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
+
+			}
 
 		return (<div className="row"><div className="col-md-2"><br/>
 				<br/><div className="card">
@@ -122,18 +162,7 @@ class MenuDashboard extends React.Component{
 					</table>
 					<strong>Usuario: {localStorage.getItem("login")}</strong>
 				</div>
-
-					<ul style={this.estilos} className="menuStilos">
-								<li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
-								<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
-								<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
-								<li onClick={(e)=>this.menu_select('doctor')}><img src={DoctorImg} className="img_estilo" />&nbsp;Agregar Doctor</li>
-								<li onClick={(e)=>this.menu_select('procedimiento')}><img src={ProcedimientoImg} className="img_estilo" />&nbsp;Agregar Procedimientos</li>
-								<li onClick={(e)=>this.menu_select('reportes')}><img src={ReporteImg} className="img_estilo" />&nbsp;Generar Reportes</li>
-								<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
-								<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li>
-
-					</ul>							
+						{Menu}								
 				</div>
 				{ver}
 			</div>

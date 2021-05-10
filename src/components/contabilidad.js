@@ -7,6 +7,7 @@ import Products from '../products.png';
 import Gastos from './gastos';
 import Suplidor from './suplidores';
 import Nomina from '../cartera.png'
+import Nominas from './nomina';
 import { Router, Route, Switch } from "react-router";
 
 class Contabilidad extends React.Component{
@@ -46,11 +47,11 @@ class Contabilidad extends React.Component{
             ver2 =  <Suplidor/>;
         }else if(this.state.opciones=='gastos'){
             ver2 =  <Gastos/>; 
+        
         }else{
-            
-            ver2 =<div><hr/><h2>Seleccione el complemento</h2></div>;
-        }
 
+            Alertify.message("Este complemento esta desactivado");
+        }
 
         return(
                <div className="col-md-10"><br/><br/><hr/>
@@ -60,9 +61,8 @@ class Contabilidad extends React.Component{
                     
                         <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('suplidor')}><img src={Cadena} width="50" /><i>Suplidores</i></li>
                         <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('gastos')}><img src={Money} width="50" /><i>Gastos</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('registrar_productos')}><img src={Nomina} width="50" /> <i>Nominas</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('registrar_productos')}><img src={Products} width="50" /> <i>Registrar productos</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('registrar_productos')}><img src={Products} width="50" /> <i>Registrar Empleado</i></li>
+                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('')}><img src={Products} width="50" /> <i>Registrar productos</i></li>
+                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('')}><img src={Products} width="50" /> <i>Registrar Empleado</i></li>
                         <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('ver_productos')}><img src={Products} width="50" /> <i>Ver productos</i></li>
                 </ul>
                 {ver2}

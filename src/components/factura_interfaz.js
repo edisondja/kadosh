@@ -139,19 +139,38 @@ class FacturaInterfaz extends React.Component{
 
     }
 
+
+ 
+  
+
+
+
+
+
     eliminar_recibo(id_recibo,id_factura,monto){
 
-        Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",()=>{
-                    Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
-                            Alertify.success("Recibo eliminado correctamente..");
-                                this.cargar_recibos(this.props.id_factura);
-                                this.setState({factura:{precio_estatus:this.state.factura.precio_estatus+monto}});
-                            }).catch(error=>{
-                            Alertify.error("No se pudo eliminar el recibo..");
+
+        Alertify.prompt("Eliminar Factura","Digite la contraseña admin para eliminar esta factura","",
+        function(event,value){
+                if(Url_base.password==value){
+                            Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",()=>{
+                                Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
+                                        Alertify.success("Recibo eliminado correctamente..");
+                                            this.cargar_recibos(this.props.id_factura);
+                                            this.setState({factura:{precio_estatus:this.state.factura.precio_estatus+monto}});
+                                        }).catch(error=>{
+                                        Alertify.error("No se pudo eliminar el recibo..");
+                                });
+                    },()=>{
+                            Alertify.message("BYE");
                     });
-        },()=>{
-                Alertify.message("BYE");
-        });
+    
+                }
+        },function(error){
+    
+        }).set('type','password');
+
+     
     }
 
     validar_pago(estado_actual,monto){
@@ -171,7 +190,7 @@ class FacturaInterfaz extends React.Component{
 
             Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
                             
-                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='3'>TRANSFERENCIA</option><option value='1'>EFECTIVO</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
+                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='3'>TRANSFERENCIA</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
                         
                         
                         let option = document.getElementById("seleccionar_pago").value;
