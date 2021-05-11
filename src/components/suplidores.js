@@ -107,9 +107,7 @@ class Suplidores extends React.Component{
 
         Alertify.confirm("Deseas eliminar este suplidor?","",()=>{
 
-                Axios.post(Core.url_base+`/api/eliminar_suplidor/`,{
-                    id:id_suplidor
-                }).then(data=>{
+                Axios.get(Core.url_base+`/api/eliminar_suplidor/${id_suplidor}`).then(data=>{
                         Alertify.message(data.data);
                 }).catch(err=>{
 

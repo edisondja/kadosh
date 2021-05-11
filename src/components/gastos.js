@@ -21,7 +21,7 @@ class Gasto extends React.Component{
 
         Alertify.confirm("Eliminar gasto","Estas seguro que deseas eliminar este gasto?",()=>{
 
-            Axios.post(`${Core.url_base}/api/eliminar_gasto/`,{id:id_gasto}).then(data=>{
+            Axios.get(`${Core.url_base}/api/eliminar_gasto/${id_gasto}`).then(data=>{
 
                 Alertify.message(data.data);
                 this.cargar_gastos();

@@ -42,7 +42,7 @@ class MenuDashboard extends React.Component{
 		window.setInterval(()=>{
 
 			this.setState({tiempo:+this.state.tiempo+1})
-			console.log(this.state.tiempo);
+			//console.log(this.state.tiempo);
 			if(this.state.tiempo==3600){
 
 
