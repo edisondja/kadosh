@@ -134,9 +134,9 @@ class Gasto extends React.Component{
             <option value="${data.suplidor_id}">${data.nombre}</option>
             ${this.listar_suplidores()}
         <select/><br/>
-        <p>Total</p>
-        <input type="number" class="form-control" id="total" value="${data.total}" plaholder="Total" /><br/>
-        <p>Itebis</p>
+        <p>Bruto</p>
+        <input type="number" class="form-control" value="${data.total}" id="bruto">
+        <p>Itebis</p><br/>
         <input type="number" class="form-control" value="${data.itebis}" id="itebis" plaholder="Itebis" /><br/>
         <p>RNC SUPLIDOR</p>
         <input type="text" class="form-control" value="${data.rnc_suplidor}" id="rnc" plaholder="RNC Suplidor" /><br/>
@@ -264,8 +264,8 @@ class Gasto extends React.Component{
         <select class="form-control" id="suplidor">
             ${this.listar_suplidores()}
         <select/><br/>
-        <p>Total</p>
-        <input type="number" class="form-control" id="total" plaholder="Total" /><br/>
+        <p>Bruto</p>
+        <input type="number" class="form-control" id="total" plaholder="Bruto" /><br/>
         <p>Itebis</p>
         <input type="number" class="form-control" id="itebis" plaholder="Itebis" /><br/>
         <p>RNC</p>
@@ -332,6 +332,7 @@ class Gasto extends React.Component{
             <th>Tipo de gasto</th>
             <th>Comprobante Fiscal</th>
             <th>Itebis</th>
+            <th>Bruto</th>
             <th>Total</th>
             <th>Fecha de pago</th>
             <th>Ver</th>
@@ -347,7 +348,8 @@ class Gasto extends React.Component{
                 <td>{data.tipo_de_gasto}</td>
                 <td>{data.comprobante_fiscal}</td>
                 <td>{data.itebis}</td>
-                <td>{new Intl.NumberFormat().format(data.total)}</td>
+                <td>{data.total}</td>
+                <td>{new Intl.NumberFormat().format(data.total + data.itebis)}</td>
                 <td>{data.fecha_registro}</td>
                 <td><img src={Buscar}  style={{cursor:'pointer'}} width='40' onClick={(e)=>this.ver_detalles_gasto(data)}/></td>
                 <td><button className="btn btn-success" onClick={(e)=>this.actualizando_gasto(data)}>Actualizar</button></td>
