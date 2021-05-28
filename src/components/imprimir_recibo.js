@@ -2,6 +2,7 @@ import React from 'react';
 import Axios from 'axios';
 import '../css/dashboard.css';
 import PerfilPaciente from './perfil_paciente';
+import alertify from 'alertifyjs';
 class ImprimirRecibo extends React.Component{
 
     constructor(props){
@@ -11,7 +12,8 @@ class ImprimirRecibo extends React.Component{
     }
 
     componentDidMount(){
-
+        
+    
     }
 
     retroceder=()=>{

@@ -38,19 +38,29 @@ class MenuDashboard extends React.Component{
 	componentDidMount(){
 
 		FuncionesExtras.notificar_cumple(this);
+		this.contador_de_sesion();
 
-		window.setInterval(()=>{
 
-			this.setState({tiempo:+this.state.tiempo+1})
+	}
+
+
+	contador_de_sesion(){
+
+		let interval = ""
+		let interval2 = "";
+		  
+		document.body.style.background="none";
+
+		interval = setInterval(()=>{
+
 			//console.log(this.state.tiempo);
-			if(this.state.tiempo==3600){
+			
 
 
 				Alertify.confirm('La sesion expiro desea extenderla?','En 10 segundos.. el sistema cerrara si no extiende la sesion',()=>{
 
-					Alertify.message("Sesion extendida..");
-					this.setState({tiempo:0});
-					
+					Alertify.message("Sesion extendida..");	
+					clearInterval(interval2);				
 
 				},function(){
 
@@ -60,22 +70,18 @@ class MenuDashboard extends React.Component{
 				});
 
 
-			}
-
-			if(this.state.tiempo==3610){
+			interval2 = setTimeout(function(){
 
 				document.getElementById("cerrar_sesion").click();
 
-			}
+			},10000);
 
 
-		},1000);
-
-		
-
+		},28800000);
 
 
 	}
+
 
 	menu_select=(select)=>{
 

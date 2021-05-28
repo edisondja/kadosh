@@ -27,6 +27,9 @@ class Login extends React.Component{
 			}
 		}
 		componentDidMount(){
+
+
+
 			if (localStorage.getItem("login") === null) {
 
 				this.setState({login:false});
@@ -74,7 +77,7 @@ class Login extends React.Component{
 
 			}else{	
 
-					dashboard=<div className="row">
+					dashboard=<div className="row"> 
 					<div className="col-md-4"></div>
 		
 						<div className="col-md-4 stilo_login"  onKeyPress={this.onKeyUp}><br/><br/>

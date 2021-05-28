@@ -12,7 +12,7 @@ class Gasto extends React.Component{
 
     constructor(props){
         super(props);
-        this.state={registros:[],cambio:'',suplidores:[],gastos:null,monto_gasto:0}
+        this.state={registros:[],cambio:'',suplidores:[],gastos:null,monto_gasto:0,id_suplidor:0}
 
     }
 
@@ -37,9 +37,9 @@ class Gasto extends React.Component{
 
     }
 
-    capturar_rnc(RNC){
+    capturar_rnc=()=>{
 
-          let s = document.querySelector("#rnc").value;
+          let s = document.querySelector("#suplidor").value;
           alert(s);
 
     }
@@ -66,6 +66,8 @@ class Gasto extends React.Component{
         this.cargar_gastos();
         Suplidores.cargar_suplidores(this);
         this.Cargar_monto_gasto("s","s");//pasando  s y s por parametro es para que cargue los gastos del dia actual
+        
+
     }
 
     cargar_gasto=(id,detalles)=>{
@@ -101,20 +103,29 @@ class Gasto extends React.Component{
 
     listar_suplidores(){
 
+
         let option_suplidores="";
 
+        function hola(){
+
+            alert("sd");
+        }
 
         this.state.suplidores.forEach(data => {
             
-            option_suplidores+=`<option value=${data.id}>${data.nombre}</option>`;
+            option_suplidores+=`<option onclick="hola()" value=${data.id}>${data.nombre}</option>`;
             
         });
+
+
 
         return option_suplidores;
     }
 
 
     actualizando_gasto=(data)=>{
+
+    
 
         Alertify.confirm("Actualizando",`<p>Tipo de gasto<p/><br/>
         <select class="form-control" id="materiales">
@@ -130,12 +141,12 @@ class Gasto extends React.Component{
             <option>Tarjeta</option>
         <select/><br/>
         <p>Seleccione el suplidor<p/><br/>
-        <select class="form-control" id="suplidor" onClick=${(e)=>this.capturar_rnc(data.rnc_suplidor)}>
+        <select class="form-control" id="suplidor" onChange=${this.capturar_rnc}>
             <option value="${data.suplidor_id}">${data.nombre}</option>
             ${this.listar_suplidores()}
         <select/><br/>
         <p>Bruto</p>
-        <input type="number" class="form-control" value="${data.total}" id="bruto">
+        <input type="number" class="form-control" value="${data.total}" id="total">
         <p>Itebis</p><br/>
         <input type="number" class="form-control" value="${data.itebis}" id="itebis" plaholder="Itebis" /><br/>
         <p>RNC SUPLIDOR</p>
@@ -244,8 +255,30 @@ class Gasto extends React.Component{
 
     }
 
+    
+    ver_suplidor=()=>{
+
+
+        alert("sss");
+    }
+       
+
+    Imprimir(){
+
+        var ficha = document.getElementById("reportes");
+        var ventimp = window.open(' ', 'popimpr');
+        ventimp.document.write(ficha.innerHTML);
+        ventimp.document.close();
+        ventimp.print();
+        ventimp.close();
+
+    }
+
 
     agregar_gastos=()=>{
+
+
+       
 
         Alertify.confirm("Registra el gasto",
         `
@@ -311,7 +344,10 @@ class Gasto extends React.Component{
     render(){
 
         return(<div><hr/>
-        <button className='btn btn-primary' onClick={(e)=>this.agregar_gastos()}>Registrar Gasto</button><hr/>
+        <button className='btn btn-primary' onClick={(e)=>this.agregar_gastos()}>Registrar Gasto</button>
+        &nbsp;<button className="btn btn-success" onClick={this.Imprimir}>Imprimir</button>
+
+        <hr/>
             <table>
                 <tr className="table" border="1">
                     <td><strong>Fecha Inicial</strong></td>
@@ -319,12 +355,13 @@ class Gasto extends React.Component{
                     <td><strong>Fecha Final</strong></td>
                     <td><input type="date"  id="fecha_final" className="form-control"/></td>
                     <td><button className="btn btn-primary" onClick={this.buscar_gasto_fecha}>Buscar</button></td>
-                    <td><h5>Gastos:&nbsp;{new Intl.NumberFormat().format(this.state.monto_gasto)}</h5></td>
+                    <td><h5>Total en gastos:&nbsp;{new Intl.NumberFormat().format(this.state.monto_gasto)}</h5></td>
                 </tr>
             </table><hr/>
-        <input type='text' id="gasto_id" className='form-control col-md-2' onChange={this.buscar_gasto} placeholder='ID de factura'/><hr/>
-        <div className="interfaz_cliente">
-        <table className="table">
+        <input type='text' id="gasto_id" className='form-control col-md-2' onChange={this.buscar_gasto} placeholder='ID de factura'/>
+        <hr/>
+        <div className="interfaz_cliente" id="reportes">
+        <table className="table" >
         <tr>
             <th>Factura</th>
             <th>Suplidor</th>
@@ -360,6 +397,20 @@ class Gasto extends React.Component{
 
            }
 
+           <tr> 
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><strong style={{fontSize:'22px'}}>TOTAL</strong></td>
+                <td><strong style={{fontSize:'22px'}}> {new Intl.NumberFormat().format(this.state.monto_gasto)}</strong></td>
+           </tr>
         </table>
         </div>
         </div>);
