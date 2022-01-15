@@ -16,6 +16,7 @@ function cargar_doctores(el){
 
          el.setState({doctores:data.data});
 
+
     }).catch(error=>{
 
         console.log(error);
@@ -23,6 +24,28 @@ function cargar_doctores(el){
 
     })
 }
+
+
+function eliminar_nota(id_nota){
+
+
+    Axios.post(`${url_base}/api/eliminar_nota`,{nota_id:id_nota}).then(data=>{
+
+        console.log(data);
+        alertify.message('Nota eliminada con exito!');	
+
+
+    }).catch(error=>{
+
+        alertify.message('No se pudo eliminar la nota');
+
+    });
+
+}
+
+
+
+
 
 
 
@@ -182,5 +205,5 @@ function cargar_generos_paciente(contexto){
 
 
 
-export default {cargar_generos_paciente,cargar_suplidores,Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
+export default {eliminar_nota,cargar_generos_paciente,cargar_suplidores,Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

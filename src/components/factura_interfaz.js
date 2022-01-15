@@ -203,6 +203,8 @@ class FacturaInterfaz extends React.Component{
                                                 Alertify.success("Pago realizado con exito");
                                                 this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                                 this.cargar_recibos(this.props.id_factura);
+                                                console.log(data);
+
                                 }).catch(error=>{
                                     Alertify.error("No se pudo procesar el pago correctamente");
                                     this.setState({mensaje:error});

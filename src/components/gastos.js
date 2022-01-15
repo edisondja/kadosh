@@ -6,18 +6,20 @@ import Core from './funciones_extras';
 import '../css/dashboard.css';
 import Suplidores from './funciones_extras';
 import alertify from 'alertifyjs';
+import { CSVLink, CSVDownload } from "react-csv";
 
 class Gasto extends React.Component{
 
 
     constructor(props){
         super(props);
-        this.state={registros:[],cambio:'',suplidores:[],gastos:null,monto_gasto:0,id_suplidor:0}
+        this.state={registros:[],cambio:'',suplidores:[],gastos:null,monto_gasto:0,id_suplidor:0,roll_estado:0,no_permiso:'Usted no tiene los permisos suficientes para raelizar esta acción'}
 
     }
 
     eliminar_gasto(id_gasto){
 
+        if(this.state.roll_estado=="Administrador"){
 
         Alertify.confirm("Eliminar gasto","Estas seguro que deseas eliminar este gasto?",()=>{
 
@@ -32,7 +34,12 @@ class Gasto extends React.Component{
             });
 
         },function(){})
+      }else{
 
+
+            Alertify.message(this.state.no_permiso);
+
+      }
     
 
     }
@@ -66,7 +73,7 @@ class Gasto extends React.Component{
         this.cargar_gastos();
         Suplidores.cargar_suplidores(this);
         this.Cargar_monto_gasto("s","s");//pasando  s y s por parametro es para que cargue los gastos del dia actual
-        
+        this.setState({roll_estado:localStorage.getItem("roll")});
 
     }
 
@@ -87,10 +94,10 @@ class Gasto extends React.Component{
 
         Alertify.confirm("Dettalles",`
        ID Factura: ${data.id}<br/>
-       Forma de pago: ${data.tipo_de_pago}<br/>11
+       Forma de pago: ${data.tipo_de_pago}<br/>
        Forma de pago: ${data.tipo_de_gasto}<br/>
        Comprobante Fiscal: ${data.comprobante_fiscal}<br/>
-       RNC SUPLIDOR: ${data.rnc}<br/>
+       RNC SUPLIDOR: ${data.rnc_suplidor}<br/>
        ITEBIS: ${data.itebis}<br/>
        TOTAL: ${data.total}<br/>
         <hr/>
@@ -113,7 +120,7 @@ class Gasto extends React.Component{
 
         this.state.suplidores.forEach(data => {
             
-            option_suplidores+=`<option onclick="hola()" value=${data.id}>${data.nombre}</option>`;
+            option_suplidores+=`<option  value=${data.id}>${data.nombre} | RNC:${data.rnc_suplidor}</option>`;
             
         });
 
@@ -141,7 +148,7 @@ class Gasto extends React.Component{
             <option>Tarjeta</option>
         <select/><br/>
         <p>Seleccione el suplidor<p/><br/>
-        <select class="form-control" id="suplidor" onChange=${this.capturar_rnc}>
+        <select class="form-control" id="suplidor" onClick=${this.capturar_rnc}>
             <option value="${data.suplidor_id}">${data.nombre}</option>
             ${this.listar_suplidores()}
         <select/><br/>
@@ -149,8 +156,7 @@ class Gasto extends React.Component{
         <input type="number" class="form-control" value="${data.total}" id="total">
         <p>Itebis</p><br/>
         <input type="number" class="form-control" value="${data.itebis}" id="itebis" plaholder="Itebis" /><br/>
-        <p>RNC SUPLIDOR</p>
-        <input type="text" class="form-control" value="${data.rnc_suplidor}" id="rnc" plaholder="RNC Suplidor" /><br/>
+        <input type="hidden" class="form-control" value="${data.rnc_suplidor}" id="rnc" plaholder="RNC Suplidor" /><br/>
         <p>Comprobante Fiscal</p>
         <input type="text" class="form-control" value="${data.comprobante_fiscal}" id="comprobante_fiscal" plaholder="comprobante_fiscal" /><br/>
         <p>Descripción</p>
@@ -221,18 +227,25 @@ class Gasto extends React.Component{
     }
 
     actualizar_gasto(gasto){
+        if(this.state.roll_estado=="Administrador"){
         
-        Axios.post(`${Core.url_base}/api/actualizar_gasto`,gasto).then(data=>{
+            Axios.post(`${Core.url_base}/api/actualizar_gasto`,gasto).then(data=>{
 
-            Alertify.message(data.data);
-            console.log(data.data);
-            this.cargar_gastos();
+                Alertify.message(data.data);
+                console.log(data.data);
+                this.cargar_gastos();
+                
             
-        
-        }).catch(error=>{
-            Alertify.message(error);
+            }).catch(error=>{
+                Alertify.message(error);
 
-        });
+            });
+       
+        }else{
+
+            Alertify.message(this.state.no_permiso);
+
+       }
 
     }
 
@@ -294,15 +307,14 @@ class Gasto extends React.Component{
             <option>Tarjeta</option>
         <select/><br/>
         <p>Seleccione el suplidor<p/><br/>
-        <select class="form-control" id="suplidor">
+        <select class="form-control" id="suplidor" onClick=${this.capturar_rnc}>
             ${this.listar_suplidores()}
         <select/><br/>
         <p>Bruto</p>
         <input type="number" class="form-control" id="total" plaholder="Bruto" /><br/>
         <p>Itebis</p>
         <input type="number" class="form-control" id="itebis" plaholder="Itebis" /><br/>
-        <p>RNC</p>
-        <input type="text" class="form-control" id="rnc" plaholder="RNC Suplidor" /><br/>
+        <input type="hidden" class="form-control" id="rnc" plaholder="RNC Suplidor" /><br/>
         <p>Comprobante Fiscal</p>
         <input type="text" class="form-control" id="comprobante_fiscal" plaholder="Comprobante Fiscal" /><br/>
         <p>Descripción</p>
@@ -343,9 +355,14 @@ class Gasto extends React.Component{
 
     render(){
 
-        return(<div><hr/>
+
+        var csvData = this.state.registros;
+        csvData.push({TOTAL:new Intl.NumberFormat({ maximumSignificantDigits: 2},{ style: 'currency', currency: 'DOP' }, ).format(this.state.monto_gasto)});
+    
+       return(<div><hr/>
         <button className='btn btn-primary' onClick={(e)=>this.agregar_gastos()}>Registrar Gasto</button>
         &nbsp;<button className="btn btn-success" onClick={this.Imprimir}>Imprimir</button>
+        <CSVLink data={csvData}><strong>&nbsp;Exportar reportes a CSV</strong></CSVLink>
 
         <hr/>
             <table>
@@ -355,7 +372,7 @@ class Gasto extends React.Component{
                     <td><strong>Fecha Final</strong></td>
                     <td><input type="date"  id="fecha_final" className="form-control"/></td>
                     <td><button className="btn btn-primary" onClick={this.buscar_gasto_fecha}>Buscar</button></td>
-                    <td><h5>Total en gastos:&nbsp;{new Intl.NumberFormat().format(this.state.monto_gasto)}</h5></td>
+                    <td><h5>Total en gastos:&nbsp;{new Intl.NumberFormat({ maximumSignificantDigits: 2},{ style: 'currency', currency: 'DOP' }, ).format(this.state.monto_gasto)}</h5></td>
                 </tr>
             </table><hr/>
         <input type='text' id="gasto_id" className='form-control col-md-2' onChange={this.buscar_gasto} placeholder='ID de factura'/>
@@ -386,7 +403,7 @@ class Gasto extends React.Component{
                 <td>{data.comprobante_fiscal}</td>
                 <td>{data.itebis}</td>
                 <td>{data.total}</td>
-                <td>{new Intl.NumberFormat().format(data.total + data.itebis)}</td>
+                <td>{data.total + data.itebis}</td>
                 <td>{data.fecha_registro}</td>
                 <td><img src={Buscar}  style={{cursor:'pointer'}} width='40' onClick={(e)=>this.ver_detalles_gasto(data)}/></td>
                 <td><button className="btn btn-success" onClick={(e)=>this.actualizando_gasto(data)}>Actualizar</button></td>
@@ -409,7 +426,7 @@ class Gasto extends React.Component{
                 <td></td>
                 <td></td>
                 <td><strong style={{fontSize:'22px'}}>TOTAL</strong></td>
-                <td><strong style={{fontSize:'22px'}}> {new Intl.NumberFormat().format(this.state.monto_gasto)}</strong></td>
+                <td><strong style={{fontSize:'22px'}}>{new Intl.NumberFormat( { maximumSignificantDigits: 2 },{ style: 'currency', currency: 'DOP' }).format(this.state.monto_gasto)}</strong></td>
            </tr>
         </table>
         </div>

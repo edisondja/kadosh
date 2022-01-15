@@ -124,6 +124,7 @@ class Suplidores extends React.Component{
         <div>
             <hr/><input type='text' className='form-control' placeholder='Buscar Suplidor'  /><hr/><button onClick={this.registrar_suplidor} className="btn btn-primary">Agregar Suplidor</button>
             <hr/>
+            <div className='estilo_notas'>
             <table className="table">
                 <tr>
                     <td>Nombre suplidor</td>
@@ -146,6 +147,7 @@ class Suplidores extends React.Component{
 
                 }
             </table>
+            </div>
         </div>)
 
 
