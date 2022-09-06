@@ -193,7 +193,40 @@ class  Cita extends React.Component{
 		}*/
 
 		Axios.get(`${Url.url_base}/api/buscar_paciente/${e.target.value}`).then(data=>{
-			this.setState({clientes:data.data});
+
+			//preprando data para que no explote en el cliente cuando se este buscando un paciente y no tenga doctor
+
+			let elementos_nuevos =[];
+
+			data.data.forEach(paciente => {
+			
+				
+					if(paciente.doctor==null){
+
+						paciente.doctor =  {
+							id: 1,
+							nombre: "No tiene",
+							apellido: "doctor registrado",
+							dni: "000-00000-0",
+							numero_telefono: "000,000,000",
+							created_at: "2022-09-06 13:48:48",
+							updated_at: "2022-09-06 13:48:48",
+							}
+							
+							elementos_nuevos.push(paciente);
+
+					}else{
+
+						elementos_nuevos.push(paciente);
+
+					}
+
+				
+			});
+			
+			this.setState({clientes:elementos_nuevos});
+			
+			//this.setState({clientes:data.data});
 
 		}).catch(error=>{
 				console.log(error);
