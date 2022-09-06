@@ -4,8 +4,8 @@ import alertify from 'alertifyjs';
 import Cargar_generos from './funciones_extras.js';
 
 var password= "kadosh2019";
-//var url_base =  "https://service.clinickadosh.com";
-var url_base =  "http://localhost:8000";
+var url_base =  "https://service.clinickadosh.com";
+//var url_base =  "http://localhost:8000";
 var login_status = false;
 var clave_secreta ="kadoshor2020";
 

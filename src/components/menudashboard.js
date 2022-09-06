@@ -113,9 +113,7 @@ class MenuDashboard extends React.Component{
 
 			if(this.state.select_opcion=="citas"){
 					
-			//	ver =  <Citas/>;
-
-				ver = <VisualizarPresupuesto/>;
+				ver =  <Citas/>;
 				
 			}else if(this.state.select_opcion=="paciente"){
 
