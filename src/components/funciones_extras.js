@@ -205,5 +205,7 @@ function cargar_generos_paciente(contexto){
 
 
 
+
+
 export default {eliminar_nota,cargar_generos_paciente,cargar_suplidores,Consultar_deuda_de_paciente,clave_secreta,login_status,cargar_procedimientos_de_factura,cargar_factura,cargar_paciente,cargar_doctores,cargar_procedimientos,password,url_base,notificar_cumple,cargar_doctor};
 

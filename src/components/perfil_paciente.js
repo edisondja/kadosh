@@ -9,6 +9,18 @@ import VerFacturas from './ver_facturas';
 import Verficar from './funciones_extras';
 import Pacientes from './citas_c';
 import alertify from 'alertifyjs';
+import ImagenNota from '../enviar.png';
+import ProcedimientoImg from '../procedimiento.png';
+import FacturasImg from '../factura_hechas.png';
+import FacturaSaldada from '../factura_saldada.png';
+import RecibosImg from '../cheque.png';
+import  { Redirect } from 'react-router-dom';
+import DocumentoImg from '../adjunto.png';
+import ImagenPerfil from '../usuario_listo.png'
+import ImagenMas from '../mas.png';
+import CrearPresupuesto from './crear_presupuesto';
+import VerPresupuesto from './ver_presupuestos';
+
 
 class PerfilPaciente extends React.Component{
 
@@ -18,7 +30,7 @@ class PerfilPaciente extends React.Component{
 		}
 		componentDidMount(){
 
-			//alert(this.props.id_paciente);
+			//alert(this...id_paciente);
 			this.consultarPaciente(this.props.id_paciente);
 			this.cargar_citas_paciente(this.props.id_paciente);
 			this.cargar_doctor(this.props.IdDoctor);
@@ -27,49 +39,31 @@ class PerfilPaciente extends React.Component{
 			this.consultar_deuda_paciente(this.props.id_paciente);
 			//this.cargar_notas();
 
+
 		}
 
-	
-		subir_documento=()=>{
 
 
-			var formData = new FormData();
-			var imagefile = document.querySelector('#documento');
-			formData.append("image", imagefile.files[0]);
-			formData.append("usuario_id",this.props.id_paciente);
-			formData.append("comentarios","");
+		crear_presupuesto =()=>{
 
-		    Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
-				headers: {
-				  'Content-Type': 'multipart/form-data'
-				}
-			}).then(data=>{
+			this.setState({select:'crear_presupuesto'});
 
-
-				console.log(data);
-				Alertify.message("archivo subido con exito");
-				//var imagefile = document.querySelector('#documento').files="";
-
-
-			}).catch(error=>{
-
-				console.log(error);
-
-			});
-
-
-
-			
 		}
-	
-
 
 		agregar_nota_paciente=(id_paciente)=>{
 
 
 			//Alertify.message("Este es el ID que tenemos de la nota"+);
 
-			Alertify.confirm("Escriba la nota que desea para este paciente",`<textarea class='form-control' id='nota'></textarea>`,()=>{
+			let agregar_nota =`<table>
+				<tr>
+					<td><img src='${ImagenNota}' style='padding:10px'/></td>
+					<td><textarea class='form-control' cols='50' rows='5' id='nota'></textarea></td>
+				</tr>
+			</table>`;
+
+
+			Alertify.confirm("<br/>Escriba la nota que desea para este paciente",agregar_nota,()=>{
 
 				let nota = {
 							id_paciente:this.props.id_paciente,
@@ -89,7 +83,7 @@ class PerfilPaciente extends React.Component{
 
 
 
-			},function(){});
+			},function(){}).resizeTo(500,500);
 
 			
 
@@ -98,10 +92,11 @@ class PerfilPaciente extends React.Component{
 
 		cargar_notas=(controlador)=>{
 
-			
+			Alertify.confirm().destroy(); 
+
 		
 			let notas =`<div class='card estilo_notas' id='panel'><table class='table' >
-			<tr><td>Nota</td><td>Fecha de nota</td></td><td>Actualizar</td><td>Eliminar</td></tr>
+			<tr><td></td><td>Nota</td><td>Fecha de nota</td></td><td>Actualizar</td><td>Eliminar</td></tr>
 			`;
 			
 			Axios.get(`${Verficar.url_base}/api/cargar_notas/${this.props.id_paciente}`).then(data=>{
@@ -110,6 +105,7 @@ class PerfilPaciente extends React.Component{
 					data.data.forEach(element => {
 						
 						notas+=`<tr id='fila${element.id}'>
+								<td><img src='${ImagenNota}' width="50"/></td>
 								<td id='texto${element.id}'><p>${element.descripcion}</p></td>
 								<td>${element.updated_at}</td>
 								<td><button class='btn-primary' id="${element.id}">Actualizar</button></td>
@@ -122,7 +118,7 @@ class PerfilPaciente extends React.Component{
 					notas+=`</table></div>`;
 
 
-					Alertify.confirm('Notas',`${notas}`,function(){},function(){});
+					Alertify.confirm('Notas',`${notas}`,function(){},function(){}).set('resizable',true).resizeTo(1024,500);
 
 
 					let panel = document.getElementById('panel');
@@ -254,6 +250,7 @@ class PerfilPaciente extends React.Component{
 
 		consultar_deuda_paciente(id_paciente){
 			
+			
 					Axios.get(`${Verficar.url_base}/api/consultar_deuda/${id_paciente}`).then(data=>{
 							this.setState({deuda_total:data.data.deuda_total});
 					}).catch(error=>{
@@ -308,6 +305,12 @@ class PerfilPaciente extends React.Component{
 
 				this.setState({paciente:data.data});
 
+				
+					if(this.state.paciente.foto_paciente==""){
+
+							document.getElementById("foto_paciente").src=ImagenPerfil;
+					}
+
 			}).catch(error=>{
 				
 				Alertify.error(`Error al cargar paciente`);
@@ -320,37 +323,90 @@ class PerfilPaciente extends React.Component{
 
 
 		cargar_documentos=()=>{
-		
+
+
+			let Redirects;
 			
 			Axios.get(`${Verficar.url_base}/api/cargar_documentos/${this.props.id_paciente}`).then(data=>{
 
-				let interface_documento = `<div id="panel_radio" class='estilo_notas'><table class='table'>
+				let interface_documento = `
+				<div id="panel_radio" class='estilo_notas'>
+				<table class='table'>
 				<tr>
-					<td>Tipo</td>
 					<td>Radiografia</td>
+					<td>Comentarios</td>
 					<td>Fecha</td>
-					<td></td>
-				</tr>`;
+					<td><img src='${ImagenMas}' style='margin-top: 17%;position:fixed;cursor:pointer;' id="agregar_nota"/>&nbsp;</td>
+				</tr>
+				`;
+				
+
+
 
 		
 				data.data.forEach(data=>{
-
+				    Redirects=`${Verficar.url_base}/storage/${data.ruta_radiografia}`;
+					//<embed src="${Redirects}" width="250x" height="250x" />
 					interface_documento+=`<tr id='fila_radiografia${data.id}'> 
-							<td>Radio</td>
-							<td><img src='${Verficar.url_base}/storage/${data.ruta_radiografia}' width='300'></td>
+							<td><a target='_blank' href='${Redirects}'>Ver documento</a></td>
+							<td>${data.comentarios}</td>
 							<td>${data.updated_at}</td>
-							<td><button class='btn-danger' id='${data.id}'>Eliminar</button></td>
+							<td><button class='btn-warning' id='${data.id}'>Eliminar</button></td>
 					</tr>`;	
 				});
 
 				//Alertify.confirm('Documentos adjuntados')
-				interface_documento+=`</table>`;
+				interface_documento+=`</table>
+				`;
 
-				Alertify.confirm('Documentos adjuntados',interface_documento,function(){},function(){});
+				Alertify.confirm('Documentos adjuntados',interface_documento,function(){},function(){}).set('resizable',true).resizeTo(1024,500);
 
 
 				let boton = document.getElementById('panel_radio');
-				let botones_radiografia_e  = boton.querySelectorAll('.btn-danger');
+				let botones_radiografia_e  = boton.querySelectorAll('.btn-warning');
+				let agregar_nota = document.getElementById("agregar_nota");
+
+				agregar_nota.addEventListener('click',function(){
+
+					let interface_documento = `<div class='card'>
+						<input type='file' id='archivo_doc' class='form-control' /><br/>
+						<textarea rows='12' id='descripcion_doc' class='form-control' placeholder='descripcion de documento'></textarea>
+					</div>`;
+
+					
+
+				
+					Alertify.confirm("Subir documento",`${interface_documento}`,function(){
+
+						var formData = new FormData();
+						var imagefile = document.querySelector('#archivo_doc');
+						formData.append("image", imagefile.files[0]);
+						formData.append("usuario_id",document.getElementById('paciente_id').value);
+						formData.append("comentarios",document.getElementById('descripcion_doc').value);
+			
+						Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
+							headers: {
+							  'Content-Type': 'multipart/form-data'
+							}
+						}).then(data=>{
+			
+			
+							console.log(data);
+							Alertify.message("archivo subido con exito");
+							//var imagefile = document.querySelector('#documento').files="";
+			
+			
+						}).catch(error=>{
+			
+							console.log(error);
+			
+						});
+			
+			
+
+					},function(){}).set('resizable',true).resizeTo(500,500);
+
+				});
 			
 				botones_radiografia_e.forEach((btn_eliminar)=>{
 
@@ -379,6 +435,22 @@ class PerfilPaciente extends React.Component{
 
 				});
 
+
+				let botones_ver = boton.querySelectorAll('.btn-primary');
+					botones_ver.forEach(boton=>{
+						boton.addEventListener('click',(e)=>{
+
+								//alert(e.target.value);
+								let contendero_documento =`<div'>
+									<embed src="${Redirects}" style='height:1024px;width:1024px'/>
+								</div>`;
+
+
+								Alertify.confirm(`Viendo documento`,`${contendero_documento}`,function(){},function(){}).set('resizable',true).resizeTo(1024,700); 
+
+
+						});
+					});
 
 				}).catch(error=>{
 
@@ -426,6 +498,13 @@ class PerfilPaciente extends React.Component{
 		}
 
 
+		ver_presupuesto=()=>{
+
+
+			this.setState({select:'ver_presupuestos'});
+
+		}
+
 		agregar_factura=()=>{
 
 			this.setState({select:'agregando_factura'})
@@ -433,8 +512,10 @@ class PerfilPaciente extends React.Component{
 
 		render(){
 				if(this.state.select=='agregando_factura'){
+
 						return <AgregarFactura IDpaciente={this.props.id_paciente}/>;
-				}else if(this.state.select=='editando_cita'){
+				
+					}else if(this.state.select=='editando_cita'){
 
 						return <AgregarCita config="actualizar" id_cita={this.state.id_cita} />
 
@@ -446,24 +527,43 @@ class PerfilPaciente extends React.Component{
 
 				return (<div className="col-md-10">
 							<hr/><br/><br/>
-							<i style={{fontSize:'larger'}}>Perfil de paciente {this.state.paciente.nombre} {this.state.paciente.apellido}</i><hr/>
+							<input type="hidden" id="paciente_id"  value={this.props.id_paciente}/>
+							<i style={{fontSize:'larger'}}>{this.state.paciente.nombre} {this.state.paciente.apellido}</i><hr/>
 							<table>
 								<tr>
-									<td><div className='card'><img src="https://cdn.pixabay.com/photo/2020/07/01/12/58/icon-5359553_960_720.png" style={{heigth:'100px',width:'100px'}}/></div></td>
-									<td><div className='card' style={{padding:'10px'}}><strong style={{color:'#46c346'}}>Adjuntar Documento a paciente</strong><br/><br/>
-										<input type="file" className='form-control' id="documento"/><br/>
-									<button class='btn-success' onClick={this.subir_documento}>Subir documento</button>
-									</div></td>
-									<td>
-										<div className='card'>
-											<img style={{height:'200px'}} src='https://i0.wp.com/www.odontologicamente.com/wp-content/uploads/2020/04/odontograma-04.jpg?resize=366%2C231&ssl=1'/>
-										
-										</div>
+									<td><div className='card'><img id="foto_paciente" src={Verficar.url_base+"/storage/"+this.state.paciente.foto_paciente} style={{height:'225px',width:'250px'}} /></div></td>
+									<td>	
+										<hr/>
+											<table  className="table table-bordered">
+												<tr>
+													<td><img src={ProcedimientoImg} width="25" /></td>
+													<td>Cantidad de procedimientos realizados</td>
+													<td>x50</td>
+												</tr>
+												<tr>
+													<td><img src={DocumentoImg} width="25" /></td>
+													<td>Documento adjuntos</td>
+													<td>x5</td>
+												</tr>
+												<tr>
+													<td><img src={FacturasImg} width="25" /></td>
+													<td>Facturas creadas</td>
+													<td>x10</td>
+												</tr>
+												<tr>
+													<td><img src={RecibosImg} width="25" /></td>
+													<td>Cantidad de recibos pagados</td>
+													<td>x5</td>
+												</tr>
+												
+
+											</table>
 									</td>
+									
 									<td>
 										<div className='card'>
-											<textarea className='form-control' placeholder='Enviar correo a paciente'></textarea><br/>
-											<button className='btn-primary'>Enviar</button>
+											<textarea cols='60' style={{height:'173px'}} className='form-control' placeholder='Enviar correo a paciente'></textarea><br/>
+											<button className='btn-primary' style={{background:'#5a08f1'}}>Enviar</button>
 										</div>
 									</td>
 								</tr>
@@ -477,6 +577,7 @@ class PerfilPaciente extends React.Component{
 									<th scope="col">Nombre</th>
 									<th scope="col">Cedula</th>
 									<th scope="col">Telefono</th>
+									<th scope="col">Email</th>
 									<th scope="col">Ingreso</th>
 									<th scope="col">Doctor</th>
 									<th scope="col">Deuda Total</th>
@@ -487,7 +588,8 @@ class PerfilPaciente extends React.Component{
 										<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
 										<td>{this.state.paciente.cedula}</td>
 										<td>{this.state.paciente.telefono}</td>
-										<td>{this.state.paciente.fecha_de_ingreso}</td>
+										<td>{this.state.paciente.correo_electronico}</td>
+										<td style={{color:'purple'}}>{this.state.paciente.fecha_de_ingreso}</td>
 										<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
 										<td>$RD {this.state.deuda_total}</td>		
 									</tr>
@@ -496,9 +598,12 @@ class PerfilPaciente extends React.Component{
 							</div>
 							<hr/>
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-primary espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
-							<button className='btn btn-primary' onClick={this.cargar_notas}>Ver notas</button>&nbsp;
+							<button className='btn btn-primary' onClick={this.cargar_notas}>Notas</button>&nbsp;
 							<button className='btn btn-primary' onClick={this.agregar_nota_paciente}>Agregar Nota</button>
-							&nbsp;<button className='btn btn-primary' onClick={this.cargar_documentos}>Documentos adjuntos</button>
+							&nbsp;<button className='btn btn-primary' onClick={this.cargar_documentos}>Documentos</button>
+							&nbsp;<button className='btn btn-primary' onClick={this.crear_presupuesto}>Crear Presupuesto</button>
+							&nbsp;<button className='btn btn-primary' onClick={this.ver_presupuesto}>Ver Presupuestos</button>
+
 							<hr/>
 							
 							<hr/>
@@ -523,6 +628,15 @@ class PerfilPaciente extends React.Component{
 				}else if(this.state.select=="ver_pacientes"){
 
 					return <Pacientes/>;
+
+				}else if(this.state.select=="crear_presupuesto"){
+
+					return <CrearPresupuesto IDpaciente={this.props.id_paciente}/>;
+
+				}else if(this.state.select=="ver_presupuestos"){
+
+
+					return <VerPresupuesto IDpaciente={this.props.id_paciente} />
 
 				}
 

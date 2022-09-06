@@ -9,6 +9,9 @@ import PerfilPaciente from './perfil_paciente';
 import AgregarCita from './agregar_cita';
 import Url from './funciones_extras';
 import ActualizarPerfil from './actualizar_paciente';
+import ImgPerfil from '../usuario.png';
+import ImgAsignar from '../asignar.png';
+import ImgActualizar from '../actualizar.png'
 import alertify from 'alertifyjs';
 import { Doughnut,Bar} from 'react-chartjs-2';
 
@@ -21,6 +24,7 @@ class  Cita extends React.Component{
 					id_doctor:0,
 					nombre_paciente:"",
 					procedimientos_hechos:0,
+					foto_paciente:"",
 					clientes:[
 						  
 					    ],
@@ -142,6 +146,9 @@ class  Cita extends React.Component{
 		  .then(res => {
 			 // console.log(res.data);
 			 this.setState({clientes:res.data});
+			// console.log(this.state.clientes);
+
+
 		  }).catch(error=>{
 
 				console.log(error);
@@ -195,10 +202,10 @@ class  Cita extends React.Component{
 
 	}
 
-	cargar=(id,id_doct)=>{
+	cargar=(id,id_doct,foto_paciente)=>{
 
 
-				this.setState({perfil_selec:true,id_cliente:id,id_doctor:id_doct});
+				this.setState({perfil_selec:true,id_cliente:id,id_doctor:id_doct,foto_paciente:foto_paciente});
 
 	}
 
@@ -230,7 +237,7 @@ class  Cita extends React.Component{
 
 		if(this.state.perfil_selec==true){
 
-				return <PerfilPaciente id_paciente={this.state.id_cliente} IdDoctor={this.state.id_doctor}nombre="oye esto es un nombre cabron" />;
+				return <PerfilPaciente id_paciente={this.state.id_cliente} IdDoctor={this.state.id_doctor} foto_paciente={this.state.foto_paciente} />;
 
 		}else if(this.state.perfil_selec=="agregar_citas"){
 
@@ -299,6 +306,7 @@ class  Cita extends React.Component{
 					<tr className="fijar_columnas">
 						<th  scope="col">Nombre</th>
 						<th  scope="col">Apellido</th>
+						<th  scope="col">Doctor</th>
 						<th  scope="col">Cedula</th>
 						<th  scope="col">Telefono</th>
 						<th  scope="col">Deuda</th> 
@@ -314,12 +322,13 @@ class  Cita extends React.Component{
 							<tr>
 								<td>{data.nombre}</td>
 								<td>{data.apellido}</td>
+								<td>{data.doctor.nombre} {data.doctor.apellido}</td>
 								<td>{data.cedula}</td>
 								<td>{data.telefono}</td> 
 								<td><p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}</p></td>
-								<td><button className="btn btn-secondary" onClick={()=>this.cargar(data.id,data.id_doctor)}>Ver perfil</button>&nbsp;</td>
-								<td><button className="btn btn-secondary" onClick={()=>this.asignar_cita(data.id,data.nombre)}>Asignar Cita</button>&nbsp;</td>
-								<td><button className="btn btn-secondary" onClick={()=>this.actualizar_paciente(data.id)}>Actualizar</button></td>
+								<td><img   onClick={()=>this.cargar(data.id,data.id_doctor,data.foto_paciente)} src={ImgPerfil} style={{cursor:'pointer'}} width="35"/></td>
+								<td><img src={ImgAsignar} style={{cursor:'pointer'}} onClick={()=>this.asignar_cita(data.id,data.nombre)} width="35"/></td>
+								<td><img src={ImgActualizar} style={{cursor:'pointer'}} onClick={()=>this.actualizar_paciente(data.id)} width="35"/></td>
 							</tr>
 							</tbody>
 						))

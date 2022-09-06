@@ -11,11 +11,11 @@ import EditarFactura from './editar_factura';
 import ReactDOMServer from 'react-dom/server';
 import '../css/dashboard.css';
 
-class FacturaInterfaz extends React.Component{
+class FacturaInterfaz extends React.Component {
 
     constructor(props){
         super(props);
-        this.state={contador:false,paciente:{},procedimientos_imprimir:[],config:'normal',data_factura:[],valor:true,factura:{precio_estatus:0,id:0},procedimientos:[],monto_total:0,recibos:[],mensaje:""};
+        this.state={descuentos_aplicados:0,contador:false,paciente:{},procedimientos_imprimir:[],config:'normal',data_factura:[],valor:true,factura:{precio_estatus:0,id:0},procedimientos:[],monto_total:0,recibos:[],mensaje:""};
     }
 
     componentDidMount(){
@@ -24,6 +24,7 @@ class FacturaInterfaz extends React.Component{
         this.cargar_procedimientos(this.props.id_factura);
         this.cargar_recibos(this.props.id_factura);
         Url_base.cargar_paciente(this,this.props.id_paciente);
+        this.cargar_descuentos_de_facutra(this.props.id_factura,"solo_texto");
        // this.cargar_monto();
         Url_base.cargar_procedimientos_de_factura(this,this.props.id_factura);
     }
@@ -61,27 +62,42 @@ class FacturaInterfaz extends React.Component{
 
     }
     
-    descontar(id_factura){
+    descontar=(id_factura)=>{
             
-        Alertify.prompt("Descuento manual","Digite la cantidad que le quiere descontar a la facutra.","",(event,value)=>{
+        Alertify.confirm("Descuento manual",`
+        <input type='number' class='form-control col-md-5' id="descontar" placeholder='Digite el monto'>
+        <hr/><textarea cols='30' class='form-control' id="comentario" placeholder='Comentario de descuento'></textarea>`,
+        
+        function(e){
 
-            var clock = this.validar_pago(this.state.factura.precio_estatus,value);
+            let descuento = parseInt(document.getElementById('descontar').value);
+            let comentario = document.getElementById('comentario').value;
+            
+           // var clock = this.validar_pago(this.state.factura.precio_estatus,descuento);
 
-            if(clock==true){
-                Axios.get(`${Url_base.url_base}/api/descontar_precio_factura/${id_factura}/${value}`).then(data=>{
+           // if(clock==true){
+                Axios.get(`${Url_base.url_base}/api/descontar_precio_factura/${id_factura}/${descuento}/${comentario}`).then(data=>{
                     Alertify.success("Descuento aplicado con exito");
-                    this.setState({factura:{precio_estatus:this.state.factura.precio_estatus-value}});
+                    this.setState({factura:{precio_estatus:this.state.factura.precio_estatus-descuento}});
+
                 }).catch(error=>{
-                    Alertify.error("No se pudo aplicar el descuento con exito");
+                    //Alertify.error("No se pudo aplicar el descuento con exito");
+                    console.log(error);
                 })
-            }
+           // }
 
-        },function(error){
 
-            Alertify.message("Descuento cancelado...");
-        });
+        },function(e){
+
+
+
+        }).set('resizable',true).resizeTo(500,300);
+
+
+
         
     }
+
 
     imprimir_factura=(id_recibo,id_factura)=>{
             
@@ -93,31 +109,89 @@ class FacturaInterfaz extends React.Component{
 
     }
 
-    cargar_descuentos_de_facutra(id_factura){
+    cargar_descuentos_de_facutra(id_factura,config='generar_vista_descuento'){
+
+
 
         Axios.get(`${Url_base.url_base}/api/consultar_descuentos/${id_factura}`).then(data=>{
             let descuentos="";
             
-            data.data.forEach(data=>{
+            if(config=="generar_vista_descuento"){
+                    data.data.forEach(data=>{
 
-                    descuentos+=ReactDOMServer.renderToStaticMarkup(
+                            descuentos+=`
+                                <tr id="fila${data.id}">
+                                    <td>${Intl.NumberFormat('en-IN', {style: 'currency',currency: 'DOP', minimumFractionDigits: 2}).format(data.monto)}</td>
+                                    <td>${data.comentario}</td>
+                                    <td>${data.created_at}</td>
+                                    <td><button class='btn-danger' id='${data.id}' value='${data.monto}'>Borrar</button></td>
+                            </tr>`;
+                            
+                                
+                    });
+
+                    Alertify.confirm("Descuentos en esta factura",`<p style='color:#9319d3;'>Descuentos aplicados</p>
+                    <div id="panel_descuento"><table class="table">
                         <tr>
-                            <td>{data.monto}</td>
-                            <td>{data.created_at}</td>
-                    </tr>);
+                            <th>Monto de descuento</th>
+                            <th>Comentario</th>
+                            <th>Fecha</th>
+                            <th>Eliminar</th>
+                        </tr>
+                        ${descuentos}
+                    </table>
+                    </div>
+                    `,function(){},function(){}).set('resizable',true).resizeTo(500,500); 
+
+                    
+                    let panel_descuento = document.getElementById("panel_descuento");
+                    let btn_borrar = panel_descuento.querySelectorAll(".btn-danger");
+
+                    
+                    btn_borrar.forEach(botones=>{
+
+
+                            botones.addEventListener('click',function(e){
+
+                                    /*---[e.target.id]:aqui se encuentra guardado el id del registro de descuento que 
+                                        queremos eliminar.
+
+                                    --[e.target.value]:En este atributo guardamos la cantidad del monto que se descuento para restablecerlo
+                                    */
+                                    let id_descuento_actual = e.target.id;
+
+                                    Alertify.confirm("Borrar descuento","<hr/>Estas seguro que deseas eliminar este descuento?",function(){
+                                        
+                                        let descuento = {
+                                            id_descuento:id_descuento_actual
+                                        };
+            
+                                        Axios.post(`${Url_base.url_base}/api/eliminar_descuento`,descuento).then(data=>{
+            
+                                        //   document.getElementById(`fila${id_descuento_actual}`).remove();
+            
+                                            console.log(data);
+                                            Alertify.message("Descuento eliminado");
+            
+                                        }).catch(error=>{
+            
+                                            Alertify.message("Error no se pudo eliminar el descuento");
+            
+                                        });
+
+                                    },function(){});
+
+                                
+
+                            });
                         
             });
 
-            Alertify.confirm("Descuentos en esta factura",`<p>Descuentos aplicados</p>
-            <table class="table">
-                <tr>
-                    <th>Descuento</th>
-                    <th>Fecha</th>
-                </tr>
-                ${descuentos}
-            </table>
-            `,function(){},function(){});
-            
+        }else{
+
+                this.setState({descuentos_aplicados:data.data.length});
+        }
+
         }).catch(error=>{
  
             Alertify.error("Error al cargar descuentos de la factura");
@@ -138,13 +212,6 @@ class FacturaInterfaz extends React.Component{
             }).set("type","password");
 
     }
-
-
- 
-  
-
-
-
 
 
     eliminar_recibo(id_recibo,id_factura,monto){
@@ -188,6 +255,16 @@ class FacturaInterfaz extends React.Component{
 
     procesar_pago=(id_factura,precio_estatus)=>{
 
+
+           // return console.log(this.state.procedimientos+" Monto:"+this.state.monto_total);
+            let monto_total =this.state.monto_total;
+            let procedimientos = this.state.procedimientos;
+            procedimientos = JSON.stringify(procedimientos);
+            
+
+          //  return console.log(procedimientos);
+
+
             Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
                             
                     Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='3'>TRANSFERENCIA</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
@@ -196,10 +273,10 @@ class FacturaInterfaz extends React.Component{
                         let option = document.getElementById("seleccionar_pago").value;
 
                         if(option==1){
-                           let pay = this.validar_pago(this.state.factura.precio_estatus,value);
+                            //let pay = this.validar_pago(this.state.factura.precio_estatus,value);
 
-                            if(pay==true){
-                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/ef`).then(data=>{
+                           // if(pay==true){
+                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/ef/${monto_total}/${procedimientos}`).then(data=>{
                                                 Alertify.success("Pago realizado con exito");
                                                 this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                                 this.cargar_recibos(this.props.id_factura);
@@ -209,7 +286,7 @@ class FacturaInterfaz extends React.Component{
                                     Alertify.error("No se pudo procesar el pago correctamente");
                                     this.setState({mensaje:error});
                                 });
-                            }
+                            //}
                             
                         }else if(option==2){
                             let codigo_targeta =prompt("Digite el codigo","x-x-x-x-x");
@@ -217,9 +294,9 @@ class FacturaInterfaz extends React.Component{
                                 Alertify.message("Este es su codigo "+codigo_targeta);
                                 
                                 let cantidad_pagada = prompt("Ingrese la cantidad que se pago","$RD 0.00");
-                                let pay = this.validar_pago(this.state.factura.precio_estatus,cantidad_pagada);
-                                if(pay==true){
-                                    Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${cantidad_pagada}/tarjeta/${precio_estatus}/${codigo_targeta}`).then(data=>{
+                              //  let pay = this.validar_pago(this.state.factura.precio_estatus,cantidad_pagada);
+                             //   if(pay==true){
+                                    Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${cantidad_pagada}/tarjeta/${precio_estatus}/${codigo_targeta}/${monto_total}/${procedimientos}`).then(data=>{
                                         Alertify.success("Pago realizado con exito");
                                         this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                         this.cargar_recibos(this.props.id_factura);
@@ -227,15 +304,15 @@ class FacturaInterfaz extends React.Component{
                                         Alertify.error("No se pudo procesar el pago correctamente");
                                         this.setState({mensaje:error});
                                     });
-                                }
+                             //   }
                         }else if(option==3){
 
                             Alertify.message("Usted selecciono pago por transferencia");
 
-                            let pay = this.validar_pago(this.state.factura.precio_estatus,value);
+                           // let pay = this.validar_pago(this.state.factura.precio_estatus,value);
 
-                            if(pay==true){
-                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/transferencia/${precio_estatus}/ts`).then(data=>{
+                            //if(pay==true){
+                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/transferencia/${precio_estatus}/ts/${monto_total}/${procedimientos}`).then(data=>{
                                                 Alertify.success("Pago realizado con exito");
                                                 this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
                                                 this.cargar_recibos(this.props.id_factura);
@@ -243,7 +320,7 @@ class FacturaInterfaz extends React.Component{
                                     Alertify.error("No se pudo procesar el pago correctamente");
                                     this.setState({mensaje:error});
                                 });
-                            }
+                           // }
 
 
 
@@ -317,7 +394,7 @@ class FacturaInterfaz extends React.Component{
 
         return (<div className="col-md-10"><br/> 
                 <h4>Factura y sus detalles</h4><button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
-                <h4>Estado actual <p style={{color:'#36b836'}}>$RD {this.state.factura.precio_estatus}</p></h4><hr/>
+                <h4>Estado actual <p style={{color:'#36b836'}} id="estado_actual">$RD {this.state.factura.precio_estatus}</p></h4><hr/>
                 <h5>Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
                 <div>
                     <table className="table">
@@ -347,6 +424,7 @@ class FacturaInterfaz extends React.Component{
                     <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button><strong>&nbsp;&nbsp;&nbsp;</strong>
                     <button className="btn btn-dark" onClick={()=>this.cargar_descuentos_de_facutra(this.props.id_factura)}>Ver descuentos</button>  <hr/>
                         <hr/><br/><br/><h2>Pagos Realizados</h2>
+                        <div><strong style={{color:'#e91d82',marginLeft:'30%'}}>Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})</strong><hr/></div>
                     <div className="tableflow">
                     <table className="table boxslider">
                         <tr>

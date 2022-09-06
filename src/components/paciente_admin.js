@@ -38,17 +38,26 @@ class PacienteAdmin extends  React.Component{
 
 	guardar_paciente=()=>{
 		
-
+		
 		if(this.state.boton_estado==false){
-			var nombre = document.getElementById("nombre").value;
-			var apellido = document.getElementById("apellido").value;
-			var dni = document.getElementById("cedula").value;
-			var telefono = document.getElementById("telefono").value;
-			var id_doctor = document.getElementById("doctores_select").value;
-			var fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
-			var sexo = document.getElementById("sexo").value
 
-			Axios.get(`${FuncionesExtras.url_base}/api/guardar_paciente/${nombre}/${apellido}/${telefono}/${id_doctor}/${dni}/${fecha_nacimiento}/${sexo}`).then(data=>{
+
+				var formData = new FormData();
+				var imagefile = document.querySelector('#foto_paciente');
+				if(imagefile.files.length>0){
+					formData.append("foto_paciente", imagefile.files[0]);
+				}
+				formData.append("nombre",document.getElementById("nombre").value);
+				formData.append("apellido",document.getElementById("apellido").value);
+				formData.append("cedula",document.getElementById("cedula").value);
+				formData.append("telefono",document.getElementById("telefono").value);
+				formData.append("id_doctor",document.getElementById("doctores_select").value);
+				formData.append("fecha_nacimiento",document.getElementById("fecha_nacimiento").value);
+				formData.append("correo_electronico",document.getElementById("correo_electronico").value);
+				formData.append("sexo",document.getElementById("sexo").value);
+
+			
+			Axios.post(`${FuncionesExtras.url_base}/api/guardar_paciente`,formData).then(data=>{
 					document.getElementById("cargar_pacientes").click();
 					this.setState({boton_estado:true});
 			}).catch(error=>{
@@ -65,8 +74,14 @@ class PacienteAdmin extends  React.Component{
 
 	render(){
 
-		return(<div className="col-md-10"><br/><h1>Agregar Paciente</h1>
-					<div><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button><br/>
+		return(<div className="col-md-10">
+				<div><hr/>
+					<table>
+						<tr>	
+							<td><h4>Agregar paciente +</h4></td>
+							<td><hr/><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button></td>
+						</tr>
+					</table>
 						
 						<strong>Nombre</strong><br/>
 
@@ -80,11 +95,18 @@ class PacienteAdmin extends  React.Component{
 
 						<input type='text' id="cedula" className="form-control"/><br/>
 
+						<strong>Correo electronico</strong><br/>
+
+						<input type='text' id="correo_electronico" placeholder='ejemplo --- edisondja@gmail.com' className="form-control"/><br/>
+
+						<strong>Foto</strong><br/>
+
+						<input type='file' id="foto_paciente"  className="form-control"/><br/>
+
 						<strong>Sexo</strong><br/>
 							<select id="sexo" className="form-control">
 								<option value="h">Masculino</option>
 								<option value="m">Femenino</option>
-								<option value="hm">Otros</option>
 							</select><br/>
 						<strong>FECHA DE NACIMIENTO</strong><br/>
 

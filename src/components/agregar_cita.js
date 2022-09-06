@@ -1,122 +1,85 @@
-
-import ReactDOM from 'react-dom';
 import React from 'react';
-import '../css/dashboard.css';
-import Axios from 'axios';
-import Alertify from 'alertifyjs';
-import Core from './funciones_extras';
-import PerfilPaciente from './perfil_paciente';
+import { ReactAgenda , ReactAgendaCtrl , guid ,  Modal } from 'react-agenda';
+import 'react-agenda/build/styles.css';
+import 'react-datetime/css/react-datetime.css';
 
-class  AgregarCita extends React.Component{
+require('moment/locale/fr.js'); // this is important for traduction purpose
 
-    constructor(props){
-          super(props);
-          this.state={data:null,mensaje:"",control:false,citas:[]};    
-    }
-
-    captura_fecha_hora(){
-
-        return {
-            hora:document.querySelector("#hora").value,
-            dia:document.querySelector("#dia").value
-        }
-    }
-
-    guardar_cita=()=>{
-
-        let data = this.captura_fecha_hora();
-    
-        Axios.get(`${Core.url_base}/api/guardar_cita/${this.props.id_paciente}/${data.hora}/${data.dia}`).then(data=>{
-
-            Alertify.success("Cita registrada correctamente");
-            this.setState({control:'cargar_paciente'});
-
-        }).catch(error=>{
-             console.log(error);
-             Alertify.success("Error al registrar cita");
-
-        })
-
-    }
-
-    cargar_citas(id_paciente){
-            Axios.get(`${Core.url_base}/api/cargar_citas_de_paciente/${id_paciente}`).then(data=>{
-                    this.setState({citas:data.data});
-            }).catch(error=>{
-            
-            });
-
-    }
-
-    actualizar_cita(id){
-        let data =this.captura_fecha_hora();
-        Alertify.message(id);
-
-        Axios.get(`${Core.url_base}/api/actualizar_cita/${this.props.id_cita}/${data.hora}/${data.dia}`).then(data=>{
-                Alertify.success(data.data);
-        }).catch(error=>{
-            Alertify.error(error);
-        });
-
-    }
-
-    retroceder=()=>{
-        this.setState({control:'cargar_paciente'});
-    }
-
-    eliminar_cita(id){
-
-        Axios.get("").then(
-
-        ).catch(error=>{
-
-        });
-
-
-    }
-
-    buscar_citas(){
-
-        Axios.get("").then(
-
-        ).catch(error=>{
-
-        });
-
-
-    }
-
-
-    render(){
-        let boton = <button onClick={this.guardar_cita} className="btn btn-primary" >Guardar</button>;
-
-
-        if(this.state.control=="actualizar" || this.props.config=="actualizar"){
-
-            boton = <button onClick={()=>this.actualizar_cita(this.props.id_cita)} className="btn btn-primary">Actualizar</button>;
-        }else if(this.state.control=="cargar_paciente"){
-
-            return <PerfilPaciente id_paciente={this.props.id_paciente}/>
-        }
-
-        return (<div className="card">
-                <div className="card-body"><hr/>
-                <h3>Asignando Horario para cita del paciente ({this.props.paciente})</h3>
-                    <strong>Hora</strong>
-                    <input type="time" className="form-control" id="hora" /><br/>
-                    <strong>Dia</strong>
-                    <input type="date" id="dia"  className="form-control"/><br/>
-                    {boton}&nbsp;
-                    <button className="btn btn-primary" onClick={this.retroceder}>Retroceder</button>
-                </div>
-            </div>);
-
-
-    }
-
-
-
-
+var colors= {
+  'color-1':"rgba(102, 195, 131 , 1)" ,
+  "color-2":"rgba(242, 177, 52, 1)" ,
+  "color-3":"rgba(235, 85, 59, 1)"
 }
 
-export default AgregarCita;
+var now = new Date();
+
+var items = [
+  {
+   _id            :guid(),
+    name          : 'Meeting , dev staff!',
+    startDateTime : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0),
+    endDateTime   : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0),
+    classes       : 'color-1'
+  },
+  {
+   _id            :guid(),
+    name          : 'Working lunch , Holly',
+    startDateTime : new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 11, 0),
+    endDateTime   : new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 13, 0),
+    classes       : 'color-2 color-3'
+  },
+
+];
+
+export default class Agenda extends React.Component {
+  constructor(props){
+  super(props);
+    this.state = {
+      items:items,
+      selected:[],
+      cellHeight:30,
+      showModal:false,
+      locale:"fr",
+      rowsPerHour:2,
+      numberOfDays:4,
+      startDate: new Date()
+    }
+    this.handleCellSelection = this.handleCellSelection.bind(this)
+    this.handleItemEdit = this.handleItemEdit.bind(this)
+    this.handleRangeSelection = this.handleRangeSelection.bind(this)
+  }
+
+handleCellSelection(item){
+  console.log('handleCellSelection',item)
+}
+handleItemEdit(item){
+  console.log('handleItemEdit', item)
+}
+handleRangeSelection(item){
+  console.log('handleRangeSelection', item)
+}
+  render() {
+    return (
+      <div className='col-md-8'>
+          <br/><br/><hr/>
+          <h3>Agendar cita</h3>
+        <ReactAgenda
+          minDate={now}
+          maxDate={new Date(now.getFullYear(), now.getMonth()+3)}
+          disablePrevButton={false}
+          startDate={this.state.startDate}
+          cellHeight={this.state.cellHeight}
+          locale={this.state.locale}
+          items={this.state.items}
+          numberOfDays={this.state.numberOfDays}
+          rowsPerHour={this.state.rowsPerHour}
+          itemColors={colors}
+          autoScale={false}
+          fixedHeader={true}
+          onItemEdit={this.handleItemEdit.bind(this)}
+          onCellSelect={this.handleCellSelection.bind(this)}
+          onRangeSelection={this.handleRangeSelection.bind(this)}/>
+      </div>
+    );
+  }
+}

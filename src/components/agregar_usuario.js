@@ -82,26 +82,6 @@ class Usuario extends React.Component{
         actualizar_usuario(id_usuario){
 
 
-            var usuario ={
-                id_usuario:id_usuario,
-                usuario:document.getElementById("usuario").value,
-                clave:document.getElementById("clave").value,
-                nombre:document.getElementById("nombre").value,
-                apellido:document.getElementById("apellido").value,
-                roll:document.getElementById("roll_usuario").value
-            };
-                
-            Axios.post(`${Core.url_base}/api/actualizar_usuario`,usuario).then(data=>{
-
-                Alertify.message("Usuario guardado con exito");
-                this.cargar_usuarios();
-
-            }).catch(error=>{
-
-                Alertify.message("Error al registrar usuario");
-            
-            });
-
 
         }
 
@@ -123,6 +103,95 @@ class Usuario extends React.Component{
         }
 
 
+        actualizar_usuario=(id_usuario)=>{
+            
+            let usuario;
+
+            Axios.get(`${Core.url_base}/api/cargar_usuario/${id_usuario}`).then(data=>{
+
+                    console.log(data.data);
+                    usuario = data.data;
+
+                    let usuario_interface =`
+                    <div id='usuarios'>
+                        <table class="table">
+                           <tr>
+                                <td>Usuario</td>
+                                <td><input type='text' class='form-control' id="usuario_a" value="${usuario.nombre}"></td>
+                           </tr>
+                           <tr>
+                                 <td>Nombre</td>
+                                 <td><input type='text' class='form-control' id="nombre_a" value="${usuario.nombre}"></td>
+                            </tr>
+                            <tr>
+                                <td>Apellido</td>
+                                <td><input type='text' class='form-control' id="apellido_a" value="${usuario.apellido}"></td>
+                            </tr>
+                            <tr>
+                                <td>Roll</td>
+                                <td>
+                                    <select class='form-control' id='roll_a'>
+                                            <option value='Administrador'>Administrador</option>
+                                            <option value='Contable'>Contable</option>
+                                            <option value='Secretaria'>Secretaria</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Clave</td>
+                                <td><input type='text' class='form-control' id="clave_a" value="${usuario.clave}"></td>
+                            </tr>
+                        </table>
+                    <div>
+                    `;
+
+                         
+                    
+                
+                    Alertify.confirm('Actualizar usuario',usuario_interface,function(){
+
+
+                            // let id_usuario =  e.target.id.substr(5,10);
+                                 var usuario ={
+                                     id_usuario:id_usuario,
+                                     usuario:document.getElementById("usuario_a").value,
+                                     clave:document.getElementById("clave_a").value,
+                                     nombre:document.getElementById("nombre_a").value,
+                                     apellido:document.getElementById("apellido_a").value,
+                                     roll:document.getElementById("roll_a").value
+                                 };
+                                     
+                                 Axios.post(`${Core.url_base}/api/actualizar_usuario`,usuario).then((data)=>{
+                                     
+                                     console.log(data);
+                                     Alertify.message("Usuario actualizado con exito");
+                                     //this.cargar_usuarios();
+ 
+                                 }).catch(error=>{
+ 
+                                     Alertify.message("Error al registrar usuario");
+                                 
+                                 });
+ 
+
+
+                    },function(){});
+                    
+                    
+                   
+                    }).catch(error=>{   
+
+                            console.log(error);
+
+                             Alertify.message("No se pudo cargar el usuario");
+
+                    });
+
+                
+            //Alertify.confirm()
+
+
+        }
 
         eliminar_usuario(id){
 
@@ -189,7 +258,7 @@ class Usuario extends React.Component{
                                 <td>{data.nombre}</td>
                                 <td>{data.apellido}</td>
                                 <td>{data.roll}</td>
-                                <td><button className="btn btn-primary">Actualizar</button></td>
+                                <td><button className="btn btn-primary" onClick={()=>this.actualizar_usuario(data.id)}>Actualizar</button></td>
                                 <td><button className="btn btn-warning" onClick={()=>this.eliminar_usuario(data.id)}>Eliminar</button></td>
                             </tr>
 

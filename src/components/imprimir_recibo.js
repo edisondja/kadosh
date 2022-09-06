@@ -3,6 +3,7 @@ import Axios from 'axios';
 import '../css/dashboard.css';
 import PerfilPaciente from './perfil_paciente';
 import alertify from 'alertifyjs';
+import ActualizarPaciente from './actualizar_paciente';
 class ImprimirRecibo extends React.Component{
 
     constructor(props){
@@ -34,6 +35,19 @@ class ImprimirRecibo extends React.Component{
 
     render(){
 
+
+       let procedimientos = this.props.data_recibo.procedimientos;
+
+       if(procedimientos==""){
+
+            procedimientos  = this.props.procedimientos_i;
+       
+        }else{
+
+            procedimientos =  JSON.parse(this.props.data_recibo.procedimientos);
+
+        }
+
         if(this.state.option=='ver_perfil'){
 
             return  <PerfilPaciente id_paciente={this.props.id_paciente}/>
@@ -55,9 +69,10 @@ class ImprimirRecibo extends React.Component{
                                    <p>____________________________</p><br/>
 
                                    <strong>Lista de procedimientos</strong><br/><br/>
-                                
+
+                                 
                                         {
-                                            this.props.procedimientos_i.map((data=>( 
+                                            procedimientos.map((data=>( 
                                                     <strong style={{display: 'block'}}>{data.nombre} x{data.cantidad} $RD {new Intl.NumberFormat().format(data.total)}
                                                     <div style={{display:'none'}}>{this.state.monto_total+=data.total}</div>
                                                     </strong>          

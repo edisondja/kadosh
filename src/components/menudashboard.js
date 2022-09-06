@@ -22,6 +22,7 @@ import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
 import Usuario from './agregar_usuario';
+import VisualizarPresupuesto from './visualizar_presupuesto';
 
 class MenuDashboard extends React.Component{
 
@@ -112,8 +113,10 @@ class MenuDashboard extends React.Component{
 
 			if(this.state.select_opcion=="citas"){
 					
-				ver =  <Citas/>;
+			//	ver =  <Citas/>;
 
+				ver = <VisualizarPresupuesto/>;
+				
 			}else if(this.state.select_opcion=="paciente"){
 
 				ver =<Paciente/>;
@@ -206,11 +209,11 @@ class MenuDashboard extends React.Component{
 				<br/><div className="card">
 					<table>
 						<tr>
-							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="50" className="img-responsive" style={{marginLeft:'10px;'}} /></td>
+							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="30" className="img-responsive" style={{marginLeft:'10px;',padding:'2px'}} /></td>
 							<td><strong>Kadosh Dental</strong></td>
 						</tr>
 					</table>
-					<strong>Usuario: {localStorage.getItem("login")}</strong>
+					<strong  style={{padding:'3px'}}>Usuario: {localStorage.getItem("login")}</strong>
 				</div>
 						{Menu}								
 				</div>
