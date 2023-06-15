@@ -25,15 +25,15 @@ class DoctorFormulario extends React.Component{
 
 		}
 
-		guardar_doctor(){
+		guardar_doctor=()=>{
 
 			var nombre = document.getElementById("nombre").value;
-			var apellido =document.getElementById("apellido").value;
-			var cedula = document.getElementById("cedula").value;
-			var telefono = document.getElementById("telefono").value;
+			var apellido = "s";
+			var cedula = "a";
+			var telefono = "c";
 
 			Axios.get(`${Core.url_base}/api/crear_doctor/${nombre}/${apellido}/${cedula}/${telefono}`).then(data=>{
-					Alertify.message("Doctor guardado con exito");
+					Alertify.message("Curso guardado con exito");
 					this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
 
@@ -57,21 +57,12 @@ class DoctorFormulario extends React.Component{
 
 
 			return (<div className="col-md-10">
-					<br/><h1>Agregar Doctor</h1>
-					<button className="btn btn-success" className="btn btn-primary boton_doctor" onClick={this.opciones}>Buscar Doctor</button><br/>
-					<strong>Nombre</strong><br/>
-					<input type="text" className="form-control" id="nombre" /><br/>
-					<strong>Apellido</strong><br/>
-					<input type="text" className="form-control" id="apellido" /><br/>
-					<strong>Cedula</strong><br/>
-					<input type="text" className="form-control" id="cedula" /><br/>
-					<strong>Numero de telefono</strong><br/>
-					<input type="tel" className="form-control" id="telefono" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
-					<strong>Especialidad</strong><br/>
-					<select className="form-control">
-							<option>Odontocista</option>
-							<option>Odontologo</option>
-					</select><br/>
+				<br/><hr/>
+					<br/><h3>Agregar Curso</h3>
+					<button className="btn btn-success" className="btn btn-primary boton_doctor" onClick={this.opciones}>Buscar Cursos</button><br/>
+					<strong>Nombre del curso</strong> +++<br/>
+					<input type="text" className="form-control col-md-8" id="nombre" /><br/>
+			
 					<button className="btn btn-primary" onClick={this.guardar_doctor}>Guardar</button>
 				   </div>);
 

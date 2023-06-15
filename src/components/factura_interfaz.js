@@ -11,6 +11,7 @@ import EditarFactura from './editar_factura';
 import ReactDOMServer from 'react-dom/server';
 import '../css/dashboard.css';
 
+
 class FacturaInterfaz extends React.Component {
 
     constructor(props){
@@ -395,11 +396,11 @@ class FacturaInterfaz extends React.Component {
         return (<div className="col-md-10"><br/> 
                 <h4>Factura y sus detalles</h4><button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
                 <h4>Estado actual <p style={{color:'#36b836'}} id="estado_actual">$RD {this.state.factura.precio_estatus}</p></h4><hr/>
-                <h5>Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
+                <h5>Estudiante: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Curso: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
                 <div>
                     <table className="table">
                         <tr>
-                            <td>Procedimiento</td>
+                            <td>Mes</td>
                             <td>Cantidad</td>
                             <td>Total</td>
                         </tr>

@@ -339,7 +339,7 @@ class  Cita extends React.Component{
 					<tr className="fijar_columnas">
 						<th  scope="col">Nombre</th>
 						<th  scope="col">Apellido</th>
-						<th  scope="col">Doctor</th>
+						<th  scope="col">Curso</th>
 						<th  scope="col">Cedula</th>
 						<th  scope="col">Telefono</th>
 						<th  scope="col">Deuda</th> 

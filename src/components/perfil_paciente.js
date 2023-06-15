@@ -579,7 +579,7 @@ class PerfilPaciente extends React.Component{
 									<th scope="col">Telefono</th>
 									<th scope="col">Email</th>
 									<th scope="col">Ingreso</th>
-									<th scope="col">Doctor</th>
+									<th scope="col">Curso</th>
 									<th scope="col">Deuda Total</th>
 									</tr>
 								</thead>
@@ -597,6 +597,8 @@ class PerfilPaciente extends React.Component{
 							</table>
 							</div>
 							<hr/>
+
+							
 							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-primary espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
 							<button className='btn btn-primary' onClick={this.cargar_notas}>Notas</button>&nbsp;
 							<button className='btn btn-primary' onClick={this.agregar_nota_paciente}>Agregar Nota</button>

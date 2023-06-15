@@ -88,7 +88,7 @@ class BuscarDoctor extends React.Component{
 				return  <ActualizarDoctor id_doctor={this.state.id_select}/>;
 			}
 			return (<div className="col-md-8"><br/>
-					<h1>Bucando doctor</h1>
+					<h1>Bucando Cursos</h1>
 					<input type="text" className="form-control" onChange={this.buscar_doctor} id="doctor_nombre"/><br/>
 					<div className="buscar_doctor">
 						{this.state.doctores.map(data=>(

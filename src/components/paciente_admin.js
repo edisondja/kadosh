@@ -78,7 +78,8 @@ class PacienteAdmin extends  React.Component{
 				<div><hr/>
 					<table>
 						<tr>	
-							<td><h4>Agregar paciente +</h4></td>
+							
+							<td><h4>Registro Estudiante+</h4></td>
 							<td><hr/><button className="btn btn-info boton_paciente" onClick={this.ver_pacientes} id="ver_pacientes">Ver Pacientes</button></td>
 						</tr>
 					</table>
@@ -116,7 +117,7 @@ class PacienteAdmin extends  React.Component{
 
 						<input type='tel'  id="telefono" className="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
 						
-						<strong>Ingresado por doctor</strong><br/>
+						<strong>Seleccione el curso</strong><br/>
 						<select id="doctores_select" className="form-control" onChange={this.seleccionar_doctor}>
 							<option value="seleccionar">Seleccioné el doctor</option>
 							{this.state.doctores.map((data=>(

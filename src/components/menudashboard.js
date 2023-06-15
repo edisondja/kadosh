@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import MenuDashBoard from  './menudashboard';
 import Citas from './citas_c';
 import Select from  '../select.png';
-import Logo from  '../logo.jpg';
+import Logo from  '../logo.png';
 import Paciente from './paciente_admin';
 import Doctor from './admin_doctor';
 import ProcedimientoForm from './agregar_procedimiento';
@@ -12,17 +12,25 @@ import Reporte from './reporte';
 import FuncionesExtras from './funciones_extras';
 import Alertify from 'alertifyjs';
 import CitasPendiente from './citas_pendiente';
-import DoctorImg from '../doctor.png';
+import DoctorImg from '../professor.png';
 import NotificacionImg from '../alertando.png';
-import PacienteImg from '../hombre.png';
+import PacienteImg from '../estudiante.png';
 import ProcedimientoImg from '../caja.png';
 import CitasImg from '../cuaderno.png';
+import UsuarioIcon from '../hombre.png';
 import ReporteImg from '../reporte.png';
 import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
 import Usuario from './agregar_usuario';
 import VisualizarPresupuesto from './visualizar_presupuesto';
+import {
+	BrowserRouter as Router,
+	Switch,
+	Route,
+	Link
+  } from "react-router-dom";
+
 
 class MenuDashboard extends React.Component{
 
@@ -110,6 +118,24 @@ class MenuDashboard extends React.Component{
 		}
 
 		let ver;
+			/*
+		  <BrowserRouter>
+				<Routes>
+				<Route path="/" element={<Citas/>}>
+					<Route path="paciente" element={<Paciente/>} />
+					<Route path="doctor" element={<Doctor />} />
+					<Route path="procedimientos" element={<ProcedimientoForm/>} />
+					<Route path="notificaciones" element={<Notificaciones/>} />
+					<Route path="reportes" element={<Reporte/>} />
+					<Route path="citas" element={<Citas/>} />
+					<Route path="citas_pendientes" element={<CitasPendiente/>} />
+					<Route path="contabilidad" element={<Contabilidad_template/>} />
+					<Route path="agregar_usuario" element={<Usuario/>} />
+				</Route>
+				</Routes>
+			</BrowserRouter>
+
+			*/
 
 			if(this.state.select_opcion=="citas"){
 					
@@ -169,10 +195,10 @@ class MenuDashboard extends React.Component{
 			if(localStorage.getItem("roll")=="Administrador"){
 				 
 				 Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
-				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
-				<li onClick={(e)=>this.menu_select('agregar_usuario')}><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar usuario</li>
-				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
-				<li onClick={(e)=>this.menu_select('doctor')}><img src={DoctorImg} className="img_estilo" />&nbsp;Agregar Doctor</li>
+				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Estudiante</li>
+				<li onClick={(e)=>this.menu_select('agregar_usuario')}><img src={UsuarioIcon} className="img_estilo" />&nbsp;Agregar usuario</li>
+				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas de estudiantes</li>
+				<li onClick={(e)=>this.menu_select('doctor')}><img src={DoctorImg} className="img_estilo" />&nbsp;Agregar Curso</li>
 				<li onClick={(e)=>this.menu_select('procedimiento')}><img src={ProcedimientoImg} className="img_estilo" />&nbsp;Agregar Procedimientos</li>
 				<li onClick={(e)=>this.menu_select('reportes')}><img src={ReporteImg} className="img_estilo" />&nbsp;Generar Reportes</li>
 				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
@@ -189,8 +215,8 @@ class MenuDashboard extends React.Component{
 
 				 
 				Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
-				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
-				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
+				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Estudiante</li>
+				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Estudiantes</li>
 				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
 
 			}else{
@@ -207,11 +233,11 @@ class MenuDashboard extends React.Component{
 				<br/><div className="card">
 					<table>
 						<tr>
-							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="30" className="img-responsive" style={{marginLeft:'10px;',padding:'2px'}} /></td>
-							<td><strong>Kadosh Dental</strong></td>
+							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="55" className="img-responsive" style={{marginLeft:'10px;',padding:'2px'}} /></td>
+							<td><strong style={{color:'#5251de',fontStyle:'oblique'}}>Colegio Luces del Futuro</strong></td>
 						</tr>
 					</table>
-					<strong  style={{padding:'3px'}}>Usuario: {localStorage.getItem("login")}</strong>
+					<strong  style={{paddingLeft:'20px',color:'rgb(3 0 82)',fontStyle:'oblique'}}>{localStorage.getItem("login")}</strong>
 				</div>
 						{Menu}								
 				</div>
