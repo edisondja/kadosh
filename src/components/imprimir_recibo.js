@@ -4,6 +4,7 @@ import '../css/dashboard.css';
 import PerfilPaciente from './perfil_paciente';
 import alertify from 'alertifyjs';
 import ActualizarPaciente from './actualizar_paciente';
+import Logo from  '../logo.png';
 class ImprimirRecibo extends React.Component{
 
     constructor(props){
@@ -55,12 +56,19 @@ class ImprimirRecibo extends React.Component{
         
         return (<div><br/><br/><br/><br/><hr/><button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
         <button onClick={this.retroceder} className="btn btn-primary" style={{float:'right'}}>Retroceder</button><hr/>
-                    <div className="card" id="recibo">
-                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR SRL <br/>&nbsp;&nbsp;C/San Antonio #33A Los Alcarrizos<br/>&nbsp;&nbsp;Santo Domingo,R.D</strong>
-                                <p> TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
-                                   
+                    <div className="card" id="recibo" style={{padding:'5px'}} >
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <img src={Logo} width="55" className="img-responsive titulo_kadosh" /><br/>
+                            <strong className="titulo_kadosh">COLEGIO LUCES DEL FUTURO<br/>&nbsp;&nbsp;Residencial Antonia, Calle David #38,<br/> Dominican Republic<br/>&nbsp;&nbsp;</strong>
+                                <p> TEL: 809-564-0566 &nbsp;&nbsp; RNC: 001-0392245-6</p>
+                    
+             
+
+                                
+
                                    <p>_____________________________</p><br/>
-                                   <p>COMPROBANTE AUTORIZADO POR LA DGII</p><br/>
+                                   <p></p><br/>
                                    <strong>Fecha de pago: {this.props.data_recibo.fecha_pago}</strong><br/>
                                    <strong>#{this.props.data_recibo.codigo_recibo}</strong><br/>
 
@@ -86,8 +94,8 @@ class ImprimirRecibo extends React.Component{
 
                                         <br/>
                                         <p>_______________________________</p><br/>
-                                        <strong>Doctor: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
-                                        <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
+                                        <strong>Curso: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
+                                        <strong>Estudiante: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
                                         <strong style={{float:'rigth'}}>Firma __________________________________&nbsp;&nbsp;</strong>
                     </div> 
 

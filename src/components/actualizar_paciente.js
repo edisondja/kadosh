@@ -147,7 +147,6 @@ class ActualizarPaciente extends React.Component{
             }
             return(<div className="col-md-8"><br/><br/><hr/><h5 style={{color:'#0350cb'}}>Actualizar Paciente</h5>
                     <div><button className="btn-primary boton_paciente" onClick={this.ver_pacientes} >Retroceder</button><br/><br/>
-
                         <table className='table'>
                             <tr>
                                 <td><img src={Core.url_base+'/storage/'+this.state.paciente.foto_paciente} id="imagen_paciente" style={{heigth:'150px',width:'150px'}} className="rounded"/><hr/></td>
@@ -187,7 +186,7 @@ class ActualizarPaciente extends React.Component{
                         <strong>Correo electronico</strong><br/>
                         <input type='email'  id="correo" onChange={this.actualizar_paciente} value={this.state.paciente.correo_electronico} className="form-control"/><br/>
 
-                        <strong>Ingresado por doctor</strong><br/>
+                        <strong>Ingresado en curso</strong><br/>
                         <select id="doctores_select" className="form-control">
                             {this.state.doctores.map((data=>(
                                         <option value={data.id}>{data.nombre} {data.apellido}</option>
