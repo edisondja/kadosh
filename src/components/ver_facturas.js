@@ -85,25 +85,53 @@ class VerFacturas extends React.Component{
 
         }else{
         
-            return (<div className="col-md-10">
-                    <hr/>
-                    <button className='btn btn-primary' style={{float:'right'}} onClick={this.retroceder}>Retroceder</button><br/>
-                    <br/><div className="card"><br/><br/>
-                    <h2>Facturas de paciente {this.state.paciente.nombre} {this.state.paciente.apellido}</h2><hr/>
-                    {
-                        this.state.facturas.map((data=>(
-
-                            <div className="card-body" id={data.id}>
-                                <img width="30" src={IconInvoice}/> <button className="btn-primary" onClick={()=>this.ver_factura(data.id)}>Ver Factura</button> <button className="btn-info" onClick={()=>this.eliminar_factura(data.id)}>Eliminar</button><strong> Total a pagar:</strong> RD$ {new Intl.NumberFormat().format(data.precio_estatus)}<hr/>
-                            </div>
-                        )))
-                        
-                    
-                    }
+          return (
+               <div className="col-md-10 mx-auto my-4">
+                    <div className="d-flex justify-content-end mb-3">
+                        <button className="btn btn-outline-secondary" onClick={this.retroceder}>
+                        <i className="fas fa-arrow-left me-2"></i> Retroceder
+                        </button>
                     </div>
 
+                    <div className="card shadow-sm p-4">
+                        <h3 className="mb-4 fw-semibold text-dark">
+                        Facturas de {this.state.paciente.nombre} {this.state.paciente.apellido}
+                        </h3>
+                        <hr />
 
-                </div>);
+                        {this.state.facturas.length === 0 ? (
+                        <p className="text-muted">No hay facturas registradas.</p>
+                        ) : (
+                        this.state.facturas.map((data) => (
+                            <div
+                            className="factura-item d-flex align-items-center justify-content-between px-3 py-2 border rounded mb-3"
+                            key={data.id}
+                            >
+                            <div className="d-flex align-items-center gap-3">
+                                <img width="30" src={IconInvoice} alt="Factura" />
+                                <div>
+                                <div className="text-muted small">Total a pagar</div>
+                                <strong className="text-dark fs-5">&nbsp;
+                                    RD$ {new Intl.NumberFormat().format(data.precio_estatus)}
+                                </strong>
+                                </div>
+                            </div>
+
+                            <div className="d-flex gap-2">
+                                <button className="btn btn-outline-primary btn-sm" onClick={() => this.ver_factura(data.id)}>
+                                <i className="fas fa-eye"></i>
+                                </button>
+                                <button className="btn btn-outline-danger btn-sm" onClick={() => this.eliminar_factura(data.id)}>
+                                <i className="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            </div>
+                        ))
+                        )}
+                    </div>
+                    </div>
+
+                );
             }
     }
 

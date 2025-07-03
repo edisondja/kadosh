@@ -167,17 +167,43 @@ class MenuDashboard extends React.Component{
 
 
 			if(localStorage.getItem("roll")=="Administrador"){
-				 
-				 Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
-				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
-				<li onClick={(e)=>this.menu_select('agregar_usuario')}><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar usuario</li>
-				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
-				<li onClick={(e)=>this.menu_select('doctor')}><img src={DoctorImg} className="img_estilo" />&nbsp;Agregar Doctor</li>
-				<li onClick={(e)=>this.menu_select('procedimiento')}><img src={ProcedimientoImg} className="img_estilo" />&nbsp;Agregar Procedimientos</li>
-				<li onClick={(e)=>this.menu_select('reportes')}><img src={ReporteImg} className="img_estilo" />&nbsp;Generar Reportes</li>
-				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
-				<li onClick={(e)=>this.menu_select('cerrar_sesion')} id="cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
-			
+				Menu = (
+					<ul style={this.estilos} className="menuStilos">
+						<li onClick={() => this.menu_select('notificaciones')} id="notificaiones">
+						<i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones
+						</li>
+						<li onClick={() => this.menu_select('paciente')} id="agregar_paciente">
+						<i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente
+						</li>
+						<li onClick={() => this.menu_select('agregar_usuario')}>
+						<i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario
+						</li>
+						<li onClick={() => this.menu_select('citas_pendiente')} id="cargar_citas">
+						<i className="fas fa-calendar-check img_estilo"></i>&nbsp;Citas Pendientes
+						</li>
+						<li onClick={() => this.menu_select('doctor')}>
+						<i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor
+						</li>
+						<li onClick={() => this.menu_select('procedimiento')}>
+						<i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos
+						</li>
+						<li onClick={() => this.menu_select('reportes')}>
+						<i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes
+						</li>
+						<li onClick={() => this.menu_select('contabilidad')}>
+						<i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad
+						</li>
+						<li onClick={() => this.menu_select('cerrar_sesion')} id="cerrar_sesion">
+						<i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;Cerrar Sesión
+						</li>
+						<li onClick={() => this.menu_select('configuracion')} id="configuracion">
+						<i className="fas fa-cog img_estilo"></i>&nbsp;Configuración
+						</li>
+
+					</ul>
+					);
+	 
+	
 			}else if(localStorage.getItem("roll")=="Contable"){
 
 				 
@@ -202,7 +228,7 @@ class MenuDashboard extends React.Component{
 				</ul>
 
 			}
-
+			
 		return (<div className="row"><div className="col-md-2"><br/>
 				<br/><div className="card">
 					<table>

@@ -510,140 +510,194 @@ class PerfilPaciente extends React.Component{
 			this.setState({select:'agregando_factura'})
 		}
 
-		render(){
-				if(this.state.select=='agregando_factura'){
+	render() {
+			if (this.state.select === 'agregando_factura') {
+				return <AgregarFactura IDpaciente={this.props.id_paciente} />;
+			} else if (this.state.select === 'editando_cita') {
+				return <AgregarCita config="actualizar" id_cita={this.state.id_cita} />;
+			} else if (this.state.select === "ver_facturas") {
+				return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre} />;
+			} else if (this.state.select === "perfil_paciente") {
+				return (
+				<div className="col-md-10 mx-auto my-4">
+					<hr />
+					<h3 className="mb-4" style={{ fontWeight: '600' }}>
+					{this.state.paciente.nombre} {this.state.paciente.apellido}
+					</h3>
 
-						return <AgregarFactura IDpaciente={this.props.id_paciente}/>;
+					<input type="hidden" id="paciente_id" value={this.props.id_paciente} />
+
+					<div className="d-flex gap-4 mb-4 align-items-start">
 				
-					}else if(this.state.select=='editando_cita'){
+					<img
+							id="foto_paciente"
+							src={Verficar.url_base + "/storage/" + this.state.paciente.foto_paciente}
+							alt="Foto Paciente"
+							style={{
+								width: '100px',
+								height: '100px',
+								objectFit: 'cover',
+								borderRadius: '50%',
+								border: '2px solid #ddd',
+								boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+							}}
+							/>
+						
+					<div className="icon-buttons-container text-center">
+						&nbsp;&nbsp;
+						<button
+							className="icon-btn"
+							onClick={this.agregar_factura}
+							title="Agregar Factura"
+							aria-label="Agregar Factura"
+						>
+							<i className="fas fa-file-invoice-dollar"></i>
+							<span>Factura</span>
+						</button>
 
-						return <AgregarCita config="actualizar" id_cita={this.state.id_cita} />
+						<button
+							className="icon-btn"
+							onClick={this.ver_facturas}
+							title="Ver Facturas"
+							aria-label="Ver Facturas"
+						>
+							<i className="fas fa-file-alt"></i>
+							<span>Ver Facturas</span>
+						</button>
 
-				}else if(this.state.select=="ver_facturas"){
+						<button
+							className="icon-btn"
+							onClick={this.cargar_notas}
+							title="Notas"
+							aria-label="Notas"
+						>
+							<i className="fas fa-sticky-note"></i>
+							<span>Notas</span>
+						</button>
 
-					return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre}/>;
+						<button
+							className="icon-btn"
+							onClick={this.agregar_nota_paciente}
+							title="Agregar Nota"
+							aria-label="Agregar Nota"
+						>
+							<i className="fas fa-plus-circle"></i>
+							<span>Agregar Nota</span>
+						</button>
 
-				}else if(this.state.select=="perfil_paciente"){
+						<button
+							className="icon-btn"
+							onClick={this.cargar_documentos}
+							title="Documentos"
+							aria-label="Documentos"
+						>
+							<i className="fas fa-folder-open"></i>
+							<span>Documentos</span>
+						</button>
 
-				return (<div className="col-md-10">
-							<hr/><br/><br/>
-							<input type="hidden" id="paciente_id"  value={this.props.id_paciente}/>
-							<i style={{fontSize:'larger'}}>{this.state.paciente.nombre} {this.state.paciente.apellido}</i><hr/>
-							<table>
-								<tr>
-									<td><div className='card'><img id="foto_paciente" src={Verficar.url_base+"/storage/"+this.state.paciente.foto_paciente} style={{height:'225px',width:'250px'}} /></div></td>
-									<td>	
-										<hr/>
-											<table  className="table table-bordered">
-												<tr>
-													<td><img src={ProcedimientoImg} width="25" /></td>
-													<td>Cantidad de procedimientos realizados</td>
-													<td>x50</td>
-												</tr>
-												<tr>
-													<td><img src={DocumentoImg} width="25" /></td>
-													<td>Documento adjuntos</td>
-													<td>x5</td>
-												</tr>
-												<tr>
-													<td><img src={FacturasImg} width="25" /></td>
-													<td>Facturas creadas</td>
-													<td>x10</td>
-												</tr>
-												<tr>
-													<td><img src={RecibosImg} width="25" /></td>
-													<td>Cantidad de recibos pagados</td>
-													<td>x5</td>
-												</tr>
-												
+						<button
+							className="icon-btn"
+							onClick={this.crear_presupuesto}
+							title="Crear Presupuesto"
+							aria-label="Crear Presupuesto"
+						>
+							<i className="fas fa-file-signature"></i>
+							<span>Presupuesto</span>
+						</button>
 
-											</table>
-									</td>
-									
-									<td>
-										<div className='card'>
-											<textarea cols='60' style={{height:'173px'}} className='form-control' placeholder='Enviar correo a paciente'></textarea><br/>
-											<button className='btn-primary' style={{background:'#5a08f1'}}>Enviar</button>
-										</div>
-									</td>
-								</tr>
-								
-							</table>
-							<div className="interfaz_perfil">
-							<button className="btn btn-primary" style={{float:'right',margin:'5px'}} onClick={this.detras}>Atras</button><br/>
-							<table class="table">
-								<thead>
-									<tr>
-									<th scope="col">Nombre</th>
-									<th scope="col">Cedula</th>
-									<th scope="col">Telefono</th>
-									<th scope="col">Email</th>
-									<th scope="col">Ingreso</th>
-									<th scope="col">Doctor</th>
-									<th scope="col">Deuda Total</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
-										<td>{this.state.paciente.cedula}</td>
-										<td>{this.state.paciente.telefono}</td>
-										<td>{this.state.paciente.correo_electronico}</td>
-										<td style={{color:'purple'}}>{this.state.paciente.fecha_de_ingreso}</td>
-										<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
-										<td>$RD {this.state.deuda_total}</td>		
-									</tr>
-								</tbody>
-							</table>
-							</div>
-							<hr/>
-							<button className="btn btn-primary espacio" onClick={this.agregar_factura}>Agregar Factura</button><button className="btn btn-info espacio" onClick={this.ver_facturas}>Ver Facturas</button><button className="btn btn-primary espacio boton_perfil" onClick={()=>this.eliminar_paciente(this.state.paciente.id)}>Eliminar Paciente</button>
-							<button className='btn btn-primary' onClick={this.cargar_notas}>Notas</button>&nbsp;
-							<button className='btn btn-primary' onClick={this.agregar_nota_paciente}>Agregar Nota</button>
-							&nbsp;<button className='btn btn-primary' onClick={this.cargar_documentos}>Documentos</button>
-							&nbsp;<button className='btn btn-primary' onClick={this.crear_presupuesto}>Crear Presupuesto</button>
-							&nbsp;<button className='btn btn-primary' onClick={this.ver_presupuesto}>Ver Presupuestos</button>
+						<button
+							className="icon-btn"
+							onClick={this.ver_presupuesto}
+							title="Ver Presupuestos"
+							aria-label="Ver Presupuestos"
+						>
+							<i className="fas fa-file-alt"></i>
+							<span>Ver Presupuestos</span>
+						</button>
+						<button
+							className="icon-btn danger"
+							onClick={() => this.eliminar_paciente(this.state.paciente.id)}
+							title="Eliminar Paciente"
+							aria-label="Eliminar Paciente"
+						>
+							<i className="fas fa-trash-alt"></i>
+							<span>Eliminar</span>
+						</button>
 
-							<hr/>
-							
-							<hr/>
-							<strong>Lista de citas</strong>
-							{
-								this.state.lista_citas.map(data=>(
-
-										<div className="card">
-											<div className="card-body">
-												<strong>Hora : {data.hora}  Dia : {data.dia}  </strong>
-												<button className="btn-info" onClick={()=>this.cargar_cita(data.id)}>Editar</button>
-												<button className="btn-primary" onClick={()=>this.eliminar_cita(data.id)}>Eliminar</button>
-											</div>
-										</div>
-									
-								))
+					</div>
 
 
+				
+					</div>
 
-							}
-						</div>);
-				}else if(this.state.select=="ver_pacientes"){
+					<div className="interfaz_perfil mb-4">
+					<button className="btn btn-secondary mb-3" onClick={this.detras}>
+						← Atrás
+					</button>
 
-					return <Pacientes/>;
+					<table className="table table-hover shadow-sm">
+						<thead className="table-primary">
+						<tr>
+							<th>Nombre</th>
+							<th>Cédula</th>
+							<th>Teléfono</th>
+							<th>Email</th>
+							<th>Ingreso</th>
+							<th>Doctor</th>
+							<th>Deuda Total</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
+							<td>{this.state.paciente.cedula}</td>
+							<td>{this.state.paciente.telefono}</td>
+							<td>{this.state.paciente.correo_electronico}</td>
+							<td style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.fecha_de_ingreso}</td>
+							<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
+							<td className="fw-bold">$RD {this.state.deuda_total}</td>
+						</tr>
+						</tbody>
+					</table>
+					</div>
 
-				}else if(this.state.select=="crear_presupuesto"){
 
-					return <CrearPresupuesto IDpaciente={this.props.id_paciente}/>;
+					<hr />
 
-				}else if(this.state.select=="ver_presupuestos"){
-
-
-					return <VerPresupuesto IDpaciente={this.props.id_paciente} />
-
-				}
-
-
-
-
-		}
+					<strong className="mb-3 d-block">Lista de citas</strong>
+					{this.state.lista_citas.map((data) => (
+					<div className="card shadow-sm mb-3" key={data.id}>
+						<div className="card-body d-flex justify-content-between align-items-center">
+						<strong>
+							Hora: {data.hora} | Día: {data.dia}
+						</strong>
+						<div>
+							<button
+							className="btn btn-outline-info me-2"
+							onClick={() => this.cargar_cita(data.id)}
+							>
+							Editar
+							</button>
+							<button
+							className="btn btn-outline-danger"
+							onClick={() => this.eliminar_cita(data.id)}
+							>
+							Eliminar
+							</button>
+						</div>
+						</div>
+					</div>
+					))}
+				</div>
+				);
+			} else if (this.state.select === "ver_pacientes") {
+				return <Pacientes />;
+			} else if (this.state.select === "crear_presupuesto") {
+				return <CrearPresupuesto IDpaciente={this.props.id_paciente} />;
+			} else if (this.state.select === "ver_presupuestos") {
+				return <VerPresupuesto IDpaciente={this.props.id_paciente} />;
+			}
+			}
 
 
 

@@ -1,16 +1,326 @@
-li{
-	cursor: pointer;
-	padding: 10px;
 
 
+
+
+/* Contenedor de botones */
+.icon-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 24px; /* espacio entre botones */
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  background: #f9f9f9;
 }
 
-li:hover{
-	background:#0275d8;
-    opacity: 10;
-    border-radius: 10px;
-    color:greenyellow;
+/* Estilo para cada botón */
+.icon-btn {
+  background-color: #ffffff;
+  border: 1.8px solid #d1d1d6;
+  color: #3a3a3c;
+  width: 85px;
+  height: 85px;
+  border-radius: 8px; /* esquinas suavemente redondeadas */
+  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  padding: 8px;
+  user-select: none;
+  box-shadow: none;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
+
+/* Texto debajo del icono */
+.icon-btn span {
+  font-size: 13px;
+  margin-top: 6px;
+  color: #3a3a3c;
+  user-select: none;
+}
+
+/* Hover */
+.icon-btn:hover {
+  background-color: #f0f0f5;
+  border-color: #a1a1aa;
+  color: #1c1c1e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Foco */
+.icon-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(90, 8, 241, 0.4);
+}
+
+/* Botón peligro (eliminar) */
+.icon-btn.danger {
+  color: #bf3b3b;
+  border-color: #d1d1d6;
+  background-color: #fff5f5;
+}
+
+.icon-btn.danger:hover {
+  background-color: #f8d7d7;
+  border-color: #a12c2c;
+  color: #7f1c1c;
+  box-shadow: 0 4px 12px rgba(127, 28, 28, 0.25);
+}
+
+
+.col-md-10.mx-auto.my-4 {
+  background-color: #f9f9f9;
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: #1d1d1f;
+}
+
+/* Card suavizada y limpia */
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.25s ease;
+  border: none;
+}
+
+.card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+}
+
+/* Imagen paciente redondeada */
+#foto_paciente {
+  border-radius: 14px;
+  width: 100%;
+  height: 225px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+#foto_paciente:hover {
+  transform: scale(1.03);
+}
+
+/* Tabla estilo minimalista */
+table.table {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 12px !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #3c3c4399;
+}
+
+table.table thead tr th {
+  background-color: transparent;
+  color: #6e6e73;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 12px 10px 6px;
+  border-bottom: 1px solid #d1d1d6;
+  text-align: left;
+}
+
+table.table tbody tr {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease;
+}
+
+table.table tbody tr:hover {
+  background: #f2f2f7;
+}
+
+table.table tbody tr td {
+  padding: 12px 10px;
+  border: none !important;
+  color: #2c2c2e;
+}
+
+/* Botones estilo macOS */
+.btn-primary {
+  background-color: #007aff;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  box-shadow: 0 6px 12px rgba(0, 122, 255, 0.4);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #005bb5;
+  box-shadow: 0 8px 16px rgba(0, 91, 181, 0.5);
+  outline: none;
+}
+
+.btn-info {
+  background-color: #5ac8fa;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 10px 22px;
+  box-shadow: 0 5px 12px rgba(90, 200, 250, 0.45);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+  background-color: #3399e6;
+  box-shadow: 0 7px 15px rgba(51, 153, 230, 0.6);
+  outline: none;
+}
+
+.btn-danger {
+  background-color: #ff3b30;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  padding: 10px 22px;
+  box-shadow: 0 5px 12px rgba(255, 59, 48, 0.45);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #cc2b24;
+  box-shadow: 0 7px 15px rgba(204, 43, 36, 0.6);
+  outline: none;
+}
+
+/* Botones outline simplificados */
+.btn-outline-info {
+  color: #5ac8fa;
+  border: 1.5px solid #5ac8fa;
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 8px 18px;
+  background: transparent;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-outline-info:hover,
+.btn-outline-info:focus {
+  background-color: #5ac8fa;
+  color: white;
+  box-shadow: 0 6px 18px rgba(90, 200, 250, 0.6);
+  outline: none;
+}
+
+/* Textarea con estilo macOS */
+textarea.form-control {
+  border-radius: 14px;
+  border: 1.5px solid #c7c7cc;
+  background-color: #f2f2f7;
+  font-size: 1rem;
+  padding: 14px 18px;
+  resize: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: #1c1c1e;
+  box-shadow: inset 0 2px 4px rgba(28, 28, 30, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+textarea.form-control:focus {
+  border-color: #007aff;
+  background-color: white;
+  box-shadow: 0 0 6px rgba(0, 122, 255, 0.4);
+  outline: none;
+}
+
+/* Títulos y textos */
+h3,
+strong {
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+/* Botones en contenedor perfil */
+.interfaz_perfil button {
+  min-width: 140px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* Espaciado entre botones */
+.d-flex.flex-wrap.gap-2 > button {
+  min-width: 140px;
+  margin-bottom: 10px;
+}
+
+/* Cartas de citas */
+.card.shadow-sm.mb-3 {
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  border: none;
+  background-color: white;
+}
+
+.card.shadow-sm.mb-3:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+
+
+
+.menuStilos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.menuStilos li {
+  cursor: pointer;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #343a40;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-bottom: 1px solid #f1f1f1;
+  user-select: none;
+}
+
+.menuStilos li:last-child {
+  border-bottom: none;
+}
+
+.menuStilos li:hover {
+  background-color: #e9f3fd;
+  color: #0d6efd;
+  border-radius: 8px;
+}
+
+.menuStilos li i {
+  font-size: 18px;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
 
 .procedimiento{
 	overflow-y:scroll;
