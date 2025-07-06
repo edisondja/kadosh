@@ -3,6 +3,7 @@ import Alertify from 'alertifyjs';
 import alertify from 'alertifyjs';
 import Cargar_generos from './funciones_extras.js';
 
+
 var password= "kadosh2019";
 //var url_base =  "https://service.clinickadosh.com";
 var url_base =  "http://localhost:8000";

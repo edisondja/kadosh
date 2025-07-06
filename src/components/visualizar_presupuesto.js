@@ -27,15 +27,65 @@ class VisualizarPresupuesto extends React.Component{
 
 
                 
-        Imprimir(){
-                
-                var ficha = document.getElementById("presupuesto");
-                var ventimp = window.open(' ', 'popimpr');
-                ventimp.document.write( ficha.innerHTML );
+        Imprimir() {
+               const ficha = document.getElementById("presupuesto");
+                const contenido = ficha.innerHTML;
+
+                const ventimp = window.open('', 'popimpr', 'width=900,height=700');
+
+                ventimp.document.write(`
+                <html>
+                <head>
+                        <title>Impresión</title>
+                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                        <style>
+                        body {
+                        font-family: Arial, sans-serif;
+                        padding: 20px;
+                        }
+
+                        table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 15px;
+                        }
+
+                        th, td {
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                        text-align: center;
+                        }
+
+                        th {
+                        background-color: #0e2b52;
+                        color: white;
+                        }
+
+                        h3 {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        }
+
+                        .titulo {
+                        font-size: 20px;
+                        font-weight: bold;
+                        text-align: center;
+                        background: #222;
+                        color: white;
+                        padding: 10px;
+                        margin-bottom: 20px;
+                        }
+                        </style>
+                </head>
+                <body onload="window.print(); setTimeout(() => window.close(), 100);">
+                        ${contenido}
+                </body>
+                </html>
+                `);
+
                 ventimp.document.close();
-                ventimp.print( );
-                ventimp.close();
-        }
+                }
 
 
         Cargar_presupuesto=(id_prespusto)=>{
@@ -108,61 +158,65 @@ class VisualizarPresupuesto extends React.Component{
                 console.log("LA FACTURA",this.state.presupuesto.factura);
         }
 
-            return (<div className='col-md-8' >
+           return (
+                <div className='col-md-8' style={{ margin: "auto", padding: "30px", fontFamily: "Arial, sans-serif", border: "1px solid #ccc" }}>
                 <div id="presupuesto">
-                    <br/><br/><hr/>
-                    <h3>{this.props.nombre_presupuesto}</h3>
-                    <table className='table' >
-                                <tr>
-                                        <th>Procedimiento</th>
-                                        <th>Paciente</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio</th>
-                                        <th>Monto</th>
-                                        <th>Total</th>
-                                      
-                                </tr>
-                                {            
-                                this.state.presupuesto.procedimientos.map((data)=>(
+                <div style={{ textAlign: "right", fontSize: "14px" }}>{this.state.presupuesto.fecha}</div>
 
+                <div style={{ textAlign: "center", fontWeight: "bold", fontSize: "20px", backgroundColor: "#222", color: "#fff", padding: "10px", marginTop: "10px" }}>
+                        PLAN DE TRATAMIENTO / PRESUPUESTO
+                </div>
 
-                                        <tr>
-                                                <td>{data.nombre_procedimiento}</td>
-                                                <td>{this.state.paciente.nombre}</td>
-                                                <td>{data.cantidad}</td>
-                                                <td>{new Intl.NumberFormat().format((data.total/data.cantidad))}</td>
-                                                <td>{new Intl.NumberFormat().format((data.total))}</td>
-                                                <th></th>
-                                        </tr>
+                <div style={{ fontWeight: "bold", textAlign: "center", marginTop: "10px" }}>
+                        DR. ALEXANDER DE JESUS ABREU
+                </div>
 
+                <div style={{ marginTop: "10px", fontSize: "16px" }}>
+                        <strong>PACIENTE:</strong> {this.state.paciente.nombre} {this.state.paciente.apellido}
+                </div>
 
-                                ))        
-                                
+                <br />
 
-                                }
-                                        <tr>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td>RD$ {new Intl.NumberFormat().format((this.state.presupuesto.total))}</td>
-                                        </tr>          
-                        
-                        </table>
-                    </div>
+                <table className='table table-bordered' style={{ textAlign: "center", borderCollapse: "collapse" }}>
+                        <thead style={{ backgroundColor: "#0e2b52", color: "#fff" }}>
+                        <tr>
+                        <th>PROCEDIMIENTO</th>
+                        <th>CANTIDAD</th>
+                        <th>PRECIO</th>
+                        <th>MONTO</th>
+                        <th>TOTAL</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {this.state.presupuesto.procedimientos.map((data, i) => (
+                        <tr key={i}>
+                        <td>{data.nombre_procedimiento}</td>
+                        <td>{data.cantidad}</td>
+                        <td>{new Intl.NumberFormat().format((data.total / data.cantidad))}</td>
+                        <td>{new Intl.NumberFormat().format(data.total)}</td>
+                        <td></td>
+                        </tr>
+                        ))}
+                        <tr style={{ fontWeight: "bold" }}>
+                        <td colSpan="4" style={{ textAlign: "right" }}>TOTAL RD$</td>
+                        <td>{new Intl.NumberFormat().format(this.state.presupuesto.total)}</td>
+                        </tr>
+                        </tbody>
+                </table>
+                </div>
 
-                        <table className='table'>
-                                <tr>
-                                        <td><button onClick={this.retroceder} style={{background:'#2c008b',borderColor:'purple'}} className='btn btn-primary'>Retroceder</button></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td><button onClick={this.Imprimir} className='btn btn-primary'>Imprimir</button></td>
-                                 </tr>
+                <div className="mt-3 d-flex justify-content-between">
+                <button onClick={this.retroceder} className='btn btn-primary' style={{ background: '#2c008b', borderColor: 'purple' }}>
+                        <i className="fas fa-arrow-left me-1"></i> Retroceder
+                </button>
 
-                        </table>
-            </div>)
-    
+                <button onClick={this.Imprimir} className='btn btn-success'>
+                        <i className="fas fa-print me-1"></i> Imprimir
+                </button>
+                </div>
+                </div>
+                );
+
 
        }
 
