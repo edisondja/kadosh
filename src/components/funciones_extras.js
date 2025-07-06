@@ -6,6 +6,7 @@ import Cargar_generos from './funciones_extras.js';
 var password= "kadosh2019";
 //var url_base =  "https://service.clinickadosh.com";
 var url_base =  "http://localhost:8000";
+//var url_base = "https://dc05-152-167-237-144.ngrok-free.app"; 
 var login_status = false;
 var clave_secreta ="kadoshor2020";
 
@@ -66,11 +67,12 @@ function cargar_doctor(u,id_doctor){
 function cargar_paciente(el,id_paciente){
 
         Axios.get(`${url_base}/api/paciente/${id_paciente}`).then(data=>{
+                    console.log(data.data);
                     el.setState({paciente:data.data});
         }).catch(error=>{
             Alertify.error("No se pudo cargar la informacion del paciente");
             Alertify.message("Conectando...");
-            cargar_paciente(el,id_paciente);
+           // cargar_paciente(el,id_paciente);
         });
 
 }

@@ -64,7 +64,7 @@ class BuscandoProcedimiento extends  React.Component{
     }
 
     render(){
-        if(this.state.actualizar==true){
+       /* if(this.state.actualizar==true){
 
                 return <Actualizar id_procedimiento={this.state.id_procedimiento}/>;
         
@@ -72,24 +72,49 @@ class BuscandoProcedimiento extends  React.Component{
 
         return (<div><br/><input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
                 <img src={Loading}/></div>);
-        }
+        }*/
 
         return (
-            <div className="tableflow col-md-10"><br/>
-                <input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
-                {this.state.procedimientos.map(data=>(                
-                        <div className="card" id={data.id}>
-                            <div className="card-body">
-                                Nombre: {data.nombre}<br/>
-                                 Precio: {new Intl.NumberFormat().format(data.precio)}<br/>
-                                <button className="btn-primary"onClick={()=>this.actualizar(data.id)}>Actualizar</button>
-                                <button className="btn-danger" onClick={()=>this.eliminar(data.id)}>Eliminar</button>
+            <div className="col-md-10"><hr/>
+                <input 
+                type="text" 
+                className="form-control mb-4 shadow-sm" 
+                onKeyUp={this.buscar_p} 
+                id="buscando" 
+                placeholder="🔍 Escriba el nombre del procedimiento" 
+                />
 
-                            </div>
+    {this.state.procedimientos.map(data => (
+                    <div className="card mb-3 shadow-sm rounded border-0 procedimiento-card .procedimiento-nombre" key={data.id}>
+                        <div className="card-body">
+                        <h5 className="card-title text-primary">
+                            {data.nombre}
+                        </h5>
+                        <p className="card-text">
+                            <strong>Precio:</strong> RD$ {new Intl.NumberFormat().format(data.precio)}
+                        </p>
+
+                        <div className="d-flex gap-2">
+                            <button 
+                            className="btn btn-outline-primary btn-sm" 
+                            onClick={() => this.actualizar(data.id)}
+                            >
+                            <i className="fas fa-pen"></i> Actualizar
+                            </button>
+
+                            <button 
+                            className="btn btn-outline-danger btn-sm" 
+                            onClick={() => this.eliminar(data.id)}
+                            >
+                            <i className="fas fa-trash"></i> Eliminar
+                            </button>
                         </div>
+                        </div>
+                    </div>
+                    ))}
+                </div>
+            
 
-                ))}
-            </div>
         );    
 
     }

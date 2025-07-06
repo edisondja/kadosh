@@ -53,45 +53,74 @@ class ImprimirRecibo extends React.Component{
             return  <PerfilPaciente id_paciente={this.props.id_paciente}/>
         }
         
-        return (<div><br/><br/><br/><br/><hr/><button className="btn btn-primary" onClick={this.Imprimir}>Imprimir</button>
-        <button onClick={this.retroceder} className="btn btn-primary" style={{float:'right'}}>Retroceder</button><hr/>
-                    <div className="card" id="recibo">
-                                <strong className="titulo_kadosh">CLINICA DENTAL KADOSH OR SRL <br/>&nbsp;&nbsp;C/San Antonio #33A Los Alcarrizos<br/>&nbsp;&nbsp;Santo Domingo,R.D</strong>
-                                <p> TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
-                                   
-                                   <p>_____________________________</p><br/>
-                                   <p>COMPROBANTE AUTORIZADO POR LA DGII</p><br/>
-                                   <strong>Fecha de pago: {this.props.data_recibo.fecha_pago}</strong><br/>
-                                   <strong>#{this.props.data_recibo.codigo_recibo}</strong><br/>
+        return (
+            <div style={{ padding: '30px', fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>
+                <br />
+                <hr />
+               <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
+                    <button className="btn btn-primary" onClick={this.Imprimir} title="Imprimir">
+                        <i className="fas fa-print"></i>
+                    </button>
 
-                                   <p>____________________________</p><br/>
-                                   <strong>FACTURA PARA CONSUMIDOR</strong><br/>
-                                   <p>____________________________</p><br/>
+                    <button onClick={this.retroceder} className="btn btn-primary" title="Retroceder">
+                        <i className="fas fa-arrow-left"></i>
+                    </button>
+                    </div>
 
-                                   <strong>Lista de procedimientos</strong><br/><br/>
+                <hr />
 
-                                 
-                                        {
-                                            procedimientos.map((data=>( 
-                                                    <strong style={{display: 'block'}}>{data.nombre} x{data.cantidad} $RD {new Intl.NumberFormat().format(data.total)}
-                                                    <div style={{display:'none'}}>{this.state.monto_total+=data.total}</div>
-                                                    </strong>          
-                                            )))
-                                            
-                                        }
-                                        <br/><br/><br/><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TOTAL $RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong><br/>
-                                        <strong>Monto Pagado RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</strong><br/>
-                                        <strong>Resto a pagar RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</strong><br/>
-                                        <br/><strong>Tipo de pago: {this.props.data_recibo.concepto_pago}</strong><br/>
+                <div className="card" id="recibo" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
+                    CLÍNICA DENTAL KADOSH OR SRL<br />
+                    <span style={{ fontSize: '14px' }}>C/San Antonio #33A Los Alcarrizos<br />
+                    Santo Domingo, R.D</span>
+                    </strong>
+                    <p>TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
+                </div>
 
-                                        <br/>
-                                        <p>_______________________________</p><br/>
-                                        <strong>Doctor: {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</strong><br/>
-                                        <strong>Paciente: {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</strong><br/>
-                                        <strong style={{float:'rigth'}}>Firma __________________________________&nbsp;&nbsp;</strong>
-                    </div> 
+                <hr />
+                <p style={{ textAlign: 'center' }}><strong>COMPROBANTE AUTORIZADO POR LA DGII</strong></p>
+                <hr />
 
-            </div>);
+                <p><strong>Fecha de pago:</strong> {this.props.data_recibo.fecha_pago}</p>
+                <p><strong>#</strong>{this.props.data_recibo.codigo_recibo}</p>
+
+                <hr />
+                <p><strong>FACTURA PARA CONSUMIDOR</strong></p>
+                <hr />
+
+                <p><strong>Lista de procedimientos:</strong></p>
+                <div style={{ marginLeft: '20px' }}>
+                    {
+                    procedimientos.map((data) => (
+                        <div key={data.nombre}>
+                        <strong style={{ display: 'block', marginBottom: '5px' }}>
+                            {data.nombre} x{data.cantidad} - RD$ {new Intl.NumberFormat().format(data.total)}
+                        </strong>
+                        <div style={{ display: 'none' }}>{this.state.monto_total += data.total}</div>
+                        </div>
+                    ))
+                    }
+                </div>
+
+                <br />
+                <p><strong>Total:</strong> RD$ {new Intl.NumberFormat().format(this.state.monto_total)}</p>
+                <p><strong>Monto Pagado:</strong> RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</p>
+                <p><strong>Resto a pagar:</strong> RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</p>
+                <p><strong>Tipo de pago:</strong> {this.props.data_recibo.concepto_pago}</p>
+
+                <hr />
+                <p><strong>Doctor:</strong> {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</p>
+                <p><strong>Paciente:</strong> {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</p>
+
+                <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                    <strong>Firma __________________________________</strong>
+                </div>
+                </div>
+            </div>
+            );
+
 
     }
 

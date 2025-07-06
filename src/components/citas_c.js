@@ -316,65 +316,83 @@ class  Cita extends React.Component{
 
 
 		return (
-		<div className="col-md-10"><br/><br/>
-					<div className="row" id="panel">
+				<div className="col-md-10"><br/><br/>
+				<div className="row" id="panel">
 					<div className="col-md-10">
-						<table className="table">
-							<tr>
-								<td>Cantidad de pacientes registrados</td>
-								<td  style={{color:'rgb(142 141 255)'}}>{this.state.cantidad_de_pacientes}</td>
-								<td>Cantidad de procedimientos realizados</td>
-								<td style={{color:'#51d18a'}}>{this.state.procedimientos_hechos}</td>	
-								<td style={{color:'black'}}>Hoy es {this.dia_actual()}</td>	
-							</tr>
-						
-						</table>
+					<table className="table">
+						<tr>
+						<td>Cantidad de pacientes registrados</td>
+						<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
+						<td>Cantidad de procedimientos realizados</td>
+						<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
+						<td style={{ color: 'black' }}>Hoy es {this.dia_actual()}</td>	
+						</tr>
+					</table>
 					</div>
-					</div><hr/>
-					<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
-					<hr/>
-					<div className="interfaz_cliente">
+				</div>
+				<hr />
+				
+				<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+				
+				<hr />
+				<div className="interfaz_cliente">
 					<table className='table table-hover'>
 					<thead>
-					<tr className="fijar_columnas">
-						<th  scope="col">Nombre</th>
-						<th  scope="col">Apellido</th>
-						<th  scope="col">Doctor</th>
-						<th  scope="col">Cedula</th>
-						<th  scope="col">Telefono</th>
-						<th  scope="col">Deuda</th> 
-						<th  scope="col">Ver Perfil</th>
-						<th  scope="col">Asignar Cita</th>
-						<th  scope="col">Actualizar</th>
-					</tr>
+						<tr className="fijar_columnas">
+						<th scope="col">Nombre</th>
+						<th scope="col">Apellido</th>
+						<th scope="col">Doctor</th>
+						<th scope="col">Cédula</th>
+						<th scope="col">Teléfono</th>
+						<th scope="col">Deuda</th> 
+						<th scope="col">Ver Perfil</th>
+						<th scope="col">Asignar Cita</th>
+						<th scope="col">Actualizar</th>
+						</tr>
 					</thead>
-					{
-						this.state.clientes.map(data=>(
-							
-							<tbody>
-							<tr>
-								<td>{data.nombre}</td>
-								<td>{data.apellido}</td>
-								<td>{data.doctor.nombre} {data.doctor.apellido}</td>
-								<td>{data.cedula}</td>
-								<td>{data.telefono}</td> 
-								<td><p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}</p></td>
-								<td><img   onClick={()=>this.cargar(data.id,data.id_doctor,data.foto_paciente)} src={ImgPerfil} style={{cursor:'pointer'}} width="35"/></td>
-								<td><img src={ImgAsignar} style={{cursor:'pointer'}} onClick={()=>this.asignar_cita(data.id,data.nombre)} width="35"/></td>
-								<td><img src={ImgActualizar} style={{cursor:'pointer'}} onClick={()=>this.actualizar_paciente(data.id)} width="35"/></td>
+					<tbody>
+						{
+						this.state.clientes.map(data => (
+							<tr key={data.id}>
+							<td>{data.nombre}</td>
+							<td>{data.apellido}</td>
+							<td>{data.doctor.nombre} {data.doctor.apellido}</td>
+							<td>{data.cedula}</td>
+							<td>{data.telefono}</td> 
+							<td>
+								<p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>
+								${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}
+								</p>
+							</td>
+							<td>
+								<i 
+								className="fa-solid fa-user-circle" 
+								style={{ cursor: 'pointer', fontSize: '20px', color: '#007bff' }} 
+								onClick={() => this.cargar(data.id, data.id_doctor, data.foto_paciente)}
+								></i>
+							</td>
+							<td>
+								<i 
+								className="fa-solid fa-calendar-plus" 
+								style={{ cursor: 'pointer', fontSize: '20px', color: '#28a745' }} 
+								onClick={() => this.asignar_cita(data.id, data.nombre)}
+								></i>
+							</td>
+							<td>
+								<i 
+								className="fa-solid fa-pen-to-square" 
+								style={{ cursor: 'pointer', fontSize: '20px', color: '#ffc107' }} 
+								onClick={() => this.actualizar_paciente(data.id)}
+								></i>
+							</td>
 							</tr>
-							</tbody>
 						))
-
-
-					
-					}
+						}
+					</tbody>
 					</table>
 				</div>
-				
-
-
-				</div>);
+				</div>
+				);
 
 
 	}

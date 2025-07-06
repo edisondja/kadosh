@@ -13,13 +13,15 @@ class VisualizarPresupuesto extends React.Component{
 
                super(props);
         
-               this.state={select:null,presupuesto:{id:0,factura:"",nombre:"",paciente_id:"",doctor_id:"",procedimientos:[[]]}}
+               this.state={select:null,paciente:{},presupuesto:{id:0,factura:"",nombre:"",paciente_id:"",doctor_id:"",procedimientos:[[]]}}
 
         }
 
         componentDidMount(){
 
                 this.Cargar_presupuesto(this.props.id_presupuesto);
+                Core.cargar_paciente(this,this.props.id_paciente);
+                        
                
         }
 
@@ -53,7 +55,7 @@ class VisualizarPresupuesto extends React.Component{
 
         }
 
-
+        
         retroceder=()=>{
 
 
@@ -113,21 +115,20 @@ class VisualizarPresupuesto extends React.Component{
                     <table className='table' >
                                 <tr>
                                         <th>Procedimiento</th>
+                                        <th>Paciente</th>
                                         <th>Cantidad</th>
                                         <th>Precio</th>
                                         <th>Monto</th>
                                         <th>Total</th>
+                                      
                                 </tr>
-                        
-
-                                {
-                                
-                                        
+                                {            
                                 this.state.presupuesto.procedimientos.map((data)=>(
 
 
                                         <tr>
                                                 <td>{data.nombre_procedimiento}</td>
+                                                <td>{this.state.paciente.nombre}</td>
                                                 <td>{data.cantidad}</td>
                                                 <td>{new Intl.NumberFormat().format((data.total/data.cantidad))}</td>
                                                 <td>{new Intl.NumberFormat().format((data.total))}</td>

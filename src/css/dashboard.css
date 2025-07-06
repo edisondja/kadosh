@@ -1,5 +1,35 @@
 
+.procedimiento-card {
+  margin-bottom: 1rem;           /* espacio entre tarjetas */
+  padding: 1rem 1.5rem;          /* espacio interno */
+  border-radius: 3px;           /* bordes redondeados */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);  /* sombra suave */
+  background-color: #ffffff;     /* fondo blanco */
+  transition: box-shadow 0.3s ease;
+}
 
+.procedimiento-card:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15); /* sombra más visible al pasar mouse */
+}
+
+/* Opcional: para el contenedor de la lista */
+.procedimientos-lista {
+  margin-top: 1.5rem;
+}
+
+/* Para el nombre y precio dentro */
+.procedimiento-nombre {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.procedimiento-precio {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.75rem;
+}
+/*Para procedimientos*/
 
 
 /* Contenedor de botones */

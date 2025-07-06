@@ -145,7 +145,10 @@ class VerPresupuesto extends React.Component{
              //   alert(this.state.id_presupuesto+" "+this.state.nombre_p);
 
 
-            return <VerPresupuestoAhora id_paciente={this.props.IDpaciente} id_presupuesto={this.state.presupuesto_id} nombre_presupuesto={this.state.nombre_p} />
+            return <VerPresupuestoAhora 
+                        id_paciente={this.props.IDpaciente} 
+                        id_presupuesto={this.state.presupuesto_id}
+                        nombre_presupuesto={this.state.nombre_p} />
 
         }
 
@@ -158,7 +161,8 @@ class VerPresupuesto extends React.Component{
 
             <table className='table'>
                 <tr>
-                    <td>Nombre de presupuesto</td>       
+                    <td>Nombre de presupuesto</td>    
+                    <td>Paciente</td>   
                     <td>Obervar</td>
                     <td>Suprimir</td>
                     <td>Fecha creado</td>
@@ -169,6 +173,7 @@ class VerPresupuesto extends React.Component{
 
                     <tr id={"presupuesto"+data.id}>
                         <td>{data.nombre}</td>  
+                        <td>{data.paciente.nombre}</td>
                         <td><img width="35" src={Lupa} onClick={()=>this.ver_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}}/></td>
                         <td><img width="35" src={Eliminar} onClick={()=>this.eliminar_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}}/></td>
                         <td>{data.created_at}</td>

@@ -22,6 +22,11 @@ import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
 import Usuario from './agregar_usuario';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+
+
+
+
 import VisualizarPresupuesto from './visualizar_presupuesto';
 
 class MenuDashboard extends React.Component{
@@ -102,8 +107,6 @@ class MenuDashboard extends React.Component{
 
 	render(){
 
-		
-
 		if(this.state.notificaciones!="" && this.state.notificado==false){
 			Alertify.success("Hoy estan de cumple años, revise las notifaciones");
 			this.setState({notificado:true});
@@ -168,10 +171,12 @@ class MenuDashboard extends React.Component{
 
 			if(localStorage.getItem("roll")=="Administrador"){
 				Menu = (
+					
 					<ul style={this.estilos} className="menuStilos">
 						<li onClick={() => this.menu_select('notificaciones')} id="notificaiones">
 						<i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones
 						</li>
+						
 						<li onClick={() => this.menu_select('paciente')} id="agregar_paciente">
 						<i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente
 						</li>
@@ -230,6 +235,7 @@ class MenuDashboard extends React.Component{
 			}
 			
 		return (<div className="row"><div className="col-md-2"><br/>
+			
 				<br/><div className="card">
 					<table>
 						<tr>

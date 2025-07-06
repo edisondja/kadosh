@@ -39,15 +39,52 @@ class ProcedimientoForm extends React.Component{
 
 		render(){
 	
-			return (<div className="col-md-10">
-					    <br/><h1>Agregar Procedimiento</h1><br/>
-						<strong>Nombre</strong><br/>
-						<input type="text" className="form-control" id="nombre_procedimiento"/><br/>
-						<strong>Precio</strong><br/>
-						<input type="number" className="form-control" id="precio"/><br/>
-						<button className="btn btn-primary" disabled={this.state.boton_estado} onClick={this.guardar_datos}>Guardar</button>
-						<BuscarProcedimiento/>
-					</div>);
+			return (<div className="col-md-10 mx-auto mt-4"><hr/>
+						<div className="card shadow border-0 rounded-4 p-4">
+							<h3 className="text-primary mb-4">
+							<i className="fas fa-plus-circle me-2"></i> Agregar Procedimiento
+							</h3>
+
+							<div className="mb-3">
+							<label htmlFor="nombre_procedimiento" className="form-label fw-semibold">
+								<i className="fas fa-file-signature me-2"></i>Nombre
+							</label>
+							<input 
+								type="text" 
+								className="form-control rounded-pill px-4" 
+								id="nombre_procedimiento" 
+								placeholder="Ej. Limpieza dental"
+							/>
+							</div>
+
+							<div className="mb-4">
+							<label htmlFor="precio" className="form-label fw-semibold">
+								<i className="fas fa-dollar-sign me-2"></i>Precio
+							</label>
+							<input 
+								type="number" 
+								className="form-control rounded-pill px-4" 
+								id="precio" 
+								placeholder="Ej. 1200"
+							/>
+							</div>
+							<div style={{ textAlign: 'center' }}>
+							<button 
+								className="btn btn-primary w-50 rounded-pill fw-semibold" 
+								disabled={this.state.boton_estado} 
+								onClick={this.guardar_datos}
+							>
+								<i className="fas fa-save me-2"></i>Guardar
+							</button>
+							</div>
+														
+						</div>
+
+						<div className="mt-4">
+							<BuscarProcedimiento />
+						</div>
+						</div>
+						);
 
 		}
 

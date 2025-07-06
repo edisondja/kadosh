@@ -132,6 +132,7 @@ class Reporte extends React.Component{ds
                        <table className="table">
                         <tr>
                             <td>Codigo</td>
+                            <td>Paciente</td>
                             <td>Concepto de pago</td>
                             <td>Tipo de pago</td>
                             <td>Estado actual</td>
@@ -143,6 +144,7 @@ class Reporte extends React.Component{ds
                                         
                                         <tr>
                                             <td>{data.codigo_recibo}</td>
+                                            <td>{data.factura.paciente.nombre} {data.factura.paciente.apellido}</td>
                                             <td>{data.concepto_pago}</td>
                                             <td>{data.tipo_de_pago}</td>
                                             <td>{data.estado_actual}</td>
