@@ -170,7 +170,7 @@ class  AgregarFactura extends React.Component{
                     {
                         this.state.procedimientos.map(data=>(
                             <div className="card">
-                                <div className="card-body">
+                                <div className="card-body procedimiento-card">
                                   <p>  {data.nombre} </p>
                                    <p> {data.precio} </p>
                                    <button className="btn btn-primary" onClick={()=>this.agregarProcedimiento(data.id,data.nombre,data.precio)}>Agregar</button>

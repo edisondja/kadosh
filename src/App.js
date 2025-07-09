@@ -1,25 +1,11 @@
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch,
-  Link
-} from 'react-router-dom';
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
+import MenuDashboard from './menudashboard';
 
-// Componentes de ejemplo (puedes quitarlos si no los necesitas)
-
-export default function App() {
-  return (
-    <Router>
-      <nav style={{ padding: '1rem' }}>
-    
-        <Link to="/paciente">Pacientes</Link>
-      </nav>
-
-      <Switch>
-        <Route exact path="/paciente" component={SDWE} />
-        {/* Puedes agregar más rutas aquí */}
-      </Switch>
-    </Router>
-  );
-}
+ReactDOM.render(
+  <BrowserRouter>
+    <MenuDashboard />
+  </BrowserRouter>,
+  document.getElementById('root')
+);

@@ -35,6 +35,7 @@ class Suplidores extends React.Component{
     registrar_suplidor=()=>{
         
         Alertify.confirm("Registrar Suplidor",`<hr/><b>Registrar Suplidor ahora</b><hr/>
+        <input type="hidden" class="form-control" id="id_usuario" placeholder="Nombre de suplidor"/>
         <input type="text" class="form-control" id="nombre_suplidor" placeholder="Nombre de suplidor"/><br/>
         <input type="text" class="form-control" id="rnc_suplidor" placeholder="RNC suplidor"/><br/>
         <textarea class="form-control" id="descripcion" placeholder="Descripcion del suplidor"></textarea>`,()=>{
@@ -44,6 +45,8 @@ class Suplidores extends React.Component{
                 console.log(data.data);
                 Alertify.message(data.data);
                 this.cargar_suplidores();
+
+                
             }).catch(error=>{
                 Alertify.message(error);
             })
@@ -55,23 +58,24 @@ class Suplidores extends React.Component{
     capturar_data_form(suplidor_id=null){
         let data_form;
 
+
         if(suplidor_id!==null){
             
             data_form = {
-                id:suplidor_id.id,
+                id_usuario:localStorage.getItem("id_usuario"),
                 nombre:document.querySelector("#nombre_suplidor").value,
                 descripcion:document.querySelector("#descripcion").value,
                 rnc_suplidor:document.querySelector("#rnc_suplidor").value
-
-            }
+            };
 
         }else{
             data_form = {
+                id_usuario:localStorage.getItem("id_usuario"),
                 nombre:document.querySelector("#nombre_suplidor").value,
                 descripcion:document.querySelector("#descripcion").value,
                 rnc_suplidor:document.querySelector("#rnc_suplidor").value
 
-            }
+            };
         }
 
         return data_form;

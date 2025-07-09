@@ -54,24 +54,38 @@ class Contabilidad extends React.Component{
         }
 
         return(
-               <div className="col-md-10"><br/><br/><hr/>
-               <h4>Administración Financiera</h4>
-             
-                <ul  className="menuStilos" style={{listStyle:'none'}} >
-                    
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('suplidor')}><img src={Cadena} width="50" /><i>Suplidores</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('gastos')}><img src={Money} width="50" /><i>Gastos</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('')}><img src={Products} width="50" /> <i>Registrar productos</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('')}><img src={Products} width="50" /> <i>Registrar Empleado</i></li>
-                        <li style={{ display:'inline'}} onClick={(e)=>this.selectMenu('ver_productos')}><img src={Products} width="50" /> <i>Ver productos</i></li>
-                </ul>
-                {ver2}
-                <div>
+               <div className="col-md-10 mac-style-container">
+                    <br /><br /><hr />
+                    <h4>Administración Financiera</h4>
+                 <ul className="menuStilos menu_contabilidad">
+                    <li onClick={(e) => this.selectMenu('suplidor')}>
+                        <i className="fas fa-link fa-2x" style={{ color: '#555' }}></i>
+                        <span>Suplidores</span>
+                    </li>
+                    <li onClick={(e) => this.selectMenu('gastos')}>
+                        <i className="fas fa-coins fa-2x" style={{ color: '#555' }}></i>
+                        <span>Gastos</span>
+                    </li>
+                    <li onClick={(e) => this.selectMenu('')}>
+                        <i className="fas fa-box-open fa-2x" style={{ color: '#555' }}></i>
+                        <span>Registrar productos</span>
+                    </li>
+                    <li onClick={(e) => this.selectMenu('')}>
+                        <i className="fas fa-user-plus fa-2x" style={{ color: '#555' }}></i>
+                        <span>Registrar Empleado</span>
+                    </li>
+                    <li onClick={(e) => this.selectMenu('ver_productos')}>
+                        <i className="fas fa-warehouse fa-2x" style={{ color: '#555' }}></i>
+                        <span>Ver productos</span>
+                    </li>
+                    </ul>   
+                    {ver2}
+    
+                    <div></div>
+                    <hr/>
+                    </div>
 
-                </div>
-                <hr/>
-               </div>
-            
+                                
             );
   
     }

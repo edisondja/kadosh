@@ -21,248 +21,139 @@ import ReporteImg from '../reporte.png';
 import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
-import Usuario from './agregar_usuario';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-
-
-
-
+import Usuario from './agregar_usuario'; 
+import { BrowserRouter as Router, Switch, Route, Link,Redirect } from 'react-router-dom';
 import VisualizarPresupuesto from './visualizar_presupuesto';
 
-class MenuDashboard extends React.Component{
-
-	constructor(props){
-		super(props);
-		this.state= {estado:true,select_opcion:'citas',notificaciones:[],notificado:false,tiempo:0}
-		this.estilos = {
-					  listStyleType:"none"
-			}	
-	
-
-	}
-
-	componentDidMount(){
-
-		FuncionesExtras.notificar_cumple(this);
-		this.contador_de_sesion();
-
-
-	}
-
-
-	contador_de_sesion(){
-
-		let interval = ""
-		let interval2 = "";
-		  
-		document.body.style.background="none";
-
-		interval = setInterval(()=>{
-
-			//console.log(this.state.tiempo);
-			
-
-
-				Alertify.confirm('La sesion expiro desea extenderla?','En 10 segundos.. el sistema cerrara si no extiende la sesion',()=>{
-
-					Alertify.message("Sesion extendida..");	
-					clearInterval(interval2);				
-
-				},function(){
-
-
-					Alertify.message("Bye...");
-
-				});
-
-
-			interval2 = setTimeout(function(){
-
-				document.getElementById("cerrar_sesion").click();
-
-			},10000);
-
-
-		},28800000);
-
-
-	}
-
-
-	menu_select=(select)=>{
-
-			this.setState({
-					select_opcion:select
-
-			},function(){
-
-					console.log(this.state.select_opcion);
-					
-			});
-
-
-
-	}
-
-
-	render(){
-
-		if(this.state.notificaciones!="" && this.state.notificado==false){
-			Alertify.success("Hoy estan de cumple años, revise las notifaciones");
-			this.setState({notificado:true});
-		}
-
-		let ver;
-
-			if(this.state.select_opcion=="citas"){
-					
-				ver =  <Citas/>;
-				
-			}else if(this.state.select_opcion=="paciente"){
-
-				ver =<Paciente/>;
-			
-
-			}else if(this.state.select_opcion=="doctor"){
-
-				ver = <Doctor/>;
-			
-			}else if(this.state.select_opcion=="procedimiento"){
-
-
-				ver =<ProcedimientoForm/>;
-			
-			}else if(this.state.select_opcion=="notificaciones"){
-				
-				ver =<Notificaciones/>;
-			
-			}else if(this.state.select_opcion=="reportes"){
-
-				ver = <Reporte/>;
-
-			}else if(this.state.select_opcion=="cargar_pacientes"){
-				
-				ver =  <Citas/>;
-
-			}else if(this.state.select_opcion=="citas_pendiente"){
-				
-				ver = <CitasPendiente/>;
-
-			}else if(this.state.select_opcion=="cerrar_sesion"){
-
-				localStorage.removeItem('login');
-				localStorage.removeItem('token');
-				localStorage.removeItem('roll');
-				localStorage.clear();
-				window.location="/";
-			
-			}else if(this.state.select_opcion=="contabilidad"){
-
-				ver =  <Contabilidad_template/>;
-			
-			}else if(this.state.select_opcion=="agregar_usuario"){
-
-				ver =  <Usuario/>;
-
-			}
-
-			let Menu;
-
-
-			if(localStorage.getItem("roll")=="Administrador"){
-				Menu = (
-					
-					<ul style={this.estilos} className="menuStilos">
-						<li onClick={() => this.menu_select('notificaciones')} id="notificaiones">
-						<i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones
-						</li>
-						
-						<li onClick={() => this.menu_select('paciente')} id="agregar_paciente">
-						<i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente
-						</li>
-						<li onClick={() => this.menu_select('agregar_usuario')}>
-						<i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario
-						</li>
-						<li onClick={() => this.menu_select('citas_pendiente')} id="cargar_citas">
-						<i className="fas fa-calendar-check img_estilo"></i>&nbsp;Citas Pendientes
-						</li>
-						<li onClick={() => this.menu_select('doctor')}>
-						<i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor
-						</li>
-						<li onClick={() => this.menu_select('procedimiento')}>
-						<i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos
-						</li>
-						<li onClick={() => this.menu_select('reportes')}>
-						<i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes
-						</li>
-						<li onClick={() => this.menu_select('contabilidad')}>
-						<i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad
-						</li>
-						<li onClick={() => this.menu_select('cerrar_sesion')} id="cerrar_sesion">
-						<i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;Cerrar Sesión
-						</li>
-						<li onClick={() => this.menu_select('configuracion')} id="configuracion">
-						<i className="fas fa-cog img_estilo"></i>&nbsp;Configuración
-						</li>
-
-					</ul>
-					);
-	 
-	
-			}else if(localStorage.getItem("roll")=="Contable"){
-
-				 
-				Menu = <ul style={this.estilos} className="menuStilos">
-				<li onClick={(e)=>this.menu_select('contabilidad')}><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</li>
-				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
-
-			}else if(localStorage.getItem("roll")=="Secretaria"){
-
-				 
-				Menu = <ul style={this.estilos} className="menuStilos"><li onClick={(e)=>this.menu_select('notificaciones')} id="notificaiones"><img src={NotificacionImg} className="img_estilo"/>&nbsp;Notificaciones</li>
-				<li onClick={(e)=>this.menu_select('paciente')} id="agregar_paciente"><img src={PacienteImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Agregar Paciente</li>
-				<li onClick={(e)=>this.menu_select('citas_pendiente')} id="cargar_citas"><img src={CitasImg} className="img_estilo" /><span className="icon-bar"></span>&nbsp;Citas Pendiente</li>
-				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li></ul>
-
-			}else{
-
-
-					 
-				Menu = <ul style={this.estilos} className="menuStilos">
-				<li onClick={(e)=>this.menu_select('cerrar_sesion')}><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</li>
-				</ul>
-
-			}
-			
-		return (<div className="row"><div className="col-md-2"><br/>
-			
-				<br/><div className="card">
-					<table>
-						<tr>
-							<td onClick={()=>this.menu_select('cargar_pacientes')} id="cargar_pacientes"><img src={Logo} width="30" className="img-responsive" style={{marginLeft:'10px;',padding:'2px'}} /></td>
-							<td><strong>Kadosh Dental</strong></td>
-						</tr>
-					</table>
-					<strong  style={{padding:'3px'}}>Usuario: {localStorage.getItem("login")}</strong>
-				</div>
-						{Menu}								
-				</div>
-				{ver}
-			</div>
-			);
-
-
-
-	}
-
-
-
-
-
-
-
-
-
+class MenuDashboard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { notificaciones: [], notificado: false };
+    this.estilos = { listStyleType: "none" };
+  }
+
+  componentDidMount() {
+    FuncionesExtras.notificar_cumple(this);
+    this.contador_de_sesion();
+  }
+
+  contador_de_sesion() {
+    let interval2;
+    let interval = setInterval(() => {
+      Alertify.confirm(
+        'La sesión expiró, desea extenderla?',
+        'En 10 segundos.. el sistema cerrará si no extiende la sesión',
+        () => {
+          Alertify.message("Sesión extendida..");
+          clearTimeout(interval2);
+        },
+        () => {
+          Alertify.message("Bye...");
+        }
+      );
+
+      interval2 = setTimeout(() => {
+        document.getElementById("cerrar_sesion").click();
+      }, 10000);
+    }, 28800000);
+  }
+
+  render() {
+    if (this.state.notificaciones.length > 0 && !this.state.notificado) {
+      Alertify.success("Hoy están de cumpleaños, revise las notificaciones");
+      this.setState({ notificado: true });
+    }
+
+    let Menu;
+
+    if (localStorage.getItem("roll") === "Administrador") {
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones</Link></li>
+          <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente</Link></li>
+          <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario</Link></li>
+          <li><Link to="/citas_pendiente"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;Citas Pendientes</Link></li>
+          <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor</Link></li>
+          <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos</Link></li>
+          <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes</Link></li>
+          <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad</Link></li>
+          <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;Cerrar Sesión</Link></li>
+          <li><Link to="/configuracion" id="configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;Configuración</Link></li>
+        </ul>
+      );
+    } else if (localStorage.getItem("roll") === "Contable") {
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/contabilidad"><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</Link></li>
+          <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
+        </ul>
+      );
+    } else if (localStorage.getItem("roll") === "Secretaria") {
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/notificaciones" id="notificaiones"><img src={NotificacionImg} className="img_estilo" />&nbsp;Notificaciones</Link></li>
+          <li><Link to="/paciente" id="agregar_paciente"><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar Paciente</Link></li>
+          <li><Link to="/citas_pendiente" id="cargar_citas"><img src={CitasImg} className="img_estilo" />&nbsp;Citas Pendiente</Link></li>
+          <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
+        </ul>
+      );
+    } else {
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
+        </ul>
+      );
+    }
+
+    return (
+      <Router>
+        <div className="row container-fluid">
+          <div className="col-md-2">
+            <br />
+            <br />
+            <div className="card">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <Link to="/cargar_pacientes" id="cargar_pacientes">
+                        <img src={Logo} width="30" className="img-responsive" style={{ marginLeft: '10px', padding: '2px' }} />
+                      </Link>
+                    </td>
+                    <td><strong>Kadosh Dental</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+              <strong style={{ padding: '3px' }}>Usuario: {localStorage.getItem("login")}</strong>
+            </div>
+            {Menu}
+          </div>
+
+            <Switch>
+              <Route exact path="/">
+                <Redirect to="/cargar_pacientes" />
+              </Route>
+              <Route path="/cargar_pacientes" component={Citas} />
+              <Route path="/citas" component={Citas} />
+              <Route path="/paciente" component={Paciente} />
+              <Route path="/doctor" component={Doctor} />
+              <Route path="/procedimiento" component={ProcedimientoForm} />
+              <Route path="/notificaciones" component={Notificaciones} />
+              <Route path="/reportes" component={Reporte} />
+              <Route path="/citas_pendiente" component={CitasPendiente} />
+              <Route path="/contabilidad" component={Contabilidad_template} />
+              <Route path="/agregar_usuario" component={Usuario} />
+              <Route path="/cerrar_sesion" render={() => {
+                localStorage.clear();
+                window.location.href = "/";
+                return null;
+              }} />
+              <Route render={() => <h3>Página no encontrada</h3>} />
+            </Switch>
+        </div>
+      </Router>
+    );
+  }
 }
 
 export default MenuDashboard;

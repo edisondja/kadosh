@@ -1,4 +1,82 @@
 
+
+.mac-style-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+
+.menu_contabilidad{
+
+  display: inline-flex;
+}
+
+.mac-style-container h4,
+.mac-style-container h5 {
+  margin-bottom: 1rem;
+}
+
+.mac-style-container .btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.mac-style-container .btn-success {
+  background-color: #2ecc71;
+  border: none;
+}
+
+.mac-style-container .btn-primary {
+  background-color: #3498db;
+  border: none;
+}
+
+.mac-style-container .btn-dark {
+  background-color: #555;
+  color: white;
+  border: none;
+}
+
+.mac-style-container .btn:hover {
+  opacity: 0.9;
+}
+
+.mac-style-container table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.mac-style-container table th,
+.mac-style-container table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eaeaea;
+  text-align: left;
+}
+
+.mac-style-container table tr:last-child td {
+  border-bottom: none;
+}
+
+.mac-style-highlight {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.mac-style-count {
+  color: #e91e63;
+  text-align: center;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+
 .procedimiento-card {
   margin-bottom: 1rem;           /* espacio entre tarjetas */
   padding: 1rem 1.5rem;          /* espacio interno */
@@ -362,18 +440,22 @@ strong {
 
 }
 
+ul>li>a{
+
+  color: #1d1d1f;
+}
 
 .menuStilos{
 
 	padding-top: 50px;
 	background:#fafdff;
+  color: #1c1c1e;
 }
 
 .buscar_doctor{
 		overflow-x: scroll;
 		height: 400px;
-		
-
+	
 
 }
 

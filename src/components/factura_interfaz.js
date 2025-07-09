@@ -392,71 +392,86 @@ class FacturaInterfaz extends React.Component {
                 return <EditarFactura id_factura={this.props.id_factura}/>
             }
 
-        return (<div className="col-md-10"><br/> 
-                <h4>Factura y sus detalles</h4><button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
-                <h4>Estado actual <p style={{color:'#36b836'}} id="estado_actual">$RD {this.state.factura.precio_estatus}</p></h4><hr/>
-                <h5>Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp; Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})</h5>
-                <div>
-                    <table className="table">
-                        <tr>
-                            <td>Procedimiento</td>
-                            <td>Cantidad</td>
-                            <td>Total</td>
-                        </tr>
-                    {  this.state.procedimientos.map((data=>(
+        return (<div className="col-md-10 mac-style-container">
+                <h4>
+                    Factura y sus detalles
+                    <button className="btn btn-primary" onClick={this.retroceder} style={{ float: 'right' }}>
+                    Retroceder
+                    </button>
+                </h4>
+                <h4>
+                    Estado actual <p className="mac-style-highlight" id="estado_actual">$RD {this.state.factura.precio_estatus}</p>
+                </h4>
+                <hr />
+                <h5>
+                    Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp;
+                    Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})
+                </h5>
 
-                            <tr>
-                                <td>{data.nombre}</td>
-                                <td>{data.cantidad}</td>
-                                <td>$RD {new Intl.NumberFormat().format(data.total)}</td>
-                            </tr>
-                      )))     
-                    }
+                <table className="table">
+                    <thead>
                     <tr>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th>$RD {new Intl.NumberFormat().format(this.state.monto_total)}</th>
+                        <th>Procedimiento</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
                     </tr>
-                    </table>
-                    <button className="btn btn-success" onClick={()=>this.procesar_pago(this.props.id_factura,this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
-                    <button className="btn btn-primary" onClick={()=>this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
-                    <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button><strong>&nbsp;&nbsp;&nbsp;</strong>
-                    <button className="btn btn-dark" onClick={()=>this.cargar_descuentos_de_facutra(this.props.id_factura)}>Ver descuentos</button>  <hr/>
-                        <hr/><br/><br/><h2>Pagos Realizados</h2>
-                        <div><strong style={{color:'#e91d82',marginLeft:'30%'}}>Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})</strong><hr/></div>
-                    <div className="tableflow">
-                    <table className="table boxslider">
-                        <tr>
-                            <td>Monto</td>
-                            <td>Concepto de pago</td>
-                            <td>Tipo de pago</td>
-                            <td>Fecha de pago</td>
-                            <td>Imprimir</td>
-                            <td>Eliminar</td>
+                    </thead>
+                    <tbody>
+                    {this.state.procedimientos.map((data) => (
+                        <tr key={data.nombre}>
+                        <td>{data.nombre}</td>
+                        <td>{data.cantidad}</td>
+                        <td>$RD {new Intl.NumberFormat().format(data.total)}</td>
                         </tr>
-                           {
-                               this.state.recibos.map((data=>(
-                                   
+                    ))}
+                    <tr>
+                        <td colSpan="2"><strong>Total</strong></td>
+                        <td><strong>$RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong></td>
+                    </tr>
+                    </tbody>
+                </table>
 
-                                    <tr id={data.id}>
-                                        <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
-                                        <td>{data.concepto_pago}</td>
-                                        <td>{data.tipo_de_pago}</td>
-                                        <td>{data.fecha_pago}</td>
-                                        <td><button class="btn btn-success" onClick={()=>this.imprimir_factura(data.id,this.props.id_factura)}>Imprimir</button></td>
-                                        <td><button className="btn btn" onClick={()=>this.eliminar_recibo(data.id,this.props.id_factura,data.monto)}>Eliminar</button></td>
-                                    </tr> 
-
-                               )))
-
-                           }
-                            
-                    </table>
-                    </div>
+                <div className="my-3">
+                    <button className="btn btn-success" onClick={() => this.procesar_pago(this.props.id_factura, this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
+                    <button className="btn btn-primary" onClick={() => this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
+                    <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button>&nbsp;
+                    <button className="btn btn-dark" onClick={() => this.cargar_descuentos_de_facutra(this.props.id_factura)}>Ver descuentos</button>
                 </div>
 
-        </div>);
+                <hr /><br />
+                <h2>Pagos Realizados</h2>
+                <div className="mac-style-count">
+                    Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})
+                </div>
+
+                <div className="tableflow">
+                    <table className="table boxslider">
+                    <thead>
+                        <tr>
+                        <th>Monto</th>
+                        <th>Concepto de pago</th>
+                        <th>Tipo de pago</th>
+                        <th>Fecha de pago</th>
+                        <th>Imprimir</th>
+                        <th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.state.recibos.map((data) => (
+                        <tr key={data.id} id={data.id}>
+                            <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
+                            <td>{data.concepto_pago}</td>
+                            <td>{data.tipo_de_pago}</td>
+                            <td>{data.fecha_pago}</td>
+                            <td><button className="btn btn-success" onClick={() => this.imprimir_factura(data.id, this.props.id_factura)}>Imprimir</button></td>
+                            <td><button className="btn btn" onClick={() => this.eliminar_recibo(data.id, this.props.id_factura, data.monto)}>Eliminar</button></td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
+                </div>
+                );
     }
 
 
