@@ -5,19 +5,20 @@ import IconInvoice from '../expediente.png';
 import FacturaInterface from './factura_interfaz';
 import FuncionesExtras from './funciones_extras';
 import PerfilPaciente from './perfil_paciente';
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 class VerFacturas extends React.Component{
 
 
     constructor(props){
             super(props);  
             this.state= {data:null,facturas:[],id_factura:null,paciente:{}};
-            FuncionesExtras.cargar_paciente(this,this.props.id_paciente);
+            FuncionesExtras.cargar_paciente(this,this.props.match.params.id);
     }
 
 
     componentDidMount(){
 
-        this.cargar_facturas(this.props.id_paciente);
+        this.cargar_facturas(this.props.match.params.id);
     }
 
     cargar_facturas=(id_paciente)=>{
@@ -74,7 +75,10 @@ class VerFacturas extends React.Component{
     render(){
     
         if(this.state.option=="ver_factura"){
+
                 return <FacturaInterface id_factura={this.state.id_factura} id_paciente={this.props.id_paciente} />
+
+
         }else if(this.state.option=="editar_factura"){
 
         }else if(this.state.option=="imprimir_factura"){
@@ -88,9 +92,13 @@ class VerFacturas extends React.Component{
           return (
                <div className="col-md-10 mx-auto my-4">
                     <div className="d-flex justify-content-end mb-3">
-                        <button className="btn btn-outline-secondary" onClick={this.retroceder}>
-                        <i className="fas fa-arrow-left me-2"></i> Retroceder
-                        </button>
+
+                        <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>   
+                            <button className="btn btn-outline-secondary" onClick={this.retroceder}>
+                            <i className="fas fa-arrow-left me-2"></i> Retroceder
+                            </button>
+                        </Link>
+                     
                     </div>
 
                     <div className="card shadow-sm p-4">
@@ -118,9 +126,12 @@ class VerFacturas extends React.Component{
                             </div>
 
                             <div className="d-flex gap-2">
-                                <button className="btn btn-outline-primary btn-sm" onClick={() => this.ver_factura(data.id)}>
-                                <i className="fas fa-eye"></i>
-                                </button>
+                                <Link to={`/ver_factura/${this.props.match.params.id}/${data.id}`}>
+                                    <button className="btn btn-outline-primary btn-sm">
+                                    <i className="fas fa-eye"></i>
+                                    </button>
+                                </Link>
+                               
                                 <button className="btn btn-outline-danger btn-sm" onClick={() => this.eliminar_factura(data.id)}>
                                 <i className="fas fa-trash-alt"></i>
                                 </button>

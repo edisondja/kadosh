@@ -4,6 +4,8 @@ import Axios from 'axios';
 import Core from './funciones_extras';
 import '../css/dashboard.css';
 import FacturaInterfaz from './factura_interfaz';
+import {Link} from 'react-router-dom';
+
 class FacturaEd extends React.Component{
 
         constructor(props){
@@ -12,9 +14,9 @@ class FacturaEd extends React.Component{
         }
 
         componentDidMount(){
-                Core.cargar_factura(this,this.props.id_factura);
-                Core.cargar_procedimientos_de_factura(this,this.props.id_factura,"");
-                Core.cargar_procedimientos(this,this.props.id_factura);
+                Core.cargar_factura(this,this.props.match.params.id_factura);
+                Core.cargar_procedimientos_de_factura(this,this.props.match.params.id_factura,"");
+                Core.cargar_procedimientos(this,this.props.match.params.id_factura);
         }
 
         buscar_procedimiento=()=>{ 
@@ -36,7 +38,7 @@ class FacturaEd extends React.Component{
             "Ingrese la cantidad de procedimineto que deseas agregar a esta factura","0",(event,value)=>{
                 let total =  (valor_procedimiento * value);
                 let cantidad = value;
-                let id_factura = this.props.id_factura;
+                let id_factura = this.props.match.params.id_factura;
                 Axios.get(`${Core.url_base}/api/agregar_procedimiento_lista/${id_factura}/${id_procedimiento}/${total}/${cantidad}`).then(data=>{
                     Alertify.success("Procedimiento agregado con exito..");
                     this.componentDidMount();
@@ -81,13 +83,19 @@ class FacturaEd extends React.Component{
         render(){
 
             if(this.state.opcion=='ver_factura'){
-                return <FacturaInterfaz id_factura={this.props.id_factura} />
+                return <FacturaInterfaz id_factura={this.props.match.params.id_factura} />
             }
 
             return(<div className="col-md-10">
                         <br/><br/><h5>Editar Factura</h5>
                         <strong>Lista de procedimientos</strong>
-                        <button onClick={this.retroceder} style={{float:'right'}} className='btn btn-primary'>Retroceder</button>
+
+
+                        <Link to={`/ver_factura/${this.props.match.params.id}/${this.props.match.params.id_factura}`}>
+                                 <button style={{float:'right'}} className='btn btn-primary'>Retroceder</button>
+                        </Link>
+                   
+
                         <table className="table">
                             <tr>
                                 <td>Procedimiento</td>

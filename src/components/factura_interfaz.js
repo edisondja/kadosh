@@ -7,26 +7,32 @@ import ImprimirRecibo from './imprimir_recibo';
 import Url_base from './funciones_extras';
 import SweetAlert from 'sweetalert2-react';
 import VerFacturas from './ver_facturas';
-import EditarFactura from './editar_factura';
 import ReactDOMServer from 'react-dom/server';
+import {Redirect,Link} from 'react-router-dom';
+
+
 import '../css/dashboard.css';
 
 class FacturaInterfaz extends React.Component {
 
     constructor(props){
         super(props);
-        this.state={descuentos_aplicados:0,contador:false,paciente:{},procedimientos_imprimir:[],config:'normal',data_factura:[],valor:true,factura:{precio_estatus:0,id:0},procedimientos:[],monto_total:0,recibos:[],mensaje:""};
+        this.state={descuentos_aplicados:0,contador:false,paciente:{},
+        procedimientos_imprimir:[],config:'normal',data_factura:[],
+        valor:true,factura:{precio_estatus:0,id:0}
+        ,procedimientos:[],monto_total:0,recibos:[],mensaje:""};
     }
 
     componentDidMount(){
 
-        this.cargar_factura(this.props.id_factura);
-        this.cargar_procedimientos(this.props.id_factura);
-        this.cargar_recibos(this.props.id_factura);
-        Url_base.cargar_paciente(this,this.props.id_paciente);
-        this.cargar_descuentos_de_facutra(this.props.id_factura,"solo_texto");
+
+        this.cargar_factura(this.props.match.params.id_factura);
+        this.cargar_procedimientos(this.props.match.params.id_factura);
+        this.cargar_recibos(this.props.match.params.id_factura);
+        Url_base.cargar_paciente(this,this.props.match.params.id);
+        this.cargar_descuentos_de_facutra(this.props.match.params.id_factura,"solo_texto");
        // this.cargar_monto();
-        Url_base.cargar_procedimientos_de_factura(this,this.props.id_factura);
+        Url_base.cargar_procedimientos_de_factura(this,this.props.match.params.id_factura);
     }
 
     cargar_monto=()=>{
@@ -223,7 +229,7 @@ class FacturaInterfaz extends React.Component {
                             Alertify.confirm("Eliminar Recibo","Estas seguro que quieres eliminar este recibo?",()=>{
                                 Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`).then(data=>{
                                         Alertify.success("Recibo eliminado correctamente..");
-                                            this.cargar_recibos(this.props.id_factura);
+                                            this.cargar_recibos(this.props.match.params.id_factura);
                                             this.setState({factura:{precio_estatus:this.state.factura.precio_estatus+monto}});
                                         }).catch(error=>{
                                     Alertify.error("No se pudo eliminar el recibo..");
@@ -279,7 +285,7 @@ class FacturaInterfaz extends React.Component {
                                 Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/ef/${monto_total}/${procedimientos}`).then(data=>{
                                                 Alertify.success("Pago realizado con exito");
                                                 this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                                this.cargar_recibos(this.props.id_factura);
+                                                this.cargar_recibos(this.props.match.params.id_factura);
                                                 console.log(data);
 
                                 }).catch(error=>{
@@ -299,7 +305,7 @@ class FacturaInterfaz extends React.Component {
                                     Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${cantidad_pagada}/tarjeta/${precio_estatus}/${codigo_targeta}/${monto_total}/${procedimientos}`).then(data=>{
                                         Alertify.success("Pago realizado con exito");
                                         this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                        this.cargar_recibos(this.props.id_factura);
+                                        this.cargar_recibos(this.props.match.params.id_factura);
                                     }).catch(error=>{
                                         Alertify.error("No se pudo procesar el pago correctamente");
                                         this.setState({mensaje:error});
@@ -315,7 +321,7 @@ class FacturaInterfaz extends React.Component {
                                 Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/transferencia/${precio_estatus}/ts/${monto_total}/${procedimientos}`).then(data=>{
                                                 Alertify.success("Pago realizado con exito");
                                                 this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                                this.cargar_recibos(this.props.id_factura);
+                                                this.cargar_recibos(this.props.match.params.id_factura);
                                 }).catch(error=>{
                                     Alertify.error("No se pudo procesar el pago correctamente");
                                     this.setState({mensaje:error});
@@ -381,23 +387,36 @@ class FacturaInterfaz extends React.Component {
     render(){
             if(this.state.config=='imprimir_recibo'){
         
-               return  <ImprimirRecibo id_paciente={this.props.id_paciente} data_recibo={this.state.data_factura} procedimientos_i={this.state.procedimientos_imprimir}/>
+               return  <ImprimirRecibo id_paciente={this.props.match.params.id} data_recibo={this.state.data_factura} procedimientos_i={this.state.procedimientos_imprimir}/>
         
             }else if(this.state.config=="ver_facturas"){
 
-                return <VerFacturas id_paciente={this.props.id_paciente} />
+               return (
+                    <Redirect
+                    to={`/ver_facturas/${this.props.match.params.id}/${this.props.match.params.id_doc}`}
+                    />);
             
             }else if(this.state.config=="editar_factura"){
 
-                return <EditarFactura id_factura={this.props.id_factura}/>
+               // return <EditarFactura id_factura={this.props.id_factura}/>
+
+
+                  return (
+                    <Redirect
+                    to={`/editar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`}
+                    />);
             }
 
         return (<div className="col-md-10 mac-style-container">
                 <h4>
                     Factura y sus detalles
-                    <button className="btn btn-primary" onClick={this.retroceder} style={{ float: 'right' }}>
-                    Retroceder
-                    </button>
+
+                    <Link to={`/ver_facturas/${this.props.match.params.id}`}>   
+                        <button className="btn btn-primary" onClick={this.retroceder} style={{ float: 'right' }}>
+                            Retroceder
+                        </button>
+                    </Link>
+                  
                 </h4>
                 <h4>
                     Estado actual <p className="mac-style-highlight" id="estado_actual">$RD {this.state.factura.precio_estatus}</p>
@@ -432,10 +451,14 @@ class FacturaInterfaz extends React.Component {
                 </table>
 
                 <div className="my-3">
-                    <button className="btn btn-success" onClick={() => this.procesar_pago(this.props.id_factura, this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
-                    <button className="btn btn-primary" onClick={() => this.descontar(this.props.id_factura)}>Descontar</button>&nbsp;
-                    <button className="btn btn-dark" onClick={this.editar_factura}>Editar</button>&nbsp;
-                    <button className="btn btn-dark" onClick={() => this.cargar_descuentos_de_facutra(this.props.id_factura)}>Ver descuentos</button>
+                    <button className="btn btn-success" onClick={() => this.procesar_pago(this.props.match.params.id_factura, this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
+                    <button className="btn btn-primary" onClick={() => this.descontar(this.props.match.params.id_factura)}>Descontar</button>&nbsp;
+                    
+                    <Link to={`/editar_factura/${this.props.match.params.id}/${this.props.match.params.id_factura}`}>
+                        <button className="btn btn-dark" >Editar</button>&nbsp;
+                    </Link>
+                    
+                    <button className="btn btn-dark" onClick={() => this.cargar_descuentos_de_facutra(this.props.match.params.id_factura)}>Ver descuentos</button>
                 </div>
 
                 <hr /><br />

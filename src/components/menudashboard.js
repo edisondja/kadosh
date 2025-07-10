@@ -21,9 +21,16 @@ import ReporteImg from '../reporte.png';
 import Bloquear from '../bloquear.png';
 import Contabilidad from '../contabilidad.png';
 import Contabilidad_template from './contabilidad';
+import PerfilPaciente from './perfil_paciente';
 import Usuario from './agregar_usuario'; 
+import EditarFactura from './editar_factura';
+import CrearPresupuesto from './crear_presupuesto';
+import VerPresupuesto from './ver_presupuestos';
 import { BrowserRouter as Router, Switch, Route, Link,Redirect } from 'react-router-dom';
 import VisualizarPresupuesto from './visualizar_presupuesto';
+import VerFacturas from './ver_facturas';
+import VerFactura from './factura_interfaz'
+import AgregarFactura from './agregando_factura';
 
 class MenuDashboard extends React.Component {
   constructor(props) {
@@ -141,7 +148,14 @@ class MenuDashboard extends React.Component {
               <Route path="/notificaciones" component={Notificaciones} />
               <Route path="/reportes" component={Reporte} />
               <Route path="/citas_pendiente" component={CitasPendiente} />
+			        <Route path="/perfil_paciente/:id/:id_doc" component={PerfilPaciente} />
+              <Route path="/crear_prepuestos/:id/:id_doc" component={CrearPresupuesto} />
+              <Route path="/presupuestos/:id/:id_doc" component={VerPresupuesto} />
               <Route path="/contabilidad" component={Contabilidad_template} />
+              <Route path="/agregar_factura/:id" component={AgregarFactura} />
+              <Route path="/ver_facturas/:id" component={VerFacturas} />
+              <Route path="/ver_factura/:id/:id_factura" component={VerFactura} />
+              <Route path="/editar_factura:id/:id_factura" component={EditarFactura} />
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();

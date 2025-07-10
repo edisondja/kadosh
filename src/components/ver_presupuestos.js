@@ -5,7 +5,9 @@ import Core from './funciones_extras';
 import PerfilPaciente from './perfil_paciente';
 import Lupa  from '../lupa.png';
 import Eliminar  from '../eliminar.png';
+import { Link } from 'react-router-dom';
 import VerPresupuestoAhora from './visualizar_presupuesto';
+
 
 
 class VerPresupuesto extends React.Component{
@@ -22,7 +24,7 @@ class VerPresupuesto extends React.Component{
     componentDidMount(){
 
 
-        this.cargar_presupuestos(this.props.IDpaciente);
+        this.cargar_presupuestos(this.props.match.params.id);
 
         console.log(this.state.presupuestos);
     }
@@ -122,13 +124,7 @@ class VerPresupuesto extends React.Component{
 
     }
 
-    retroceder=()=>{
 
-
-        this.setState({select:'perfil'});
-
-
-    }
 
 
     render(){
@@ -156,7 +152,10 @@ class VerPresupuesto extends React.Component{
         return (<div className='col-md-8'>  
             <hr/><hr/>
             <h3>Lista de presupuestos</h3>
-            <button className='btn-primary' style={{float:'right',margin:'5px'}} onClick={this.retroceder}>Retroceder</button><br/>
+            <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+                <button className='btn-primary' style={{float:'right',margin:'5px'}}>Retroceder</button><br/>
+            </Link>
+ 
             <input type='text' onChange={this.buscar_prespuestos} className='form-control' placeholder='Buscar el prespuesto por nombre' /><hr/>
 
             <table className='table'>

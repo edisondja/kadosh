@@ -15,6 +15,8 @@ import ImgActualizar from '../actualizar.png'
 import alertify from 'alertifyjs';
 import { Doughnut,Bar} from 'react-chartjs-2';
 
+
+
 class  Cita extends React.Component{
 
 	constructor(props){
@@ -365,11 +367,10 @@ class  Cita extends React.Component{
 								</p>
 							</td>
 							<td>
-								<i 
-								className="fa-solid fa-user-circle" 
-								style={{ cursor: 'pointer', fontSize: '20px', color: '#007bff' }} 
-								onClick={() => this.cargar(data.id, data.id_doctor, data.foto_paciente)}
-								></i>
+								 <a href={`/perfil_paciente/${data.id}/${data.id_doctor}`}>
+								<i className="fa-solid fa-user-circle" />
+								</a>
+
 							</td>
 							<td>
 								<i 

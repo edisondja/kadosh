@@ -7,6 +7,8 @@ import cargar_doctores from './funciones_extras';
 import VerFacturas from './ver_facturas';
 import PerfilPaciente from './perfil_paciente';
 import alertify from 'alertifyjs';
+import { Link } from 'react-router-dom';
+
 
 class  AgregarFactura extends React.Component{
 
@@ -28,6 +30,8 @@ class  AgregarFactura extends React.Component{
 
 
     componentDidMount(){
+
+
 
         cargar_doctores.cargar_procedimientos(this);
         cargar_doctores.cargar_doctores(this);
@@ -52,8 +56,8 @@ class  AgregarFactura extends React.Component{
     generar_factura=()=>{
             //accion a ajecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
-            if(this.state.boton_estado==false){
-            Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
+            if(this.state.boton_estado==false){  
+            Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{id_paciente:this.props.match.params.id,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
 
                     console.log(data.data);
                     this.setState({total:0,lista_procedimiento:[],factura:'ready'});
@@ -116,15 +120,16 @@ class  AgregarFactura extends React.Component{
 
 
     render(){
+        
          var indice_procedimiento = 0;
 
          if(this.state.factura=='ready'){
 
-                return <VerFacturas id_paciente={this.props.IDpaciente}/>;
+               // return <VerFacturas id_paciente={this.props.match.params.id}/>;
 
          }else if(this.state.factura=='perfil_paciente'){
 
-            return <PerfilPaciente id_paciente={this.props.IDpaciente}  />
+           // return <PerfilPaciente id_paciente={this.props.match.params.id}  />
          }else{
 
             
@@ -133,7 +138,11 @@ class  AgregarFactura extends React.Component{
 
         return (<div className="col-md-8">
                 <div><br/>
-                    <button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
+                   <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+                    <button className="btn btn-primary" style={{ float: 'right' }}>
+                        Retroceder
+                    </button>
+                    </Link>
                     <h2>CREACCION DE FACTURA</h2><hr/>
                     <strong>Lista de procedimientos</strong><br/>
                     <table className="table">
@@ -178,9 +187,6 @@ class  AgregarFactura extends React.Component{
 
                             </div>
                         )
-
-
-
                     )
                     }
                     </div>

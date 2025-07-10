@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import Alertify from 'alertifyjs';
 import Axios from 'axios';
 import '../css/dashboard.css';
-import AgregarFactura from './agregando_factura';
 import AgregarCita from './agregar_cita';
 import VerFacturas from './ver_facturas';
 import Verficar from './funciones_extras';
@@ -18,25 +17,53 @@ import  { Redirect } from 'react-router-dom';
 import DocumentoImg from '../adjunto.png';
 import ImagenPerfil from '../usuario_listo.png'
 import ImagenMas from '../mas.png';
-import CrearPresupuesto from './crear_presupuesto';
-import VerPresupuesto from './ver_presupuestos';
+import { Link } from 'react-router-dom';
+
 
 
 class PerfilPaciente extends React.Component{
 
+
+	
 		constructor(props){
+
+			
 			super(props);
-			this.state={actualizo:0,deuda_total:0,doctor:{nombre:'',apellido:''},paciente:{nombre:null,apellido:null},select:'perfil_paciente',lista_citas:[],cita:"",id_cita:"",eliminar:0};
+			this.state = {
+				id_doc: 0,
+				id_paciente: 0,
+				actualizo: 0,
+				deuda_total: 0,
+				doctor: {
+					nombre: '',
+					apellido: ''
+				},
+				paciente: {
+					nombre: null,
+					apellido: null
+				},
+				select: 'perfil_paciente',
+				lista_citas: [],
+				cita: '',
+				id_cita: '',
+				eliminar: 0
+				};
 		}
 		componentDidMount(){
 
 			//alert(this...id_paciente);
-			this.consultarPaciente(this.props.id_paciente);
-			this.cargar_citas_paciente(this.props.id_paciente);
-			this.cargar_doctor(this.props.IdDoctor);
+
+			
+			const id = this.props.match.params.id;
+			const id_doc = this.props.match.params.id_doc;
+
+
+			this.consultarPaciente(id);
+			this.cargar_citas_paciente(id);
+			this.cargar_doctor(id_doc);
 			//this.setState({doctor:});
 			//alert(this.props.IdDoctor);
-			this.consultar_deuda_paciente(this.props.id_paciente);
+			this.consultar_deuda_paciente(id);
 			//this.cargar_notas();
 
 
@@ -505,14 +532,11 @@ class PerfilPaciente extends React.Component{
 
 		}
 
-		agregar_factura=()=>{
-
-			this.setState({select:'agregando_factura'})
-		}
+		
 
 	render() {
 			if (this.state.select === 'agregando_factura') {
-				return <AgregarFactura IDpaciente={this.props.id_paciente} />;
+				return '';
 			} else if (this.state.select === 'editando_cita') {
 				return <AgregarCita config="actualizar" id_cita={this.state.id_cita} />;
 			} else if (this.state.select === "ver_facturas") {
@@ -545,25 +569,26 @@ class PerfilPaciente extends React.Component{
 						
 					<div className="icon-buttons-container text-center">
 						&nbsp;&nbsp;
+						<Link to={`/agregar_factura/${this.props.match.params.id}`}>
 						<button
 							className="icon-btn"
-							onClick={this.agregar_factura}
 							title="Agregar Factura"
 							aria-label="Agregar Factura"
 						>
 							<i className="fas fa-file-invoice-dollar"></i>
 							<span>Factura</span>
 						</button>
-
+						</Link>
+						<Link to={`/ver_facturas/${this.props.match.params.id}`}>
 						<button
 							className="icon-btn"
-							onClick={this.ver_facturas}
 							title="Ver Facturas"
 							aria-label="Ver Facturas"
 						>
 							<i className="fas fa-file-alt"></i>
 							<span>Ver Facturas</span>
 						</button>
+						</Link>
 
 						<button
 							className="icon-btn"
@@ -594,26 +619,28 @@ class PerfilPaciente extends React.Component{
 							<i className="fas fa-folder-open"></i>
 							<span>Documentos</span>
 						</button>
+						
+					<Link to={`/crear_prepuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+					<button
+						className="icon-btn"
+						title="Crear Presupuesto"
+						aria-label="Crear Presupuesto"
+					>
+						<i className="fas fa-file-signature"></i>
+						<span>Presupuesto</span>
+					</button>
+					</Link>
 
-						<button
-							className="icon-btn"
-							onClick={this.crear_presupuesto}
-							title="Crear Presupuesto"
-							aria-label="Crear Presupuesto"
-						>
-							<i className="fas fa-file-signature"></i>
-							<span>Presupuesto</span>
-						</button>
-
-						<button
-							className="icon-btn"
-							onClick={this.ver_presupuesto}
-							title="Ver Presupuestos"
-							aria-label="Ver Presupuestos"
-						>
-							<i className="fas fa-file-alt"></i>
-							<span>Ver Presupuestos</span>
-						</button>
+					<Link to={`/presupuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+					<button
+						className="icon-btn"
+						title="Ver Presupuestos"
+						aria-label="Ver Presupuestos"
+					>
+						<i className="fas fa-file-alt"></i>
+						<span>Ver Presupuestos</span>
+					</button>
+					</Link>
 						<button
 							className="icon-btn danger"
 							onClick={() => this.eliminar_paciente(this.state.paciente.id)}
@@ -693,9 +720,8 @@ class PerfilPaciente extends React.Component{
 			} else if (this.state.select === "ver_pacientes") {
 				return <Pacientes />;
 			} else if (this.state.select === "crear_presupuesto") {
-				return <CrearPresupuesto IDpaciente={this.props.id_paciente} />;
+				//return <CrearPresupuesto IDpaciente={this.props.id_paciente} />;
 			} else if (this.state.select === "ver_presupuestos") {
-				return <VerPresupuesto IDpaciente={this.props.id_paciente} />;
 			}
 			}
 

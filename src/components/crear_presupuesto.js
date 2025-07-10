@@ -7,6 +7,8 @@ import cargar_doctores from './funciones_extras';
 import VerFacturas from './ver_facturas';
 import PerfilPaciente from './perfil_paciente';
 import alertify from 'alertifyjs';
+import core from './funciones_extras';
+import { Redirect } from 'react-router-dom';
 
 class  crear_presupuesto extends React.Component{
 
@@ -56,9 +58,9 @@ class  crear_presupuesto extends React.Component{
 
 
             //console.log({id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]});; 
-
+                                                
             if(this.state.boton_estado==false){
-            Axios.post(`${cargar_doctores.url_base}/api/crear_presupuesto`,{data:{nombre:prespuesto,id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:this.state.lista_procedimiento}}).then((data)=>{
+            Axios.post(`${cargar_doctores.url_base}/api/crear_presupuesto`,{data:{nombre:prespuesto,id_paciente:this.props.match.params.id,id_doctor:id_doctor,total:this.state.total,procedimientos:this.state.lista_procedimiento}}).then((data)=>{
 
                     console.log(data.data);
                     Alertify.message("Prespuesto generado con exito!");
@@ -127,11 +129,13 @@ class  crear_presupuesto extends React.Component{
 
          if(this.state.factura=='ready'){
 
-                return <VerFacturas id_paciente={this.props.IDpaciente}/>;
+            return <Redirect to={`/ver_facturas/${this.props.match.params.id}`} />
 
          }else if(this.state.factura=='perfil_paciente'){
 
-            return <PerfilPaciente id_paciente={this.props.IDpaciente}  />
+
+            return <Redirect to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`} />;
+
          }else{
 
             
