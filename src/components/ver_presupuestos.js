@@ -151,7 +151,7 @@ class VerPresupuesto extends React.Component{
 
         return (<div className='col-md-8'>  
             <hr/><hr/>
-            <h3>Lista de presupuestos</h3>
+            <h3>Lista de presupuestos</h3>  
             <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
                 <button className='btn-primary' style={{float:'right',margin:'5px'}}>Retroceder</button><br/>
             </Link>
@@ -173,7 +173,14 @@ class VerPresupuesto extends React.Component{
                     <tr id={"presupuesto"+data.id}>
                         <td>{data.nombre}</td>  
                         <td>{data.paciente.nombre}</td>
-                        <td><img width="35" src={Lupa} onClick={()=>this.ver_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}}/></td>
+                        <td>
+                            <Link to={`/presupuesto/${this.props.match.params.id}/${data.id}`}>
+
+                                <img width="35" src={Lupa} style={{cursor:'pointer'}}/>
+
+                             </Link>
+                           
+                        </td>
                         <td><img width="35" src={Eliminar} onClick={()=>this.eliminar_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}}/></td>
                         <td>{data.created_at}</td>
                     </tr>

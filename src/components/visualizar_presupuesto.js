@@ -19,8 +19,9 @@ class VisualizarPresupuesto extends React.Component{
 
         componentDidMount(){
 
-                this.Cargar_presupuesto(this.props.id_presupuesto);
-                Core.cargar_paciente(this,this.props.id_paciente);
+
+                this.Cargar_presupuesto(this.props.match.params.id_prespusto);
+                Core.cargar_paciente(this,this.props.match.params.id);
                         
                
         }
