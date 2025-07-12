@@ -1,3 +1,141 @@
+/* macOS-inspired styles */
+.mac-btn {
+  padding: 12px 26px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.4px;
+}
+
+.mac-btn:active {
+  transform: scale(0.97);
+}
+
+/* Elegancia y contraste refinado */
+.mac-btn-dark {
+  background: linear-gradient(145deg, #2a2a2e, #1c1c1e);
+  color: #f0f0f5;
+  border: 1px solid #3a3a3f;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mac-btn-dark:hover {
+  background: linear-gradient(145deg, #353539, #262628);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+
+
+.mac-container {
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f6f7;
+  min-height: 100vh;
+}
+
+.mac-box {
+  max-width: 800px;
+  margin: auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+}
+
+.mac-title {
+  font-size: 28px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.mac-input {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mac-input:focus {
+  border-color: #aaa;
+  background-color: #fff;
+}
+
+.mac-doctor-list {
+  margin-top: 30px;
+}
+
+.mac-card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+  transition: transform 0.2s ease;
+}
+
+.mac-card:hover {
+  transform: translateY(-2px);
+}
+
+.mac-card-body {
+  padding: 20px;
+}
+
+.mac-card-title {
+  font-size: 20px;
+  color: #222;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.mac-btn-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.mac-btn {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.mac-btn:active {
+  transform: scale(0.98);
+}
+
+.mac-btn-primary {
+  background-color: #007aff;
+  color: #fff;
+}
+
+.mac-btn-primary:hover {
+  background-color: #006ae6;
+}
+
+.mac-btn-danger {
+  background-color:  #fff;
+
+}
+
 
 
 .mac-style-container {

@@ -4,6 +4,8 @@ import Axios from 'axios';
 import alertify from 'alertifyjs';
 import Core  from './funciones_extras';
 import PerfilPaciente from './perfil_paciente';
+import { Link,Redirect } from 'react-router-dom';
+
 
 class VisualizarPresupuesto extends React.Component{
 
@@ -12,16 +14,22 @@ class VisualizarPresupuesto extends React.Component{
         constructor(props){
 
                super(props);
-        
-               this.state={select:null,paciente:{},presupuesto:{id:0,factura:"",nombre:"",paciente_id:"",doctor_id:"",procedimientos:[[]]}}
+
+               this.state={select:null,paciente:{},
+                                presupuesto:{id:0,factura:"",nombre:"",
+                                paciente_id:"",doctor_id:"",
+                                procedimientos:[[]]},
+                                doctore:[]                
+                        }
 
         }
 
         componentDidMount(){
 
 
-                this.Cargar_presupuesto(this.props.match.params.id_prespusto);
+                this.Cargar_presupuesto(this.props.match.params.id_presupuesto);
                 Core.cargar_paciente(this,this.props.match.params.id);
+                Core.cargar_doctor(this,this.props.match.params.id_doc);
                         
                
         }
@@ -126,8 +134,8 @@ class VisualizarPresupuesto extends React.Component{
         if(this.state.select=='perfil'){
 
 
-                return <PerfilPaciente  id_paciente={this.props.id_paciente}/>
-
+                return <Redirect to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}/>
+                
         }
 
         let count = this.state.presupuesto.procedimientos.length;
@@ -160,8 +168,11 @@ class VisualizarPresupuesto extends React.Component{
         }
 
            return (
+
                 <div className='col-md-8' style={{ margin: "auto", padding: "30px", fontFamily: "Arial, sans-serif", border: "1px solid #ccc" }}>
+                        
                 <div id="presupuesto">
+
                 <div style={{ textAlign: "right", fontSize: "14px" }}>{this.state.presupuesto.fecha}</div>
 
                 <div style={{ textAlign: "center", fontWeight: "bold", fontSize: "20px", backgroundColor: "#222", color: "#fff", padding: "10px", marginTop: "10px" }}>
@@ -169,7 +180,7 @@ class VisualizarPresupuesto extends React.Component{
                 </div>
 
                 <div style={{ fontWeight: "bold", textAlign: "center", marginTop: "10px" }}>
-                        DR. ALEXANDER DE JESUS ABREU
+                        DR. {this.state.doctore.nombre} {this.state.doctore.apellido}
                 </div>
 
                 <div style={{ marginTop: "10px", fontSize: "16px" }}>

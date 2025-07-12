@@ -368,21 +368,21 @@ class  Cita extends React.Component{
 							</td>
 							<td>
 								 <a href={`/perfil_paciente/${data.id}/${data.id_doctor}`}>
-								<i className="fa-solid fa-user-circle" />
+								<i className="fa-solid fa-user-circle" style={{ cursor: 'pointer', fontSize: '20px', color: 'black' }} />
 								</a>
 
 							</td>
 							<td>
 								<i 
 								className="fa-solid fa-calendar-plus" 
-								style={{ cursor: 'pointer', fontSize: '20px', color: '#28a745' }} 
+								style={{ cursor: 'pointer', fontSize: '20px', color: '#black' }} 
 								onClick={() => this.asignar_cita(data.id, data.nombre)}
 								></i>
 							</td>
 							<td>
 								<i 
 								className="fa-solid fa-pen-to-square" 
-								style={{ cursor: 'pointer', fontSize: '20px', color: '#ffc107' }} 
+								style={{ cursor: 'pointer', fontSize: '20px', color: '#black' }} 
 								onClick={() => this.actualizar_paciente(data.id)}
 								></i>
 							</td>

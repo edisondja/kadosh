@@ -7,7 +7,7 @@ import cargar_doctores from './funciones_extras';
 import VerFacturas from './ver_facturas';
 import PerfilPaciente from './perfil_paciente';
 import alertify from 'alertifyjs';
-import { Link } from 'react-router-dom';
+import { Link,Redirect } from 'react-router-dom';
 
 
 class  AgregarFactura extends React.Component{
@@ -62,7 +62,9 @@ class  AgregarFactura extends React.Component{
                     console.log(data.data);
                     this.setState({total:0,lista_procedimiento:[],factura:'ready'});
                     Alertify.success("Factura generada correctamente, puede ir al perfil del paciente y verla");
-                   // document.getElementById("agregar_paciente").click();
+                    // document.getElementById("agregar_paciente").click();
+                    //Redireciona a la factura de pacientes cuando se cargue la factura
+
 
                 }).catch(error=>{
                     Alertify.error("Error al crear factura");
@@ -125,11 +127,12 @@ class  AgregarFactura extends React.Component{
 
          if(this.state.factura=='ready'){
 
-               // return <VerFacturas id_paciente={this.props.match.params.id}/>;
+            return <Redirect to={`/ver_facturas/${this.props.match.params.id}`} />;
 
          }else if(this.state.factura=='perfil_paciente'){
 
-           // return <PerfilPaciente id_paciente={this.props.match.params.id}  />
+            return <Redirect to={`/perfil_paciente/${this.props.match.params.id}/${this.props.params.id_doc}`}/>
+            
          }else{
 
             

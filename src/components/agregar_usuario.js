@@ -226,49 +226,121 @@ class Usuario extends React.Component{
 
         render(){
 
-                return(
-                   <div className="col-md-8"><br/><hr/><hr/><br/><h4>Registrar Usuario</h4>
-                   <p>Registro de usuarios y roles</p>
-                    <input type="text" id="usuario" className="form-control" placeholder="Usuario"/><br/>
-                    <input type="password" id="clave"className="form-control" placeholder="Clave"/><br/>
-                    <input type="text" id="nombre" className="form-control" placeholder="Nombre"/><br/>
-                    <input type="text" id="apellido" className="form-control" placeholder="Apellido"/><br/>
-                    <p>Seleccione el roll de usuario</p>
-                    <select id="roll_usuario" className="form-control">
-                        <option>Administrador</option>
-                        <option>Secretaria</option>
-                        <option>Contable</option>
-                    </select><br/>
-                    <button className="btn btn-primary" onClick={this.agregar_usuario}>+ Agregar usuario</button><hr/>
-                    <strong>Usuarios registrados</strong><hr/>
-                    <input type="search" className="form-control" onChange={(e)=>this.buscar_usuario(e.target.value)} placeholder="Buscar usuario" /><br/>
-                    <table className="table">
-                        <tr>
-                            <td>Usuario</td>
-                            <td>Nombre</td>
-                            <td>Apellido</td>
-                            <td>Roll</td>
-                            <td>actualizar</td>
-                            <td>Eliminar</td>
-                        </tr>
-                        {this.state.usuarios.map(data=>(
+               return (
+                    <div className="mac-container col-md-10">
+                        <div className="mac-box">
+                        <h2 className="mac-title">Registrar Usuario</h2>
+                        <p className="text-muted">Registro de usuarios y asignación de roles</p>
 
-                            <tr>
-                                <td>{data.usuario}</td>
-                                <td>{data.nombre}</td>
-                                <td>{data.apellido}</td>
-                                <td>{data.roll}</td>
-                                <td><button className="btn btn-primary" onClick={()=>this.actualizar_usuario(data.id)}>Actualizar</button></td>
-                                <td><button className="btn btn-warning" onClick={()=>this.eliminar_usuario(data.id)}>Eliminar</button></td>
-                            </tr>
+                        <div className="mac-form-group">
+                            <input
+                            type="text"
+                            id="usuario"
+                            className="mac-input"
+                            placeholder="Usuario"
+                            />
+                        </div><br/>
 
-                        ))}
+                        <div className="mac-form-group">
+                            <input
+                            type="password"
+                            id="clave"
+                            className="mac-input"
+                            placeholder="Clave"
+                            />
+                        </div><br/>
 
+                        <div className="mac-form-group">
+                            <input
+                            type="text"
+                            id="nombre"
+                            className="mac-input"
+                            placeholder="Nombre"
+                            />
+                        </div><br/>
 
+                        <div className="mac-form-group">
+                            <input
+                            type="text"
+                            id="apellido"
+                            className="mac-input"
+                            placeholder="Apellido"
+                            />
+                        </div><br/>
 
-                     
-                    </table>
-                 </div>);
+                        <div className="mac-form-group">
+                            <label>Rol del Usuario</label>
+                            <select id="roll_usuario" className="mac-input">
+                            <option>Administrador</option>
+                            <option>Secretaria</option>
+                            <option>Contable</option>
+                            </select>
+                        </div><br/>
+
+                        <div className="text-end mb-4" style={{textAlign:'center'}}>
+                            <button
+                            className="mac-btn mac-btn-dark"
+                            onClick={this.agregar_usuario}
+                            >
+                            ➕ Agregar Usuario
+                            </button>
+                        </div><br/>
+
+                        <hr />
+                        <strong className="d-block mb-3">Usuarios registrados</strong>
+
+                        <div className="mac-form-group">
+                            <input
+                            type="search"
+                            className="mac-input"
+                            onChange={(e) => this.buscar_usuario(e.target.value)}
+                            placeholder="🔍 Buscar usuario"
+                            />
+                        </div>
+
+                        <div className="table-responsive">
+                            <table className="table table-striped table-bordered">
+                            <thead className="table-light">
+                                <tr>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Rol</th>
+                                <th>Actualizar</th>
+                                <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {this.state.usuarios.map((data) => (
+                                <tr key={data.id}>
+                                    <td>{data.usuario}</td>
+                                    <td>{data.nombre}</td>
+                                    <td>{data.apellido}</td>
+                                    <td>{data.roll}</td>
+                                    <td>
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        onClick={() => this.actualizar_usuario(data.id)}
+                                    >
+                                        ✏️ Actualizar
+                                    </button>
+                                    </td>
+                                    <td>
+                                    <button
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() => this.eliminar_usuario(data.id)}
+                                    >
+                                        🗑️ Eliminar
+                                    </button>
+                                    </td>
+                                </tr>
+                                ))}
+                            </tbody>
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+                    );
 
                    
 

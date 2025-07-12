@@ -174,7 +174,7 @@ class VerPresupuesto extends React.Component{
                         <td>{data.nombre}</td>  
                         <td>{data.paciente.nombre}</td>
                         <td>
-                            <Link to={`/presupuesto/${this.props.match.params.id}/${data.id}`}>
+                            <Link to={`/presupuesto/${this.props.match.params.id}/${data.id}/${data.doctor_id}`}>
 
                                 <img width="35" src={Lupa} style={{cursor:'pointer'}}/>
 

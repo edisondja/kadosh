@@ -540,7 +540,8 @@ class PerfilPaciente extends React.Component{
 			} else if (this.state.select === 'editando_cita') {
 				return <AgregarCita config="actualizar" id_cita={this.state.id_cita} />;
 			} else if (this.state.select === "ver_facturas") {
-				return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre} />;
+
+				//return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre} />;
 			} else if (this.state.select === "perfil_paciente") {
 				return (
 				<div className="col-md-10 mx-auto my-4">
@@ -569,7 +570,7 @@ class PerfilPaciente extends React.Component{
 						
 					<div className="icon-buttons-container text-center">
 						&nbsp;&nbsp;
-						<Link to={`/agregar_factura/${this.props.match.params.id}`}>
+						<Link to={`/agregar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
 						<button
 							className="icon-btn"
 							title="Agregar Factura"
@@ -631,7 +632,7 @@ class PerfilPaciente extends React.Component{
 					</button>
 					</Link>
 
-					<Link to={`/presupuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+					<Link to={`/presupuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}/${this.props.match.params.id_doc}`}>
 					<button
 						className="icon-btn"
 						title="Ver Presupuestos"

@@ -87,28 +87,85 @@ class BuscarDoctor extends React.Component{
 
 				return  <ActualizarDoctor id_doctor={this.state.id_select}/>;
 			}
-			return (<div className="col-md-8"><br/>
-					<h1>Bucando doctor</h1>
-					<input type="text" className="form-control" onChange={this.buscar_doctor} id="doctor_nombre"/><br/>
-					<div className="buscar_doctor">
-						{this.state.doctores.map(data=>(
-								<div><br/>
-									<div class="card">
-										
-										<div class="card-body"><hr/><strong>{data.nombre} {data.apellido}</strong><hr/>
-												<div style={estilo_botones}>
-													<button class="btn btn-primary" onClick={()=>this.actualizar_doctor(data.id)}>Actualizar</button>
-													<button class="btn btn-secondary" onClick={()=>this.eliminar_doctor(data.id)} style={{marginLeft:5}}>Eliminar</button>	
-											    </div>
-										</div> 
+			
+			return (
+						<div className="container py-5">
+							<div className="col-md-10 mx-auto">
+							<h2 className="mb-4 text-center" style={{ fontWeight: 300, color: "#555" }}>
+								Buscar Doctor
+							</h2>
+
+							<input
+								type="text"
+								className="form-control form-control-lg rounded-4 shadow-sm px-4"
+								onChange={this.buscar_doctor}
+								id="doctor_nombre"
+								placeholder="🔍 Escribe el nombre del doctor..."
+								style={{
+								fontSize: "1.1rem",
+								border: "1px solid #ddd",
+								backgroundColor: "#f9f9f9",
+								}}
+							/>
+
+							<div className="buscar_doctor mt-5">
+								{this.state.doctores.map((data) => (
+								<div className="mb-4" key={data.id}>
+									<div
+									className="card border-0 shadow-sm"
+									style={{
+										borderRadius: "20px",
+										backgroundColor: "#fff",
+										transition: "all 0.3s",
+									}}
+									>
+									<div className="card-body">
+										<h5
+										className="mb-3"
+										style={{
+											fontWeight: 500,
+											color: "#333",
+											borderBottom: "1px solid #eee",
+											paddingBottom: "10px",
+										}}
+										>
+										{data.nombre} {data.apellido}
+										</h5>
+
+										<div className="d-flex justify-content-end">
+										<button
+											className="btn btn-outline-primary"
+											onClick={() => this.actualizar_doctor(data.id)}
+											style={{
+											borderRadius: "12px",
+											padding: "8px 20px",
+											fontWeight: 500,
+											marginRight: "10px",
+											}}
+										>
+											✏️ Actualizar
+										</button>
+										<button
+											className="btn btn-outline-danger"
+											onClick={() => this.eliminar_doctor(data.id)}
+											style={{
+											borderRadius: "12px",
+											padding: "8px 20px",
+											fontWeight: 500,
+											}}
+										>
+											🗑️ Eliminar
+										</button>
+										</div>
 									</div>
-								
+									</div>
 								</div>
-						))}
+								))}
+							</div>
+							</div>
 						</div>
-				
-					</div>
-					);
+						);
+
 
 
 		}

@@ -56,24 +56,61 @@ class DoctorFormulario extends React.Component{
 
 
 
-			return (<div className="col-md-10">
-					<br/><h1>Agregar Doctor</h1>
-					<button className="btn btn-success" className="btn btn-primary boton_doctor" onClick={this.opciones}>Buscar Doctor</button><br/>
-					<strong>Nombre</strong><br/>
-					<input type="text" className="form-control" id="nombre" /><br/>
-					<strong>Apellido</strong><br/>
-					<input type="text" className="form-control" id="apellido" /><br/>
-					<strong>Cedula</strong><br/>
-					<input type="text" className="form-control" id="cedula" /><br/>
-					<strong>Numero de telefono</strong><br/>
-					<input type="tel" className="form-control" id="telefono" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
-					<strong>Especialidad</strong><br/>
-					<select className="form-control">
+			return (
+					<div className="mac-container col-md-10">
+						<div className="mac-box">
+						<h2 className="mac-title">Agregar Doctor</h2>
+						
+	
+						<div className="text-end mb-4" style={{float:'right'}}>
+							<button className="mac-btn mac-btn-dark" onClick={this.opciones}>
+							🔍 Buscar Doctor
+							</button>
+						</div>
+
+						<div className="mac-form-group">
+							<label>Nombre</label>
+							<input type="text" className="mac-input" id="nombre" placeholder="Escribe el nombre" />
+						</div>
+
+						<div className="mac-form-group">
+							<label>Apellido</label>
+							<input type="text" className="mac-input" id="apellido" placeholder="Escribe el apellido" />
+						</div>
+
+						<div className="mac-form-group">
+							<label>Cédula</label>
+							<input type="text" className="mac-input" id="cedula" placeholder="000-0000000-0" />
+						</div>
+
+						<div className="mac-form-group">
+							<label>Número de Teléfono</label>
+							<input
+							type="tel"
+							className="mac-input"
+							id="telefono"
+							placeholder="809-000-0000"
+							pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+							/>
+						</div>
+
+						<div className="mac-form-group">
+							<label>Especialidad</label>
+							<select className="mac-input">
 							<option>Odontocista</option>
-							<option>Odontologo</option>
-					</select><br/>
-					<button className="btn btn-primary" onClick={this.guardar_doctor}>Guardar</button>
-				   </div>);
+							<option>Odontólogo</option>
+							</select>
+						</div>
+
+						<div className="text-end" style={{textAlign:'center'}}><hr/>
+							<button className="mac-btn mac-btn-dark"   onClick={this.guardar_doctor}>
+							💾 Guardar
+							</button>
+						</div>
+						</div>
+					</div>
+					);
+
 
 
 		}
