@@ -156,7 +156,7 @@ class MenuDashboard extends React.Component {
               <Route path="/agregar_factura/:id/:id_doc" component={AgregarFactura} />
               <Route path="/ver_facturas/:id" component={VerFacturas} />
               <Route path="/ver_factura/:id/:id_factura" component={VerFactura} />
-              <Route path="/editar_factura:id/:id_factura" component={EditarFactura} />
+              <Route path="/editar_factura/:id/:id_factura" component={EditarFactura} />
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/cerrar_sesion" render={() => {
