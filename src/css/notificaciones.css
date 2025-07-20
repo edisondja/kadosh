@@ -1,0 +1,72 @@
+.mac-box-premium {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.07);
+    padding: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.titulo {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1c1c1e;
+    display: flex;
+    align-items: center;
+}
+
+.icono {
+    margin-left: 12px;
+}
+
+.notificacion-card {
+    background: #f9f9f9;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+}
+
+.contenido {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.texto {
+    flex: 1;
+}
+
+.descripcion {
+    font-size: 16px;
+    color: #3a3a3c;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.botones {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-negro {
+    background-color: #35355c;
+    color: #fff;
+    padding: 10px 20px;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-negro:hover {
+    background-color: #53719e;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-left: 20px;
+    object-fit: cover;
+}

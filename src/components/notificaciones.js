@@ -1,80 +1,82 @@
 import FuncionesExtras from './funciones_extras';
-import Axios from 'axios';
 import React from 'react';
-import Alertify from 'alertifyjs';
-import PerfilPaciente from './perfil_paciente';
+import { withRouter } from 'react-router-dom';
 import HDB from '../hbd.png';
-import Loading from '../loading.gif';
 import okay from '../okay.png';
+import '../css/notificaciones.css';
 
+class Notificacion extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            notificaciones: [],
+        };
+    }
 
+    componentDidMount() {
+        FuncionesExtras.notificar_cumple(this);
+    }
 
-class  Notificacion extends React.Component{
+    ver_paciente = (id, id_doctor) => {
+        this.props.history.push(`/perfil_paciente/${id}/${id_doctor}`);
+    };
 
+   
+    compartirWhatsapp = (telefono, nombre) => {
+        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de Kadosh Dental te desea un feliz cumpleaños 🎈.`;
+        const url = `https://web.whatsapp.com/send?phone=1${telefono}&text=${encodeURIComponent(mensaje)}`;
 
-        constructor(props){
-            super(props);
-            this.state={data:"cxzczx",notificaciones:[],config:"",id_paciente:0};
+        if (this.waWindow && !this.waWindow.closed) {
+            this.waWindow.location.href = url;
+            this.waWindow.focus();
+        } else {
+            this.waWindow = window.open(url, 'whatsapp_kadosh');
         }
-        
-        componentDidMount(){
+    }
 
-            FuncionesExtras.notificar_cumple(this);
-
-        }
-        
-        notifiacion_leidas(id_notificacion){
-
-
-        }
-
-        enviar_correo(){
-
-
-        }
-        
-        ver_paciente=(id)=>{
-
-            this.setState({config:"ver_paciente",id_paciente:id});
-
-        }
-    
-        render(){
-
-            if(this.state.config=="ver_paciente"){
-                    return <PerfilPaciente id_paciente={this.state.id_paciente}/>
-            }else if(this.state.notificaciones==""){
-            return (<div className="col-md-8"><br/><br/><hr/><div className="card"><p className="h4">No hay notificaciones en este momento  <img src={okay} width="64"/></p>
-                           
-                    </div>
-               </div>);
-            }
-
+     render() {
+        if (this.state.notificaciones.length === 0) {
             return (
-                    <div className="card col-md-8"><br/><br/>
-                        <div className="card-title" style={{overflowY : 'auto'}}><h3>Notificaciones</h3></div>
-                        {
-                            this.state.notificaciones.map((data=>(
-
-                                <div className="card-body">
-                                    <p>Hoy esta de cumple Años <strong>{data.nombre} {data.apellido}</strong> Felicitalo! y demuestrale lo especial que es para la familia Kadoshor <img src={HDB} style={{float:'right'}} className="img-circle"/></p>
-                                    <button className="btn btn-primary" onClick={()=>this.ver_paciente(data.id)}>Mas informacion</button>
-                                    <hr/>
-                                </div>
-
-
-                            )))
-
-
-                        }
-                      
-                   </div>
+                <div className="col-md-8 mt-5">
+                    <div className="mac-box-premium">
+                        <p className="titulo">No hay notificaciones en este momento</p>
+                        <img src={okay} alt="Okay" width="48" className="icono" />
+                    </div>
+                </div>
             );
-
-
         }
 
+        return (
+            <div className="col-md-8 mt-5">
+                <div className="mac-box-premium">
+                    <h3 className="titulo mb-4">🎉 Notificaciones</h3>
 
-};
+                    {this.state.notificaciones.map((data, index) => (
+                        <div key={index} className="notificacion-card">
+                            <div className="contenido">
+                                <div className="texto">
+                                    <p className="descripcion">
+                                        Hoy está de cumpleaños <strong>{data.nombre} {data.apellido}</strong> 🎂.<br />
+                                        Teléfono: <strong>{data.telefono}</strong><br />
+                                        ¡Felicítalo y demuéstrale lo especial que es para la familia Kadoshor!
+                                    </p>
+                                    <div className="botones">
+                                        <button className="btn-negro" onClick={() => this.ver_paciente(data.id, data.id_doctor)}>
+                                            Ver perfil
+                                        </button>
+                                        <button className="btn-negro" onClick={() => this.compartirWhatsapp(data.telefono, data.nombre)}>
+                                            Compartir por WhatsApp
+                                        </button>
+                                    </div>
+                                </div>
+                                <img src={HDB} alt="Cumpleaños" className="avatar" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+}
 
-export default Notificacion;
+export default withRouter(Notificacion);

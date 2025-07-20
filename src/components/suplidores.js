@@ -32,55 +32,47 @@ class Suplidores extends React.Component{
 
     }
 
-    registrar_suplidor=()=>{
-        
-        Alertify.confirm("Registrar Suplidor",`<hr/><b>Registrar Suplidor ahora</b><hr/>
-        <input type="hidden" class="form-control" id="id_usuario" placeholder="Nombre de suplidor"/>
-        <input type="text" class="form-control" id="nombre_suplidor" placeholder="Nombre de suplidor"/><br/>
-        <input type="text" class="form-control" id="rnc_suplidor" placeholder="RNC suplidor"/><br/>
-        <textarea class="form-control" id="descripcion" placeholder="Descripcion del suplidor"></textarea>`,()=>{
+    registrar_suplidor = () => {
+        Alertify.confirm(
+            "Registrar Suplidor",
+            `<hr/><b>Registrar Suplidor ahora</b><hr/>
+            <input type="text" class="form-control" id="nombre_suplidor" placeholder="Nombre de suplidor"/><br/>
+            <input type="text" class="form-control" id="rnc_suplidor" placeholder="RNC suplidor"/><br/>
+            <textarea class="form-control" id="descripcion" placeholder="Descripción del suplidor"></textarea>`,
+            async () => {
+            // Captura de datos del formulario
+            const nombre = document.querySelector("#nombre_suplidor").value.trim();
+            const rnc = document.querySelector("#rnc_suplidor").value.trim();
+            const descripcion = document.querySelector("#descripcion").value.trim();
+            const id_usuario = localStorage.getItem("id_usuario");
 
-            let registrar_suplidor = this.capturar_data_form();
-            Axios.post(`${Core.url_base}/api/registrar_suplidor`,registrar_suplidor).then((data)=>{
-                console.log(data.data);
-                Alertify.message(data.data);
-                this.cargar_suplidores();
+            // Validación básica
+            if (!nombre) {
+                Alertify.error("El nombre del suplidor es obligatorio.");
+                return;
+            }
 
-                
-            }).catch(error=>{
-                Alertify.message(error);
-            })
-
-        },()=>{});
-
-    }
-
-    capturar_data_form(suplidor_id=null){
-        let data_form;
-
-
-        if(suplidor_id!==null){
-            
-            data_form = {
-                id_usuario:localStorage.getItem("id_usuario"),
-                nombre:document.querySelector("#nombre_suplidor").value,
-                descripcion:document.querySelector("#descripcion").value,
-                rnc_suplidor:document.querySelector("#rnc_suplidor").value
+            const suplidor = {
+                id_usuario,
+                nombre,
+                rnc_suplidor: rnc,
+                descripcion
             };
 
-        }else{
-            data_form = {
-                id_usuario:localStorage.getItem("id_usuario"),
-                nombre:document.querySelector("#nombre_suplidor").value,
-                descripcion:document.querySelector("#descripcion").value,
-                rnc_suplidor:document.querySelector("#rnc_suplidor").value
+            try {
+                const response = await Axios.post(`${Core.url_base}/api/registrar_suplidor`, suplidor);
+                Alertify.success(response.data.mensaje || "Suplidor registrado correctamente");
+                this.componentDidMount(); // Recargar suplidores
+            } catch (error) {
+                const errores = error.response?.data?.errors || error.message;
+                Alertify.error(`Error al registrar: ${JSON.stringify(errores)}`);
+            }
+            },
+            () => {}
+        );
+        };
 
-            };
-        }
-
-        return data_form;
-
-    }
+   
 
     actualizar_suplidor(data){
         

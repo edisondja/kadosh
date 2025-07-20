@@ -136,7 +136,6 @@ class MenuDashboard extends React.Component {
             </div>
             {Menu}
           </div>
-
             <Switch>
               <Route exact path="/">
                 <Redirect to="/cargar_pacientes" />

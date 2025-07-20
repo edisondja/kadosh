@@ -21,6 +21,8 @@ class FacturaInterfaz extends React.Component {
         procedimientos_imprimir:[],config:'normal',data_factura:[],
         valor:true,factura:{precio_estatus:0,id:0}
         ,procedimientos:[],monto_total:0,recibos:[],mensaje:""};
+
+        
     }
 
     componentDidMount(){
@@ -279,92 +281,115 @@ eliminar_recibo(id_recibo, id_factura, monto) {
         return true;
     }
 
-    procesar_pago=(id_factura,precio_estatus)=>{
+procesar_pago = (id_factura, precio_estatus) => {
+    const monto_total = this.state.monto_total;
+    const procedimientos = JSON.stringify(this.state.procedimientos);
+
+   const enviarPago = (cantidad, concepto_pago, tipo_de_pago = '') => {
+    const monto = parseFloat(cantidad.toString().replace(/[^0-9.-]+/g, ""));
+    const procedimientos = this.state.procedimientos;
 
 
-           // return console.log(this.state.procedimientos+" Monto:"+this.state.monto_total);
-            let monto_total =this.state.monto_total;
-            let procedimientos = this.state.procedimientos;
-            procedimientos = JSON.stringify(procedimientos);
-            
-
-          //  return console.log(procedimientos);
-
-
-            Alertify.confirm("Kadosh","Deseas realizar un pago de esta factura?",()=>{
-                            
-                    Alertify.prompt("Pagando factura",`<select id='seleccionar_pago'><option value='1'>EFECTIVO</option><option value='3'>TRANSFERENCIA</option><option value='2'>TARJETA</option><option value='3'>CHEQUE</option></select> <p>Seleccione el tipo de pago</button>`,"$RD 00.00",(event,value)=>{
-                        
-                        
-                        let option = document.getElementById("seleccionar_pago").value;
-
-                        if(option==1){
-                            //let pay = this.validar_pago(this.state.factura.precio_estatus,value);
-
-                           // if(pay==true){
-                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/efectivo/${precio_estatus}/ef/${monto_total}/${procedimientos}`).then(data=>{
-                                                Alertify.success("Pago realizado con exito");
-                                                this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                                this.cargar_recibos(this.props.match.params.id_factura);
-                                                console.log(data);
-
-                                }).catch(error=>{
-                                    Alertify.error("No se pudo procesar el pago correctamente");
-                                    this.setState({mensaje:error});
-                                });
-                            //}
-                            
-                        }else if(option==2){
-                            let codigo_targeta =prompt("Digite el codigo","x-x-x-x-x");
-
-                                Alertify.message("Este es su codigo "+codigo_targeta);
-                                
-                                let cantidad_pagada = prompt("Ingrese la cantidad que se pago","$RD 0.00");
-                              //  let pay = this.validar_pago(this.state.factura.precio_estatus,cantidad_pagada);
-                             //   if(pay==true){
-                                    Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${cantidad_pagada}/tarjeta/${precio_estatus}/${codigo_targeta}/${monto_total}/${procedimientos}`).then(data=>{
-                                        Alertify.success("Pago realizado con exito");
-                                        this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                        this.cargar_recibos(this.props.match.params.id_factura);
-                                    }).catch(error=>{
-                                        Alertify.error("No se pudo procesar el pago correctamente");
-                                        this.setState({mensaje:error});
-                                    });
-                             //   }
-                        }else if(option==3){
-
-                            Alertify.message("Usted selecciono pago por transferencia");
-
-                           // let pay = this.validar_pago(this.state.factura.precio_estatus,value);
-
-                            //if(pay==true){
-                                Axios.get(`${Url_base.url_base}/api/pagar_recibo/${id_factura}/${value}/transferencia/${precio_estatus}/ts/${monto_total}/${procedimientos}`).then(data=>{
-                                                Alertify.success("Pago realizado con exito");
-                                                this.setState({mensaje:"Payment success",factura:{precio_estatus:this.state.factura.precio_estatus-value}});
-                                                this.cargar_recibos(this.props.match.params.id_factura);
-                                }).catch(error=>{
-                                    Alertify.error("No se pudo procesar el pago correctamente");
-                                    this.setState({mensaje:error});
-                                });
-                           // }
-
-
-
-
-                        }else{
-                            
-                            Alertify.error("Numeracion de pago incorrecta");
-                        }
-                        
- 
-                    },function(){
-                            Alertify.message("Pago cancelado");
-                    }).set('type','text');
-
-            },function(){
-
+    Axios.post(`${Url_base.url_base}/api/pagar_recibo`, {
+                id_factura,
+                monto,
+                tipo_de_pago:tipo_de_pago,
+                estado_actual: precio_estatus,
+                concepto_pago:concepto_pago,
+                total: this.state.monto_total,
+                procedimientos
+            })
+            .then(data => {
+                Alertify.success("Pago realizado con éxito");
+                this.setState({
+                    mensaje: "Payment success",
+                    factura: {
+                        precio_estatus: this.state.factura.precio_estatus - monto
+                    }
+                });
+                this.cargar_recibos(this.props.match.params.id_factura);
+            })
+            .catch(error => {
+                console.error(error.response?.data || error);
+                Alertify.error("No se pudo procesar el pago correctamente");
+                this.setState({ mensaje: error.message || error.toString() });
             });
+        };
+
+
+   Alertify.prompt(
+    "Pagando factura",
+    `
+    <select id='seleccionar_pago'>
+        <option value='1'>EFECTIVO</option>
+        <option value='2'>TARJETA</option>
+        <option value='3'>TRANSFERENCIA</option>
+        <option value='4'>CHEQUE</option>
+        <option value='5'>PAGO MIXTO</option>
+    </select>
+    <p>Seleccione el tipo de pago</p>
+    `,
+    "$RD 00.00",
+    async (event, value) => {
+        const option = document.getElementById("seleccionar_pago").value;
+
+        switch (option) {
+            case '1': // EFECTIVO
+                enviarPago(value, 'efectivo', 'ef');
+                break;
+
+            case '2': { // TARJETA
+                const codigo_tarjeta = prompt("Digite el código de la tarjeta", "xxxx-xxxx-xxxx");
+                const cantidad_tarjeta = prompt("Ingrese la cantidad que se pagó con tarjeta", "$RD 0.00");
+                Alertify.message("Código: " + codigo_tarjeta);
+                enviarPago(cantidad_tarjeta,"tarjeta" ,'tj');
+                break;
+            }
+
+            case '3': // TRANSFERENCIA
+                enviarPago(value, 'transferencia', 'ts');
+                break;
+
+            case '4': // CHEQUE
+                enviarPago(value, 'cheque', 'ch');
+                break;
+
+            case '5': { // PAGO MIXTO
+                const monto_efectivo = prompt("Ingrese el monto pagado en efectivo", "$RD 0.00");
+                const monto_tarjeta = prompt("Ingrese el monto pagado con tarjeta", "$RD 0.00");
+
+                const efectivo = parseFloat(monto_efectivo.replace(/[^0-9.-]+/g, ""));
+                const tarjeta = parseFloat(monto_tarjeta.replace(/[^0-9.-]+/g, ""));
+
+                const monto_total = efectivo + tarjeta;
+
+                if (monto_total > 0) {
+
+                    const formatoPeso = new Intl.NumberFormat('es-DO', {
+                        style: 'currency',
+                        currency: 'DOP',
+                        minimumFractionDigits: 2
+                    });
+
+                    const descripcion_extra = `Pago Mixto / ${formatoPeso.format(efectivo)} en efectivo / en tarjeta ${formatoPeso.format(tarjeta)}`;
+                    enviarPago(monto_total, descripcion_extra,'mxt') ;
+                }
+                break;
+            }
+
+            default:
+                Alertify.error("Método de pago no reconocido");
+                break;
+        }
+    },
+    () => {
+        Alertify.message("Pago cancelado");
     }
+).set('type', 'text');
+
+};
+
+
 
     editar_factura=()=>{
         this.setState({config:'editar_factura'});
