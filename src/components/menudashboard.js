@@ -32,6 +32,7 @@ import VerFacturas from './ver_facturas';
 import VerFactura from './factura_interfaz'
 import AgregarFactura from './agregando_factura';
 import VerPresupuestoAhora from './visualizar_presupuesto';
+import Configuracion from './configuracion';
 
 class MenuDashboard extends React.Component {
   constructor(props) {
@@ -158,6 +159,7 @@ class MenuDashboard extends React.Component {
               <Route path="/editar_factura/:id/:id_factura" component={EditarFactura} />
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
+              <Route path="/configuracion" component={Configuracion} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";
