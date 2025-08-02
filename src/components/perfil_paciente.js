@@ -46,9 +46,59 @@ class PerfilPaciente extends React.Component{
 				lista_citas: [],
 				cita: '',
 				id_cita: '',
-				eliminar: 0
+				eliminar: 0,
+				modal_nota_visable:false,
+				modal_documento_visible: false,
+				nota_texto: '',
+				modal_ver_notas_visable:false,
+				notasPaciente: []
 				};
 		}
+
+
+		ver_notas = () => {
+				this.cargarNotas();
+				this.setState({ modal_ver_notas_visable: true });
+				
+		}
+
+		openModalNota = () => {
+			this.setState({ modal_nota_visable: true });
+
+		}
+
+		closeModalNota = () => {
+
+			this.setState({ modal_nota_visable: false, nota_texto: '' });
+		}
+		
+
+		setNotaTexto=(valor)=>{
+
+			this.setState({nota_texto:valor});
+
+		}
+
+		guardarNota=()=>{
+ 
+
+			let nota = {
+				id_paciente: this.props.match.params.id,
+				descripcion: this.state.nota_texto
+			};
+
+
+			console.log(nota);
+			Axios.post(`${Verficar.url_base}/api/crear_nota`, nota)
+				.then((data) => {
+				console.log(data);
+				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
+				})
+				.catch((error) => {
+				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
+				});
+		}
+
 		componentDidMount(){
 
 			//alert(this...id_paciente);
@@ -75,205 +125,34 @@ class PerfilPaciente extends React.Component{
 
 		}
 
-		agregar_nota_paciente = () => {
-		// Construimos el contenido con tabla + imagen + textarea
-		let contenido = `
-			<table style="width: 100%; border-collapse: collapse;">
-			<tr>
-				<td style="width: 60px; vertical-align: top; padding-right: 10px;">
-				</td>
-				<td style="vertical-align: top;">
-				<textarea id="nota" placeholder="Escribe aquí la nota..."
-					style="
-					width: 100%;
-					height: 100px;
-					padding: 10px;
-					font-size: 14px;
-					border: 1px solid #ccc;
-					border-radius: 8px;
-					resize: vertical;
-					font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-						Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-					"
-				></textarea>
-				</td>
-			</tr>
-			</table>
-		`;
 
-		Alertify.confirm(
-			`<div style="font-weight:600; margin-bottom:10px;">📝 Escriba la nota que desea para este paciente:</div>${contenido}`,
-			function() {
 
-			let nota = {
-				id_paciente:this.props.match.params.id,  // usa el parámetro que recibe la función
-				nota: document.getElementById('nota').value.trim(),
-			};
+		cargarNotas = () => {
 
-			console.log(nota);
-			if (!nota.nota) {
-				alertify.message('Por favor, escribe una nota antes de continuar');
-				return false; // evita cerrar el diálogo si la nota está vacía
-			}
+			Axios.get(`${Verficar.url_base}/api/cargar_notas/${this.props.match.params.id}`)
+				.then((res) => {
 
-			Axios.post(`${Verficar.url_base}/api/crear_nota`, nota)
-				.then((data) => {
-				console.log(data);
-				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
+					console.log(res.data);
+				this.setState({ notasPaciente: res.data});
 				})
-				.catch((error) => {
-				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
+				.catch((err) => {
+				alertify.error('No se pudieron cargar las notas');
 				});
-			},
-			() => {
-			// Acción al cancelar (puedes dejar vacío)
-			}
-		).resizeTo(500, 350);
-		}
+		};
 
 
-
-		cargar_notas=(controlador)=>{
-
-			Alertify.confirm().destroy(); 
-
-		
-			let notas =`<div class='card estilo_notas' id='panel'><table class='table' >
-			<tr><td></td><td>Nota</td><td>Fecha de nota</td></td><td>Actualizar</td><td>Eliminar</td></tr>
-			`;
-			
-			Axios.get(`${Verficar.url_base}/api/cargar_notas/${this.props.id_paciente}`).then(data=>{
-
-				
-					data.data.forEach(element => {
-						
-						notas+=`<tr id='fila${element.id}'>
-								<td><img src='${ImagenNota}' width="50"/></td>
-								<td id='texto${element.id}'><p>${element.descripcion}</p></td>
-								<td>${element.updated_at}</td>
-								<td><button class='btn-primary' id="${element.id}">Actualizar</button></td>
-								<td><button class='btn-warning' id="${element.id}">Eliminar</button></td>
-							</tr>`;
-					});
-
-				
-
-					notas+=`</table></div>`;
-
-
-					Alertify.confirm('Notas',`${notas}`,function(){},function(){}).set('resizable',true).resizeTo(1024,500);
-
-
-					let panel = document.getElementById('panel');
-					let botones = panel.querySelectorAll('.btn-warning');
-	
-					botones.forEach((botones)=>{
-	
-						botones.addEventListener('click',function(e){
-
-								let nota = {nota_id:e.target.id};
-
-								/*Eliminar fila creada con su propio id*/
-								document.getElementById(`fila${e.target.id}`).remove();
-								
-								Axios.post(`${Verficar.url_base}/api/eliminar_nota`,nota).then(data=>{
-
-									console.log(data);
-									alertify.message('Nota eliminada con exito!');	
-	
-								}).catch(error=>{
-	
-									alertify.message('No se pudo eliminar la nota');
-	
-								});
-	
-						});
-	
-					});
-	
-	
-	
-					let panel_a = document.getElementById('panel');
-					let botones_actualizar_A = panel_a.querySelectorAll('.btn-primary');
-	
-					
-					botones_actualizar_A.forEach((botones_actualizar)=>{
-	
-							let contador = 0;
-	
-							botones_actualizar.addEventListener('click',function(e){
-
-								botones_actualizar.disabled=true;
-								let text = document.getElementById(`texto${e.target.id}`);
-								let id =e.target.id;
-								let texto = text.innerText;
-
-									text.innerHTML=`<textarea id="textos${e.target.id}">${texto}</textarea>`;
-
-
-									
-									 document.getElementById('panel').addEventListener('keyup',(e)=>{
-										
-									
-
-										
-
-										if(e.which==13){
-											botones_actualizar.disabled=false;
-
-												let id_record = e.target.id.substr(6,10);
-
-												let nota_actualizar = {
-													id_nota:id_record,
-													descripcion:document.getElementById(`textos${id}`).value
-												};
-
-													//alert(nota_actualizar.descripcion);
-													Axios.post(`${Verficar.url_base}/api/actualizar_nota`,nota_actualizar).then(data=>{
-															console.log(data);
-														   // this.forceUpdate();
-															//text.innerHTML=`<textarea id="textos${e.target.id}">${texto}</textarea>`;
-															text.innerHTML=`<td id="texto${e.target.id}">${nota_actualizar.descripcion}</td>`;
-															Alertify.message("nota actualizada con exito");
-										
-													}).catch(error=>{
-
-
-													});
-
-
-										}
-
-
-
-
-									});
-
-
-									 
-
-
-
-							});
-	
-	
-	
-					});
-	
-	
-
-
-			}).catch(error=>{
-
-				console.log(error);
-
-
+		eliminarNota = (notaId) => {
+		Axios.post(`${Verficar.url_base}/api/eliminar_nota`, { nota_id: notaId })
+			.then(() => {
+			alertify.success('Nota eliminada con éxito');
+			this.setState((prevState) => ({
+				notasPaciente: prevState.notasPaciente.filter((n) => n.id !== notaId),
+			}));
+			})
+			.catch(() => {
+			alertify.error('No se pudo eliminar la nota');
 			});
-
-
-
-		}
-
+		};
 
 
 		cargar_doctor=(id_doctor)=>{
@@ -386,8 +265,6 @@ class PerfilPaciente extends React.Component{
 				
 
 
-
-		
 				data.data.forEach(data=>{
 				    Redirects=`${Verficar.url_base}/storage/${data.ruta_radiografia}`;
 					//<embed src="${Redirects}" width="250x" height="250x" />
@@ -554,7 +431,6 @@ class PerfilPaciente extends React.Component{
 	render() {
 
 
-
 			if (this.state.select === 'agregando_factura') {
 				return '';
 			} else if (this.state.select === 'editando_cita') {
@@ -613,7 +489,7 @@ class PerfilPaciente extends React.Component{
 
 						<button
 							className="icon-btn"
-							onClick={this.cargar_notas}
+							onClick={this.ver_notas}
 							title="Notas"
 							aria-label="Notas"
 						>
@@ -623,7 +499,7 @@ class PerfilPaciente extends React.Component{
 
 						<button
 							className="icon-btn"
-							onClick={this.agregar_nota_paciente}
+							onClick={this.openModalNota}
 							title="Agregar Nota"
 							aria-label="Agregar Nota"
 						>
@@ -739,6 +615,89 @@ class PerfilPaciente extends React.Component{
 						</table>
 					</div>
 				</div>
+				{this.state.modal_nota_visable && (
+				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+					<div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
+					<div className="mac-box p-4 rounded-3 shadow-lg" style={{ width: '100%' }}>
+						<div className="d-flex justify-content-between align-items-center mb-3">
+						<h5 className="fw-bold">📝 Escribir Nota del Paciente</h5>
+						<button
+							type="button"
+							className="btn-close"
+							onClick={this.closeModalNota}
+						></button>
+						</div>
+
+						<textarea
+						className="mac-input w-100"
+						placeholder="Escribe aquí la nota..."
+						rows={6}
+						value={this.state.nota_texto}
+						onChange={(e) => this.setNotaTexto(e.target.value)}
+						style={{ resize: 'vertical' }}
+						></textarea>
+
+						<div className="d-flex justify-content-end gap-2 mt-4">
+						<button className="mac-btn mac-btn-green" onClick={this.guardarNota}>
+							💾 Guardar
+						</button>
+						<button className="mac-btn mac-btn-gray" onClick={this.closeModalNota}>
+							❌ Cancelar
+						</button>
+						</div>
+					</div>
+					</div>
+				</div>
+				)}
+				{this.state.modal_ver_notas_visable && (
+				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+					<div className="modal-dialog modal-lg modal-dialog-centered">
+					<div className="modal-content" style={{ borderRadius: '12px' }}>
+						<div className="modal-header">
+						<h5 className="modal-title">Notas del Paciente 🗒️</h5>
+						<button className="btn-close" onClick={() => this.setState({ modal_ver_notas_visable: false })}></button>
+						</div>
+						<div className="modal-body">
+						<table className="table">
+							<thead>
+							<tr>
+								<th>Contenido</th>
+								<th>Fecha</th>
+								<th colSpan="2">Eliminar</th>
+							</tr>
+							</thead>
+							<tbody>
+							{this.state.notasPaciente.map((nota) => (
+								<tr key={nota.id}>
+								<td style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>
+									<p style={{ margin: 0 }}>{nota.descripcion}</p>
+								</td>
+								<td>{nota.updated_at}</td>
+						
+								<td>
+									<button
+									className="btn btn-outline-danger btn-sm"
+									onClick={() => this.eliminarNota(nota.id)}
+									title="Eliminar nota"
+									>
+									<i className="icon icon-trash" />
+									</button>
+								</td>
+								</tr>
+							))}
+							</tbody>
+						</table>
+						</div>
+						<div className="modal-footer">
+						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visable: false })}>
+							Cerrar
+						</button>
+						</div>
+					</div>
+					</div>
+				</div>
+				)}
+
 			</div>
 				);
 			} else if (this.state.select === "ver_pacientes") {
