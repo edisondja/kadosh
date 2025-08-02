@@ -33,6 +33,8 @@ import VerFactura from './factura_interfaz'
 import AgregarFactura from './agregando_factura';
 import VerPresupuestoAhora from './visualizar_presupuesto';
 import Configuracion from './configuracion';
+import AgregarCita from './agregar_cita';
+import Modulo_p from './modulo_p';
 
 class MenuDashboard extends React.Component {
   constructor(props) {
@@ -81,12 +83,14 @@ class MenuDashboard extends React.Component {
           <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones</Link></li>
           <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente</Link></li>
           <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario</Link></li>
-          <li><Link to="/citas_pendiente"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;Citas Pendientes</Link></li>
+          <li><Link to="/agregar_cita"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;Administracion de Citas</Link></li>
           <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor</Link></li>
           <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos</Link></li>
           <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes</Link></li>
           <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad</Link></li>
           <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;Cerrar Sesión</Link></li>
+          <li><Link to="/dispositivos" id="dispositivos"><i className="fa fa-plug img_estilo"></i>&nbsp;Dispositivos conectados</Link></li>
+          <li><Link to="/auditoria" id="auditoria"><i className="fa fa-eye img_estilo"></i>&nbsp;Auditoría</Link></li>
           <li><Link to="/configuracion" id="configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;Configuración</Link></li>
         </ul>
       );
@@ -160,12 +164,13 @@ class MenuDashboard extends React.Component {
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
+              <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";
                 return null;
               }} />
-              <Route render={() => <h3>Página no encontrada</h3>} />
+              <Route  component={Modulo_p} />
             </Switch>
         </div>
       </Router>

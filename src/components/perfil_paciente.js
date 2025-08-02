@@ -69,52 +69,68 @@ class PerfilPaciente extends React.Component{
 
 		}
 
-
-
 		crear_presupuesto =()=>{
 
 			this.setState({select:'crear_presupuesto'});
 
 		}
 
-		agregar_nota_paciente=(id_paciente)=>{
+		agregar_nota_paciente = () => {
+		// Construimos el contenido con tabla + imagen + textarea
+		let contenido = `
+			<table style="width: 100%; border-collapse: collapse;">
+			<tr>
+				<td style="width: 60px; vertical-align: top; padding-right: 10px;">
+				</td>
+				<td style="vertical-align: top;">
+				<textarea id="nota" placeholder="Escribe aquí la nota..."
+					style="
+					width: 100%;
+					height: 100px;
+					padding: 10px;
+					font-size: 14px;
+					border: 1px solid #ccc;
+					border-radius: 8px;
+					resize: vertical;
+					font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+						Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+					"
+				></textarea>
+				</td>
+			</tr>
+			</table>
+		`;
 
+		Alertify.confirm(
+			`<div style="font-weight:600; margin-bottom:10px;">📝 Escriba la nota que desea para este paciente:</div>${contenido}`,
+			function() {
 
-			//Alertify.message("Este es el ID que tenemos de la nota"+);
+			let nota = {
+				id_paciente:this.props.match.params.id,  // usa el parámetro que recibe la función
+				nota: document.getElementById('nota').value.trim(),
+			};
 
-			let agregar_nota =`<table>
-				<tr>
-					<td><img src='${ImagenNota}' style='padding:10px'/></td>
-					<td><textarea class='form-control' cols='50' rows='5' id='nota'></textarea></td>
-				</tr>
-			</table>`;
+			console.log(nota);
+			if (!nota.nota) {
+				alertify.message('Por favor, escribe una nota antes de continuar');
+				return false; // evita cerrar el diálogo si la nota está vacía
+			}
 
-
-			Alertify.confirm("<br/>Escriba la nota que desea para este paciente",agregar_nota,()=>{
-
-				let nota = {
-							id_paciente:this.props.id_paciente,
-							nota:document.getElementById('nota').value
-						   };
-
-				Axios.post(`${Verficar.url_base}/api/crear_nota`,nota).then(data=>{
-
-					console.log(data);
-					alertify.message('Nota creada con exito');
-
-
-				}).catch(error=>{
-
-					alertify.message('No se pudo crear la nota');
+			Axios.post(`${Verficar.url_base}/api/crear_nota`, nota)
+				.then((data) => {
+				console.log(data);
+				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
+				})
+				.catch((error) => {
+				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
 				});
-
-
-
-			},function(){}).resizeTo(500,500);
-
-			
-
+			},
+			() => {
+			// Acción al cancelar (puedes dejar vacío)
+			}
+		).resizeTo(500, 350);
 		}
+
 
 
 		cargar_notas=(controlador)=>{
@@ -317,6 +333,7 @@ class PerfilPaciente extends React.Component{
 			this.setState({lista_citas:data.data});
 				console.log(data.data);
 
+				
 
 			}).catch(error=>{
 				Alertify.error("error no se pudo cargar las citas");
@@ -535,6 +552,9 @@ class PerfilPaciente extends React.Component{
 		
 
 	render() {
+
+
+
 			if (this.state.select === 'agregando_factura') {
 				return '';
 			} else if (this.state.select === 'editando_cita') {
@@ -693,30 +713,33 @@ class PerfilPaciente extends React.Component{
 					<hr />
 
 					<strong className="mb-3 d-block">Lista de citas</strong>
-					{this.state.lista_citas.map((data) => (
-					<div className="card shadow-sm mb-3" key={data.id}>
-						<div className="card-body d-flex justify-content-between align-items-center">
-						<strong>
-							Hora: {data.hora} | Día: {data.dia}
-						</strong>
-						<div>
-							<button
-							className="btn btn-outline-info me-2"
-							onClick={() => this.cargar_cita(data.id)}
-							>
-							Editar
-							</button>
-							<button
-							className="btn btn-outline-danger"
-							onClick={() => this.eliminar_cita(data.id)}
-							>
-							Eliminar
-							</button>
-						</div>
-						</div>
+					<div className="mb-4">
+					<h5 className="text-xl font-semibold mb-4 text-gray-800">📋 Lista de citas</h5>
+
+					<div className="overflow-x-auto">
+						<table className="table min-w-full border-collapse bg-white rounded-xl shadow-md">
+						<thead className="bg-gray-50 border-b">
+							<tr>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">Inicio</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">Fin</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">Motivo</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">Doctor</th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.state.lista_citas.map((data) => (
+							<tr key={data.id} className="border-t hover:bg-gray-50 transition">
+								<td className="px-4 py-3 text-gray-800">{data.inicio}</td>
+								<td className="px-4 py-3 text-gray-800">{data.fin}</td>
+								<td className="px-4 py-3 text-gray-800">{data.motivo}</td>
+								<td className="px-4 py-3 text-gray-800">{data.doctor.nombre} {data.doctor.apellido}</td>
+							</tr>
+							))}
+						</tbody>
+						</table>
 					</div>
-					))}
 				</div>
+			</div>
 				);
 			} else if (this.state.select === "ver_pacientes") {
 				return <Pacientes />;

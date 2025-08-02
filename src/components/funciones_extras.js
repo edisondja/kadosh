@@ -5,8 +5,8 @@ import Cargar_generos from './funciones_extras.js';
 
 
 var password= "kadosh2019";
-var url_base =  "https://service.clinickadosh.com";
-//var url_base =  "http://127.0.0.1:8000";
+//var url_base =  "https://service.clinickadosh.com";
+var url_base =  "http://127.0.0.1:8000";
 //var url_base = "https://dc05-152-167-237-144.ngrok-free.app"; 
 var login_status = false;
 var clave_secreta ="kadoshor2020";
@@ -14,6 +14,7 @@ var clave_secreta ="kadoshor2020";
 
 function cargar_doctores(el){
 
+    
     Axios.get(`${url_base}/api/doctores`).then(data=>{
 
          el.setState({doctores:data.data});
@@ -24,7 +25,7 @@ function cargar_doctores(el){
         console.log(error);
         cargar_doctores(el);
 
-    })
+    });
 }
 
 
