@@ -35,6 +35,7 @@ import VerPresupuestoAhora from './visualizar_presupuesto';
 import Configuracion from './configuracion';
 import AgregarCita from './agregar_cita';
 import Modulo_p from './modulo_p';
+import ActulizarPaciente from './actualizar_paciente';
 
 class MenuDashboard extends React.Component {
   constructor(props) {
@@ -164,6 +165,8 @@ class MenuDashboard extends React.Component {
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
+              <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
+        
               <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();

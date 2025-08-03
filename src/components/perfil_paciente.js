@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom';
 
 
 
+
 class PerfilPaciente extends React.Component{
 
 
@@ -49,8 +50,10 @@ class PerfilPaciente extends React.Component{
 				eliminar: 0,
 				modal_nota_visable:false,
 				modal_documento_visible: false,
+		
 				nota_texto: '',
 				modal_ver_notas_visable:false,
+				documentos: [],
 				notasPaciente: []
 				};
 		}
@@ -93,6 +96,8 @@ class PerfilPaciente extends React.Component{
 				.then((data) => {
 				console.log(data);
 				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
+				
+					this.setState({ modal_nota_visable: false, nota_texto: '' });
 				})
 				.catch((error) => {
 				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
@@ -242,145 +247,62 @@ class PerfilPaciente extends React.Component{
 			});
 
 
-		}
+			}
+
+			subirDocumento = () => {
+
+				const formData = new FormData();
+				formData.append("image", this.state.nuevoArchivo);
+				formData.append("usuario_id", this.props.match.params.id);
+				formData.append("comentarios", this.state.nuevoComentario);
+
+				Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
+					headers: { 'Content-Type': 'multipart/form-data' }
+				})
+					.then(() => {
+					Alertify.success("Archivo subido con éxito");
+					this.setState({ nuevoArchivo: null, nuevoComentario: "" });
+					this.cargar_documentos(); // refrescar lista
+					})
+					.catch((error) => {
+					console.error(error);
+					});
+			};
 
 
-		cargar_documentos=()=>{
+			eliminarDocumento = (id) => {
 
-
-			let Redirects;
-			
-			Axios.get(`${Verficar.url_base}/api/cargar_documentos/${this.props.id_paciente}`).then(data=>{
-
-				let interface_documento = `
-				<div id="panel_radio" class='estilo_notas'>
-				<table class='table'>
-				<tr>
-					<td>Radiografia</td>
-					<td>Comentarios</td>
-					<td>Fecha</td>
-					<td><img src='${ImagenMas}' style='margin-top: 17%;position:fixed;cursor:pointer;' id="agregar_nota"/>&nbsp;</td>
-				</tr>
-				`;
-				
-
-
-				data.data.forEach(data=>{
-				    Redirects=`${Verficar.url_base}/storage/${data.ruta_radiografia}`;
-					//<embed src="${Redirects}" width="250x" height="250x" />
-					interface_documento+=`<tr id='fila_radiografia${data.id}'> 
-							<td><a target='_blank' href='${Redirects}'>Ver documento</a></td>
-							<td>${data.comentarios}</td>
-							<td>${data.updated_at}</td>
-							<td><button class='btn-warning' id='${data.id}'>Eliminar</button></td>
-					</tr>`;	
-				});
-
-				//Alertify.confirm('Documentos adjuntados')
-				interface_documento+=`</table>
-				`;
-
-				Alertify.confirm('Documentos adjuntados',interface_documento,function(){},function(){}).set('resizable',true).resizeTo(1024,500);
-
-
-				let boton = document.getElementById('panel_radio');
-				let botones_radiografia_e  = boton.querySelectorAll('.btn-warning');
-				let agregar_nota = document.getElementById("agregar_nota");
-
-				agregar_nota.addEventListener('click',function(){
-
-					let interface_documento = `<div class='card'>
-						<input type='file' id='archivo_doc' class='form-control' /><br/>
-						<textarea rows='12' id='descripcion_doc' class='form-control' placeholder='descripcion de documento'></textarea>
-					</div>`;
-
-					
-
-				
-					Alertify.confirm("Subir documento",`${interface_documento}`,function(){
-
-						var formData = new FormData();
-						var imagefile = document.querySelector('#archivo_doc');
-						formData.append("image", imagefile.files[0]);
-						formData.append("usuario_id",document.getElementById('paciente_id').value);
-						formData.append("comentarios",document.getElementById('descripcion_doc').value);
-			
-						Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
-							headers: {
-							  'Content-Type': 'multipart/form-data'
-							}
-						}).then(data=>{
-			
-			
-							console.log(data);
-							Alertify.message("archivo subido con exito");
-							//var imagefile = document.querySelector('#documento').files="";
-			
-			
-						}).catch(error=>{
-			
-							console.log(error);
-			
-						});
-			
-			
-
-					},function(){}).set('resizable',true).resizeTo(500,500);
-
-				});
-			
-				botones_radiografia_e.forEach((btn_eliminar)=>{
-
-
-							btn_eliminar.addEventListener('click',function(e){
-
-
-									Axios.post(`${Verficar.url_base}/api/eliminar_radiografia`,{id_radiografia:e.target.id}).then(data=>{
-										
-										  console.log(data);
-										  Alertify.message("Eliminando documento");	
-										  setTimeout(function(){
-
-												document.getElementById(`fila_radiografia${e.target.id}`).remove();
-												Alertify.message("Completado");	
-
-										  },2000);
-
-									}).catch(error=>{
-										
-											Alertify.message("Error no se pudo eliminar el documento lo sentimos, pongase en contacto con el desarrollador.")
-									});
-
-
-							});
-
-				});
-
-
-				let botones_ver = boton.querySelectorAll('.btn-primary');
-					botones_ver.forEach(boton=>{
-						boton.addEventListener('click',(e)=>{
-
-								//alert(e.target.value);
-								let contendero_documento =`<div'>
-									<embed src="${Redirects}" style='height:1024px;width:1024px'/>
-								</div>`;
-
-
-								Alertify.confirm(`Viendo documento`,`${contendero_documento}`,function(){},function(){}).set('resizable',true).resizeTo(1024,700); 
-
-
-						});
+				Axios.delete(`${Verficar.url_base}/api/eliminar_radiografia/${id}`)
+					.then(() => {
+					Alertify.success("Documento eliminado");
+					this.cargar_documentos();
+					})
+					.catch((error) => {
+					console.error(error);
 					});
 
-				}).catch(error=>{
+			};
 
 
-				Alertify.message('Problema cargando los documentos');
 
-			});
 
-		}
+			cargar_documentos = () => {
+
+				this.setState({ modal_documento_visible: true });
+
+				Axios.get(`${Verficar.url_base}/api/cargar_documentos/${this.props.match.params.id}`)
+					.then((res) => {
+					this.setState({
+						documentos: res.data,
+					});
+					})
+					.catch((err) => {
+					console.error(err);
+					});
+			};
+
+
+		
 
 		eliminar_cita(id){
 			
@@ -697,6 +619,62 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
+				{this.state.modal_documento_visible && (
+				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+					<div className="modal-dialog modal-xl modal-dialog-centered">
+					<div className="modal-content">
+						<div className="modal-header">
+						<h5 className="modal-title">📁 Documentos del Paciente</h5>
+						<button className="btn-close" onClick={() => this.setState({ modalDocumentosVisible: false })}></button>
+						</div>
+						<div className="modal-body">
+						<table className="table">
+							<thead>
+							<tr>
+								<th>Documento</th>
+								<th>Comentarios</th>
+								<th>Fecha</th>
+								<th>Eliminar</th>
+							</tr>
+							</thead>
+							<tbody>
+							{this.state.documentos.map((doc) => (
+								<tr key={doc.id}>
+								<td><a href={`${Verficar.url_base}/storage/${doc.ruta_radiografia}`} target="_blank" rel="noopener noreferrer">Ver documento</a></td>
+								<td>{doc.comentarios}</td>
+								<td>{doc.updated_at}</td>
+								<td>
+									<button className="btn btn-warning btn-sm" onClick={() => this.eliminarDocumento(doc.id)}>
+									Eliminar
+									</button>
+								</td>
+								</tr>
+							))}
+							</tbody>
+						</table>
+
+						<hr />
+						<h6>➕ Agregar nuevo documento</h6>
+						<input type="file" className="form-control mb-2" onChange={(e) => this.setState({ nuevoArchivo: e.target.files[0] })} />
+						<textarea
+							className="form-control mb-2"
+							placeholder="Comentarios del documento"
+							rows="3"
+							value={this.state.nuevoComentario}
+							onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
+						/>
+						<button className="btn btn-primary" onClick={this.subirDocumento}>Subir Documento</button>
+						</div>
+						<div className="modal-footer">
+						<button className="btn btn-secondary" onClick={() => this.setState({ modal_documento_visible: false })}>
+							Cerrar
+						</button>
+						</div>
+					</div>
+					</div>
+				</div>
+				)}
+
 
 			</div>
 				);

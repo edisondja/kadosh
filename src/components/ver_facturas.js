@@ -94,7 +94,7 @@ class VerFacturas extends React.Component{
                     <div className="d-flex justify-content-end mb-3">
 
                         <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>   
-                            <button className="btn btn-outline-secondary" onClick={this.retroceder}>
+                            <button className="btn btn-dark" onClick={this.retroceder} style={{marginRight: '10px',cursor: 'pointer' }} >
                             <i className="fas fa-arrow-left me-2"></i> Retroceder
                             </button>
                         </Link>

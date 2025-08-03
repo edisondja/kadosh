@@ -379,14 +379,13 @@ class  Cita extends React.Component{
 								onClick={() => this.asignar_cita(data.id, data.nombre)}
 								></i>
 							</td>
-							<td>
-								<i 
-								className="fa-solid fa-pen-to-square" 
-								style={{ cursor: 'pointer', fontSize: '20px', color: '#black' }} 
-								onClick={() => this.actualizar_paciente(data.id)}
-								></i>
-							</td>
-							</tr>
+						<td>
+							<a href={`/actualizar_paciente/${data.id}`} style={{ marginRight: '10px', color: 'black' }}>
+								<i className="fa-solid fa-pen-to-square" style={{ cursor: 'pointer', fontSize: '20px' }}></i>
+							</a>
+							
+						</td>
+					</tr>
 						))
 						}
 					</tbody>

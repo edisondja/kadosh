@@ -4,18 +4,30 @@ import Citas from './citas_c';
 import Axios from 'axios';
 import FuncionesExtras from './funciones_extras';
 import alertify from 'alertifyjs';
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
+import flags from 'react-phone-number-input/flags'
+import doFlag from '../assets/flags/do.svg';
 
 class PacienteAdmin extends  React.Component{
 
 	constructor(props){
 			super(props);
-			this.state={estados:true,ver_paciente:false,doctores:[],boton_estado:true};
+			this.state={
+				estados:true,ver_paciente:false,doctores:[],
+				boton_estado:true,
+				telefono:'',
+				customFlags: {
+					DO: doFlag
+			}
+		};
 			
 
 	}
 
 	componentDidMount(){
 			FuncionesExtras.cargar_doctores(this);
+
 		
 	}
 
@@ -36,6 +48,12 @@ class PacienteAdmin extends  React.Component{
 	}
 
 
+	capturar_telefono = (telefono) => {
+
+		this.setState({ telefono });
+
+	 }
+
 	guardar_paciente=()=>{
 		
 		
@@ -50,7 +68,7 @@ class PacienteAdmin extends  React.Component{
 				formData.append("nombre",document.getElementById("nombre").value);
 				formData.append("apellido",document.getElementById("apellido").value);
 				formData.append("cedula",document.getElementById("cedula").value);
-				formData.append("telefono",document.getElementById("telefono").value);
+				formData.append("telefono",this.state.telefono);
 				formData.append("id_doctor",document.getElementById("doctores_select").value);
 				formData.append("fecha_nacimiento",document.getElementById("fecha_nacimiento").value);
 				formData.append("correo_electronico",document.getElementById("correo_electronico").value);
@@ -133,13 +151,15 @@ class PacienteAdmin extends  React.Component{
 
 						<div className="mac-form-group">
 							<label>Número de Teléfono</label>
-							<input
-							type="tel"
-							id="telefono"
-							className="mac-input"
-							pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-							placeholder="809-000-0000"
-							/>
+						<PhoneInput	
+						 	inputClassName="form-control" 
+							country="DO"
+							flags={this.state.customFlags.DO}
+							placeholder="Ingrese el número de teléfono"
+							value={this.state.telefono}
+							onChange={(value) => this.capturar_telefono(value)}
+							defaultCountry="DO"/>
+							
 						</div>
 
 						<div className="mac-form-group">

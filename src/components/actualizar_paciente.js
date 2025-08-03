@@ -15,7 +15,7 @@ class ActualizarPaciente extends React.Component{
         }
         
         componentDidMount(){
-            this.cargar_data_paciente(this.props.IdPaciente);
+            this.cargar_data_paciente(this.props.match.params.id);
             Core.cargar_doctores(this);
         }
 
@@ -40,7 +40,7 @@ class ActualizarPaciente extends React.Component{
             var formData = new FormData();
 			var imagefile = document.querySelector('#foto_perfil');
 			formData.append("foto_paciente", imagefile.files[0]);
-            formData.append("id",this.props.IdPaciente);
+            formData.append("id",this.props.match.params.id);
 
             Axios.post(`${Core.url_base}/api/actualizar_foto_paciente`,formData).then(data=>{
 
@@ -72,7 +72,7 @@ class ActualizarPaciente extends React.Component{
                             id_doctor:doctor_select,
                             telefono:telefono,
                             correo_electronico:correo,
-                            id:this.props.IdPaciente
+                            id: this.props.match.params.id
                     };
                     
                     //console.log(paciente_update);
