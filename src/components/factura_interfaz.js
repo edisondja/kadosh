@@ -531,7 +531,12 @@ procesar_pago = (id_factura, precio_estatus) => {
                             <td>{data.concepto_pago}</td>
                             <td>{data.tipo_de_pago}</td>
                             <td>{data.fecha_pago}</td>
-                            <td><button className="btn btn-success" onClick={() => this.imprimir_factura(data.id, this.props.id_factura)}>Imprimir</button></td>
+                            <td>
+                                <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}`}>
+                                    <button className="btn btn-success">Imprimir</button>
+                                </Link>
+                            </td> 
+    
                             <td><button className="btn btn" onClick={() => this.eliminar_recibo(data.id, this.props.match.params.id_factura, data.monto)}>Eliminar</button></td>
                         </tr>
                         ))}

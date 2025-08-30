@@ -145,8 +145,15 @@ class Reporte extends React.Component{ds
                                         
                                         <tr>
                                             <td>{data.codigo_recibo}</td>
-                                            <td>{data.factura.doctor.nombre} {data.factura.doctor.apellido}</td>
-                                            <td>{data.factura.paciente.nombre} {data.factura.paciente.apellido}</td>
+                                            <td>
+                                            {data?.factura?.doctor
+                                                ? `${data.factura.doctor.nombre} ${data.factura.doctor.apellido}`
+                                                : "Sin doctor"}
+                                            </td>
+                                            <td>{data?.factura?.paciente
+                                                ? `${data.factura.paciente.nombre} ${data.factura.paciente.apellido}`
+                                                : "Sin paciente"}
+                                            </td>
                                             <td>{data.concepto_pago}</td>
                                             <td>{data.tipo_de_pago}</td>
                                             <td>{data.estado_actual}</td>

@@ -47,11 +47,6 @@ function eliminar_nota(id_nota){
 }
 
 
-
-
-
-
-
 function cargar_doctor(u,id_doctor){
 
         Axios.get(`${url_base}/api/cargar_doctor/${id_doctor}`).then(data=>{

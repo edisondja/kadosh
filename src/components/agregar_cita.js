@@ -6,6 +6,8 @@ import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Core from './funciones_extras';
 import alertify from 'alertifyjs';
+import { Link,Redirect } from 'react-router-dom';
+
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
@@ -21,7 +23,15 @@ const Agenda = () => {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const [editando, setEditando] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
+  const [ids_entidades, setIdsEntidades] = useState({ id_paciente: null, id_doctor: null });
 
+
+     let  headers_s = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      };
+
+  
   useEffect(() => {
     Axios.get(`${Core.url_base}/api/doctores`)
       .then((data) => setDoctors(data.data))
@@ -37,9 +47,10 @@ const Agenda = () => {
 
   const eliminar_evento = () => {
 
-    alertify.confirm('¿Estás seguro de eliminar esta cita?', () => {
+    alertify.confirm('¿Estás seguro de eliminar esta cita?', ()  => {
 
-      Axios.delete(`${Core.url_base}/api/eliminar_cita/${eventoSeleccionado.id}`).then((res) => {
+  
+      Axios.delete(`${Core.url_base}/api/eliminar_cita/${eventoSeleccionado.id}`, { headers: headers_s }).then((res) => {
 
         cerrarModal();
          setEventoSeleccionado(null);
@@ -53,7 +64,15 @@ const Agenda = () => {
     });
 
   }
+
+  const ver_paciente = () => {
+
     
+    alert(`/perfil_paciente/${ids_entidades.id_paciente}/${ids_entidades.id_doctor}`);
+        // Redirigir al perfil del paciente seleccionado
+      return <Redirect to={`/perfil_paciente/${ids_entidades.id_paciente}/${ids_entidades.id_doctor}`} />
+
+    };
 
   const cargarCitasDoctor = (doctorId) => {
     Axios.get(`${Core.url_base}/api/citas_doctor/${doctorId}`)
@@ -107,6 +126,12 @@ const Agenda = () => {
     };
 
     if (config === 'guardar') {
+
+      let  headers_s = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      };
+
       Axios.post(`${Core.url_base}/api/guardar_cita`, evento)
         .then((res) => {
           const citaGuardada = res.data;
@@ -126,7 +151,7 @@ const Agenda = () => {
         })
         .catch((err) => console.error(err));
     } else if (config === 'actualizar') {
-      Axios.put(`${Core.url_base}/api/actualizar_cita/${eventoSeleccionado.id}`, evento)
+      Axios.put(`${Core.url_base}/api/actualizar_cita/${eventoSeleccionado.id}`, evento, { headers: headers_s })
         .then((res) => {
           const citaActualizada = res.data.cita;
           const doctor = doctors.find((d) => d.id == doctorSeleccionado);
@@ -159,6 +184,9 @@ const Agenda = () => {
   };
 
   const manejarEventoSeleccionado = (evento) => {
+
+
+    setIdsEntidades({ id_paciente: evento.paciente_id, id_doctor: evento.doctor_id });
     setEventoSeleccionado(evento);
     setNewEvent({
       title: evento.title,
@@ -171,6 +199,8 @@ const Agenda = () => {
     setEditando(true);
     setModalOpen(true);
   };
+
+
 
 
   return (
@@ -210,29 +240,35 @@ const Agenda = () => {
         </div>
       </div>
 
-      <Calendar
-        localizer={localizer}
-        events={events}
-        onSelectEvent={manejarEventoSeleccionado}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: '80vh' }}
-        messages={{
-          next: 'Sig.',
-          previous: 'Ant.',
-          today: 'Hoy',
-          month: 'Mes',
-          week: 'Semana',
-          day: 'Día',
-          agenda: 'Agenda',
-          date: 'Fecha',
-          time: 'Hora',
-          event: 'Evento',
-          noEventsInRange: 'No hay eventos.',
-        }}
-        tooltipAccessor={(event) => `Paciente: ${event.paciente_nombre}\nDoctor: ${event.doctor_nombre}\nMotivo: ${event.title}`}
-        titleAccessor={(event) => `${event.title} - ${event.paciente_nombre || ''}`}
-      />
+     <Calendar
+      localizer={localizer}
+      events={events}
+      onSelectEvent={manejarEventoSeleccionado}
+      startAccessor="start"
+      endAccessor="end"
+      style={{ height: '80vh' }}
+      messages={{
+        next: 'Sig.',
+        previous: 'Ant.',
+        today: 'Hoy',
+        month: 'Mes',
+        week: 'Semana',
+        day: 'Día',
+        agenda: 'Agenda',
+        date: 'Fecha',
+        time: 'Hora',
+        event: 'Evento',
+        noEventsInRange: 'No hay eventos.',
+      }}
+      tooltipAccessor={(event) =>
+        `Paciente: ${event.paciente_nombre}\nDoctor: ${event.doctor_nombre}\nMotivo: ${event.title}`
+      }
+      titleAccessor={(event) =>
+        `${event.title} - ${event.paciente_nombre || ''}`
+      }
+      min={new Date(0, 0, 0, 8, 0, 0)} // Empieza a mostrar desde las 8:00 AM
+    />
+
 
       {modalOpen && (
         <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
@@ -295,6 +331,11 @@ const Agenda = () => {
                   {editando && (
                     <button type="button" className="btn btn-danger" onClick={eliminar_evento}>Eliminar</button>
                   )}
+
+                  {editando && (
+                    <Link className='btn btn-secondary' to={`/perfil_paciente/${ids_entidades.id_paciente}/${ids_entidades.id_doctor}`}> Ver paciente</Link>
+                  )}
+
                   <button type="submit" className="btn btn-primary">Guardar</button>
                   <button type="button" className="btn btn-secondary" onClick={cerrarModal}>Cancelar</button>
                 </div>

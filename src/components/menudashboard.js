@@ -32,6 +32,7 @@ import VerFacturas from './ver_facturas';
 import VerFactura from './factura_interfaz'
 import AgregarFactura from './agregando_factura';
 import VerPresupuestoAhora from './visualizar_presupuesto';
+import ImprimirRecibo  from './imprimir_recibo';
 import Configuracion from './configuracion';
 import AgregarCita from './agregar_cita';
 import Modulo_p from './modulo_p';
@@ -80,7 +81,7 @@ class MenuDashboard extends React.Component {
 
     if (localStorage.getItem("roll") === "Administrador") {
       Menu = (
-        <ul style={this.estilos} className="menuStilos">
+        <ul style={this.estilos} className="menuStilos ">
           <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones</Link></li>
           <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente</Link></li>
           <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario</Link></li>
@@ -166,7 +167,7 @@ class MenuDashboard extends React.Component {
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
-        
+              <Route path="/imprimir_recibo/:id_recibo/:id_factura" component={ImprimirRecibo} />
               <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();

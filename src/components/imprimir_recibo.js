@@ -1,63 +1,116 @@
 import React from 'react';
 import Axios from 'axios';
 import '../css/dashboard.css';
-import PerfilPaciente from './perfil_paciente';
-import alertify from 'alertifyjs';
-import ActualizarPaciente from './actualizar_paciente';
-class ImprimirRecibo extends React.Component{
+import Alertify from 'alertifyjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import Core from './funciones_extras';
+import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
 
-    constructor(props){
+class ImprimirRecibo extends React.Component {
+    constructor(props) {
         super(props);
-        this.state= {monto_total:0,option:''};
+        this.state = {
+            monto_total: 0,
+            redirectPerfil: false,
+            factura: {},
+            recibo: {}
+        };
+    }
+
+    componentDidMount() {
+        Alertify.message("Cargando recibo...");
+        const { id_factura, id_recibo } = this.props.match.params;
+        this.cargar_factura(id_factura);
+        this.cargar_recibo(id_recibo);
+
 
     }
 
-    componentDidMount(){
-        
-    
-    }
+    retroceder = () => {
+        this.setState({ redirectPerfil: true });
+    };
 
-    retroceder=()=>{
-        this.setState({option:'ver_perfil'})
-    }
+    Imprimir = () => {
+        const ficha = document.getElementById("recibo");
+        const ventimp = window.open('', 'popimpr');
+        ventimp.document.write(ficha.innerHTML);
+        ventimp.document.close();
+        ventimp.print();
+        ventimp.close();
+    };
 
-    Imprimir(){
-        
-            var ficha = document.getElementById("recibo");
-            var ventimp = window.open(' ', 'popimpr');
-            ventimp.document.write( ficha.innerHTML );
-            ventimp.document.close();
-            ventimp.print( );
-            ventimp.close();
+    cargar_factura = async (id_factura) => {
+        try {
+            const { data } = await Axios.get(`${Core.url_base}/api/cargar_factura/${id_factura}`);
+            console.log("Factura:", data);
+            this.setState({ factura: data[0] || {} });
+        } catch (error) {
+            Alertify.error("Error cargando factura. Reintentando...");
+            setTimeout(() => this.cargar_factura(id_factura), 2000);
+        }
+    };
 
-    }
+    cargar_recibo = async (id_recibo) => {
+        try {
+            const { data } = await Axios.get(`${Core.url_base}/api/cargar_recibo/${id_recibo}`);
+
+            console.log("Recibo:", data);
+            this.setState({ recibo: data|| {} });
 
 
-    render(){
+        } catch (error) {
+            Alertify.error("Error cargando recibo. Reintentando...");
+            setTimeout(() => this.cargar_recibo(id_recibo), 2000);
+        }
+    };  
+
+    generarPDFyEnviar = async () => {
+        try {
+            const elemento = document.getElementById('recibo');
+            const canvas = await html2canvas(elemento, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
 
-       let procedimientos = this.props.data_recibo.procedimientos;
+            const pdfBlob = pdf.output('blob');
+            const formData = new FormData();
+            formData.append('pdf', pdfBlob, 'recibo.pdf');
+            formData.append('email', this.state.recibo.factura.paciente.correo_electronico || '');
+            formData.append('asunto', 'Recibo de Pago - Clínica Kadosh');
 
-       if(procedimientos==""){
+            await Axios.post(`${Core.url_base}/api/enviar_recibo`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
 
-            procedimientos  = this.props.procedimientos_i;
-       
-        }else{
+            Alertify.success('Recibo enviado por correo correctamente');
+        } catch (error) {
+            console.error(error);
+            Alertify.error('Error al generar o enviar el PDF');
+        }
+    };
 
-            procedimientos =  JSON.parse(this.props.data_recibo.procedimientos);
+    render() {
+        const { factura, recibo, redirectPerfil } = this.state;
+        const procedimientos = JSON.parse(recibo.procedimientos || "[]");
 
+        // Calcular total en cada render sin modificar state
+        const monto_total = procedimientos.reduce((acc, item) => acc + (item.total || 0), 0);
+
+        if (redirectPerfil) {
+            return <Redirect to={`/perfil_paciente/${this.props.match.params.id_paciente}`} />;
         }
 
-        if(this.state.option=='ver_perfil'){
-
-            return  <PerfilPaciente id_paciente={this.props.id_paciente}/>
-        }
-        
         return (
             <div style={{ padding: '30px', fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>
-                <br />
                 <hr />
-               <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
                     <button className="btn btn-primary" onClick={this.Imprimir} title="Imprimir">
                         <i className="fas fa-print"></i>
                     </button>
@@ -65,66 +118,61 @@ class ImprimirRecibo extends React.Component{
                     <button onClick={this.retroceder} className="btn btn-primary" title="Retroceder">
                         <i className="fas fa-arrow-left"></i>
                     </button>
-                    </div>
 
+                    <button onClick={this.generarPDFyEnviar} className="btn btn-success" title="Generar PDF y Enviar por Correo">
+                        <i className="fas fa-file-pdf"></i> Enviar PDF
+                    </button>
+                </div>
                 <hr />
 
                 <div className="card" id="recibo" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                    <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
-                    CLÍNICA DENTAL KADOSH OR SRL<br />
-                    <span style={{ fontSize: '14px' }}>C/San Antonio #33A Los Alcarrizos<br />
-                    Santo Domingo, R.D</span>
-                    </strong>
-                    <p>TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
-                </div>
-
-                <hr />
-                <p style={{ textAlign: 'center' }}><strong>COMPROBANTE AUTORIZADO POR LA DGII</strong></p>
-                <hr />
-
-                <p><strong>Fecha de pago:</strong> {this.props.data_recibo.fecha_pago}</p>
-                <p><strong>#</strong>{this.props.data_recibo.codigo_recibo}</p>
-
-                <hr />
-                <p><strong>FACTURA PARA CONSUMIDOR</strong></p>
-                <hr />
-
-                <p><strong>Lista de procedimientos:</strong></p>
-                <div style={{ marginLeft: '20px' }}>
-                    {
-                    procedimientos.map((data) => (
-                        <div key={data.nombre}>
-                        <strong style={{ display: 'block', marginBottom: '5px' }}>
-                            {data.nombre} x{data.cantidad} - RD$ {new Intl.NumberFormat().format(data.total)}
+                    <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                        <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
+                            CLÍNICA DENTAL KADOSH OR SRL<br />
+                            <span style={{ fontSize: '14px' }}>C/San Antonio #33A Los Alcarrizos<br />Santo Domingo, R.D</span>
                         </strong>
-                        <div style={{ display: 'none' }}>{this.state.monto_total += data.total}</div>
-                        </div>
-                    ))
-                    }
-                </div>
+                        <p>TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
+                    </div>
 
-                <br />
-                <p><strong>Total:</strong> RD$ {new Intl.NumberFormat().format(this.state.monto_total)}</p>
-                <p><strong>Monto Pagado:</strong> RD$ {new Intl.NumberFormat().format(this.props.data_recibo.monto)}</p>
-                <p><strong>Resto a pagar:</strong> RD$ {new Intl.NumberFormat().format(this.props.data_recibo.estado_actual)}</p>
-                <p><strong>Tipo de pago:</strong> {this.props.data_recibo.concepto_pago}</p>
+                    <hr />
+                    <p style={{ textAlign: 'center' }}><strong>COMPROBANTE AUTORIZADO POR LA DGII</strong></p>
+                    <hr />
 
-                <hr />
-                <p><strong>Doctor:</strong> {this.props.data_recibo.nombre} {this.props.data_recibo.apellido}</p>
-                <p><strong>Paciente:</strong> {this.props.data_recibo.paciente} {this.props.data_recibo.apellido_paciente}</p>
+                    <p><strong>Fecha de pago:</strong> {recibo.fecha_pago}</p>
+                    <p><strong>#</strong> {recibo.codigo_recibo}</p>
 
-                <div style={{ textAlign: 'right', marginTop: '50px' }}>
-                    <strong>Firma __________________________________</strong>
-                </div>
+                    <hr />
+                    <p><strong>FACTURA PARA CONSUMIDOR</strong></p>
+                    <hr />
+
+                    <p><strong>Lista de procedimientos:</strong></p>
+                    <div style={{ marginLeft: '20px' }}>
+                        {procedimientos.map((data, idx) => (
+                            <div key={idx}>
+                                <strong style={{ display: 'block', marginBottom: '5px' }}>
+                                    {data.nombre} x{data.cantidad} - RD$ {new Intl.NumberFormat().format(data.total)}
+                                </strong>
+                            </div>
+                        ))}
+                    </div>
+
+                    <br />
+                    <p><strong>Total:</strong> RD$ {new Intl.NumberFormat().format(monto_total)}</p>
+                    <p><strong>Monto Pagado:</strong> RD$ {new Intl.NumberFormat().format(recibo.monto || 0)}</p>
+                    <p><strong>Resto a pagar:</strong> RD$ {new Intl.NumberFormat().format(recibo.estado_actual || 0)}</p>
+                    <p><strong>Tipo de pago:</strong> {recibo.concepto_pago}</p>
+
+                    <hr />
+                    <p><strong>Doctor:</strong> {this.state.recibo?.factura?.doctor?.nombre || ''} {this.state.recibo?.factura?.doctor?.apellido || ''}</p>
+                    <p><strong>Paciente:</strong> {this.state.recibo?.factura?.paciente?.nombre || ''} {this.state.recibo?.factura?.paciente?.apellido || ''}</p>
+
+                    <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                        <strong>Firma __________________________________</strong>
+                    </div>
                 </div>
             </div>
-            );
-
-
+        );
     }
-
-
 }
 
 export default ImprimirRecibo;

@@ -18,11 +18,50 @@ class VerFacturas extends React.Component{
 
     componentDidMount(){
 
+        console.log(this.state.facturas);
+
         this.cargar_facturas(this.props.match.params.id);
     }
 
-    cargar_facturas=(id_paciente)=>{
-        Axios.get(`${FuncionesExtras.url_base}/api/cargar_facturas_paciente/${id_paciente}`).then(data=>{
+    validar_para_borrar=(id_factura)=>{
+
+     Axios.get(`${FuncionesExtras.url_base}/api/cargar_recibos/${id_factura}`)
+        .then(data=>{
+
+            if(data.data.length>0){
+
+                Alertify.error(`Estimado usuario no puedes eliminar esta factura, 
+                    ya que recibos generados dependen de esta, si desea eliminarla borre todos los recibos, 
+                    correspondientes`);
+
+            }else{
+                Alertify.prompt("Eliminar Factura","Digite la contraseña admin para eliminar esta factura","",
+                    function(event,value){
+                            if(FuncionesExtras.password==value){
+                                
+                                Axios.get(`${FuncionesExtras.url_base}/api/eliminar_factura/${id_factura}`).then(data=>{
+                                        Alertify.success("Factura eliminada con exito");
+                                        document.getElementById(id_factura).remove();
+                                }).catch(error=>{
+                                        Alertify.error("No se pudo eliminar la factura");
+                                });
+                                Alertify.success("contraseña correcta");
+                            }
+                    },function(error){
+
+                    }).set('type','password');
+                }
+   
+        }).catch(error=>{
+
+            Alertify.message(error);
+        });
+        
+    }
+
+
+   cargar_facturas=(id_paciente)=>{
+         Axios.get(`${FuncionesExtras.url_base}/api/cargar_facturas_paciente/${id_paciente}`).then(data=>{
             
             this.setState({facturas:data.data});
             Alertify.message("Facturas listas");
@@ -34,22 +73,11 @@ class VerFacturas extends React.Component{
         });
     }
 
-    eliminar_factura(id_factura){
-            Alertify.prompt("Eliminar Factura","Digite la contraseña admin para eliminar esta factura","",
-        function(event,value){
-                if(FuncionesExtras.password==value){
-                    
-                    Axios.get(`${FuncionesExtras.url_base}/api/eliminar_factura/${id_factura}`).then(data=>{
-                            Alertify.success("Factura eliminada con exito");
-                            document.getElementById(id_factura).remove();
-                    }).catch(error=>{
-                            Alertify.error("No se pudo eliminar la factura");
-                    });
-                    Alertify.success("contraseña correcta");
-                }
-        },function(error){
+     eliminar_factura(id_factura){
 
-        }).set('type','password');
+
+         this.validar_para_borrar(id_factura);
+
     }
 
     actualizar_factura(id_factura){

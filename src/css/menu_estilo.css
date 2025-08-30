@@ -1,0 +1,43 @@
+/* Añade esto a tu CSS principal o componente */
+.menu-wrapper {
+  position: relative;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  padding: 10px;
+}
+
+.menu-container {
+  transition: all 0.3s ease;
+}
+
+.menu-container ul {
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .menu-container {
+    display: none;
+  }
+
+  .menu-container.open {
+    display: block;
+    background-color: #f0f0f5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  .menuStilos.open {
+    padding: 0;
+  }
+}
