@@ -168,9 +168,9 @@ class  AgregarFactura extends React.Component{
                     </table>
                     <h3>Monto total</h3>
                     <strong id="monto_total">$ {this.state.total}</strong>
-                    <strong  style={{float:'right',margin:'5px'}}>Seleccione el doctor</strong>
+                    <strong  style={{float:'right',margin:'5px'}}>Seleccione el curso</strong>
                     <select className="form-control col-md-3" style={{float:'right'}} id="doctor_i" onChange={this.select_checked}>
-                        <option value="seleccione_doctor">Seleccione un doctor</option>
+                        <option value="seleccione_doctor">Seleccione un Curso</option>
                         {this.state.doctores.map(data=>(
                              <option value={data.id}>{data.nombre} {data.apellido}</option>
                         ))}

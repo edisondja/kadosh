@@ -489,7 +489,7 @@ class PerfilPaciente extends React.Component{
 							<th>Teléfono</th>
 							<th>Email</th>
 							<th>Ingreso</th>
-							<th>Doctor</th>
+							<th>Curso</th>
 							<th>Deuda Total</th>
 						</tr>
 						</thead>
@@ -624,7 +624,7 @@ class PerfilPaciente extends React.Component{
 					<div className="modal-dialog modal-xl modal-dialog-centered">
 					<div className="modal-content">
 						<div className="modal-header">
-						<h5 className="modal-title">📁 Documentos del Paciente</h5>
+						<h5 className="modal-title">📁 Documentos del Alumno</h5>
 						<button className="btn-close" onClick={() => this.setState({ modalDocumentosVisible: false })}></button>
 						</div>
 						<div className="modal-body">

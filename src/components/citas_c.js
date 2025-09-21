@@ -323,7 +323,7 @@ class  Cita extends React.Component{
 					<div className="col-md-10">
 					<table className="table">
 						<tr>
-						<td>Cantidad de pacientes registrados</td>
+						<td>Cantidad de estudiantes registrados</td>
 						<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
 						<td>Cantidad de procedimientos realizados</td>
 						<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
@@ -343,7 +343,7 @@ class  Cita extends React.Component{
 						<tr className="fijar_columnas">
 						<th scope="col">Nombre</th>
 						<th scope="col">Apellido</th>
-						<th scope="col">Doctor</th>
+						<th scope="col">Curso</th>
 						<th scope="col">Cédula</th>
 						<th scope="col">Teléfono</th>
 						<th scope="col">Deuda</th> 

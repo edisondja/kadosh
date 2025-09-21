@@ -60,27 +60,31 @@ class PacienteAdmin extends  React.Component{
 		if(this.state.boton_estado==false){
 
 
-				var formData = new FormData();
-				var imagefile = document.querySelector('#foto_paciente');
-				if(imagefile.files.length>0){
-					formData.append("foto_paciente", imagefile.files[0]);
-				}
-				formData.append("nombre",document.getElementById("nombre").value);
-				formData.append("apellido",document.getElementById("apellido").value);
-				formData.append("cedula",document.getElementById("cedula").value);
-				formData.append("telefono",this.state.telefono);
-				formData.append("id_doctor",document.getElementById("doctores_select").value);
-				formData.append("fecha_nacimiento",document.getElementById("fecha_nacimiento").value);
-				formData.append("correo_electronico",document.getElementById("correo_electronico").value);
-				formData.append("sexo",document.getElementById("sexo").value);
+				const formData = new FormData();
 
-			
+				// Foto (si no hay archivo no se agrega nada)
+				const imagefile = document.querySelector("#foto_paciente");
+				if (imagefile && imagefile.files && imagefile.files.length > 0) {
+				formData.append("foto_paciente", imagefile.files[0]);
+				}
+
+				// Campos de texto con fallback seguro
+				formData.append("nombre", document.getElementById("nombre")?.value ?? "");
+				formData.append("apellido", document.getElementById("apellido")?.value ?? "");
+				formData.append("cedula", document.getElementById("cedula")?.value ?? "");
+				formData.append("telefono", this.state.telefono ?? "");
+				formData.append("id_doctor", document.getElementById("doctores_select")?.value ?? "");
+				formData.append("fecha_nacimiento", document.getElementById("fecha_nacimiento")?.value ?? "");
+				formData.append("correo_electronico", document.getElementById("correo_electronico")?.value ?? "");
+				formData.append("sexo", document.getElementById("sexo")?.value ?? "");
+
 			Axios.post(`${FuncionesExtras.url_base}/api/guardar_paciente`,formData).then(data=>{
 					document.getElementById("cargar_pacientes").click();
 					this.setState({boton_estado:true});
+
 			}).catch(error=>{
 
-					alert("error");
+					alert(error);
 			})
 
 			this.setState({boton_estado:true});
@@ -96,7 +100,7 @@ class PacienteAdmin extends  React.Component{
 					<div className="mac-container col-md-10">
 						<div className="mac-box">
 						<div className="d-flex justify-content-between align-items-center mb-4">
-							<h2 className="mac-title">Agregar Paciente</h2>
+							<h2 className="mac-title">Agregar Estudiante</h2>
 							<button
 							className="mac-btn mac-btn-dark"
 							onClick={this.ver_pacientes}
@@ -169,7 +173,7 @@ class PacienteAdmin extends  React.Component{
 							className="mac-input"
 							onChange={this.seleccionar_doctor}
 							>
-							<option value="seleccionar">Seleccione el doctor</option>
+							<option value="seleccionar">Seleccione el curso</option>
 							{this.state.doctores.map((data) => (
 								<option key={data.id} value={data.id}>
 								{data.nombre} {data.apellido}

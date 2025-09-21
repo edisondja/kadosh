@@ -128,10 +128,10 @@ class ImprimirRecibo extends React.Component {
                 <div className="card" id="recibo" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                         <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
-                            CLÍNICA DENTAL KADOSH OR SRL<br />
-                            <span style={{ fontSize: '14px' }}>C/San Antonio #33A Los Alcarrizos<br />Santo Domingo, R.D</span>
+                            COLEGIO LUCES DEL FUTURO<br />
+                            <span style={{ fontSize: '14px' }}>Calle David #38, Residencial Antonia, Manoguayabo, Santo Domingo Oeste, República Dominicana</span>
                         </strong>
-                        <p>TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
+                        <p>TEL: 809-564-0566 &nbsp;</p>
                     </div>
 
                     <hr />
@@ -163,8 +163,8 @@ class ImprimirRecibo extends React.Component {
                     <p><strong>Tipo de pago:</strong> {recibo.concepto_pago}</p>
 
                     <hr />
-                    <p><strong>Doctor:</strong> {this.state.recibo?.factura?.doctor?.nombre || ''} {this.state.recibo?.factura?.doctor?.apellido || ''}</p>
-                    <p><strong>Paciente:</strong> {this.state.recibo?.factura?.paciente?.nombre || ''} {this.state.recibo?.factura?.paciente?.apellido || ''}</p>
+                    <p><strong>Curso:</strong> {this.state.recibo?.factura?.doctor?.nombre || ''} {this.state.recibo?.factura?.doctor?.apellido || ''}</p>
+                    <p><strong>Estudiante:</strong> {this.state.recibo?.factura?.paciente?.nombre || ''} {this.state.recibo?.factura?.paciente?.apellido || ''}</p>
 
                     <div style={{ textAlign: 'right', marginTop: '50px' }}>
                         <strong>Firma __________________________________</strong>

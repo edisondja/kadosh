@@ -59,47 +59,60 @@ class DoctorFormulario extends React.Component{
 			return (
 					<div className="mac-container col-md-10">
 						<div className="mac-box">
-						<h2 className="mac-title">Agregar Doctor</h2>
+						<h2 className="mac-title">Agregar Curso</h2>
 						
 	
 						<div className="text-end mb-4" style={{float:'right'}}>
 							<button className="mac-btn mac-btn-dark" onClick={this.opciones}>
-							🔍 Buscar Doctor
+							🔍 Buscar Curso
 							</button>
 						</div>
 
 						<div className="mac-form-group">
 							<label>Nombre</label>
-							<input type="text" className="mac-input" id="nombre" placeholder="Escribe el nombre" />
+							<input type="text" className="mac-input" id="nombre"placeholder="Escribe el nombre" />
 						</div>
 
-						<div className="mac-form-group">
-							<label>Apellido</label>
-							<input type="text" className="mac-input" id="apellido" placeholder="Escribe el apellido" />
+					<div className="mac-form-group" style={{ display: 'none' }}> 
+							<label>Apellido</label> 
+							<input 
+								type="text" 
+								className="mac-input" 
+								id="apellido" 
+								value="1"  
+								placeholder="Escribe el apellido" 
+							/> 
 						</div>
 
-						<div className="mac-form-group">
-							<label>Cédula</label>
-							<input type="text" className="mac-input" id="cedula" placeholder="000-0000000-0" />
+						<div className="mac-form-group" style={{ display: 'none' }}> 
+							<label>Cédula</label> 
+							<input 
+								type="text" 
+								className="mac-input" 
+								id="cedula" 
+								value="1"  
+								placeholder="000-0000000-0" 
+							/> 
 						</div>
 
-						<div className="mac-form-group">
-							<label>Número de Teléfono</label>
-							<input
-							type="tel"
-							className="mac-input"
-							id="telefono"
-							placeholder="809-000-0000"
-							pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-							/>
+						<div className="mac-form-group" style={{ display: 'none' }}> 
+							<label>Número de Teléfono</label> 
+							<input 
+								value="1"  
+								type="tel" 
+								className="mac-input" 
+								id="telefono" 
+								placeholder="809-000-0000" 
+								pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" 
+							/> 
 						</div>
 
-						<div className="mac-form-group">
-							<label>Especialidad</label>
+						<div className="mac-form-group" style={{ display: 'none' }}> 
+							<label>Especialidad</label> 
 							<select className="mac-input">
-							<option>Odontocista</option>
-							<option>Odontólogo</option>
-							</select>
+								<option>Odontocista</option>
+								<option>Odontólogo</option>
+							</select> 
 						</div>
 
 						<div className="text-end" style={{textAlign:'center'}}><hr/>

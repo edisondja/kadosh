@@ -468,8 +468,8 @@ procesar_pago = (id_factura, precio_estatus) => {
                 </h4>
                 <hr />
                 <h5>
-                    Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp;
-                    Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})
+                    Estudiante: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp;
+                    Curso: ({this.state.factura.nombre} {this.state.factura.apellido})
                 </h5>
 
                 <table className="table">

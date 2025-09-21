@@ -89,7 +89,7 @@ class Login extends React.Component{
 							<input type='password' placeholder="&#9673; Clave" className="form-control" id="clave" /><br/>
 							<button className="btn btn-primary boton_login" onClick={this.iniciar_sesion} id="boton_login">Login</button>
 							<hr/>
-							 <p>Copyright 2020 © 2025 Clinica ABC All Rights Reserved.</p>
+							 <p>Copyright 2020 © 2025 Colegio CLF ABC All Rights Reserved.</p>
 						</div>
 						<div>
 						</div>

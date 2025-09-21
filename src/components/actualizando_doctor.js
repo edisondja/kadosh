@@ -84,7 +84,7 @@ class ActualizarDoctor extends React.Component{
         return(
             <div className="col-md-8">
                 <div> <br/><br/>
-                    <h2>Actualizar doctor</h2>
+                    <h2>Actualizar Curso</h2>
                     <strong>Nombre</strong><br/>
                     <input type="text" id="nombre" onChange={this.editando_campo}  value={this.state.doctor.nombre}  defaultValue={this.state.doctor.nombre} className="form-control"/><br/>
                     <strong>Apellido</strong><br/>

@@ -83,10 +83,10 @@ class MenuDashboard extends React.Component {
       Menu = (
         <ul style={this.estilos} className="menuStilos ">
           <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones</Link></li>
-          <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente</Link></li>
+          <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Estudiante</Link></li>
           <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario</Link></li>
           <li><Link to="/agregar_cita"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;Administracion de Citas</Link></li>
-          <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor</Link></li>
+          <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Curso</Link></li>
           <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos</Link></li>
           <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes</Link></li>
           <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad</Link></li>
@@ -135,7 +135,7 @@ class MenuDashboard extends React.Component {
                         <img src={Logo} width="30" className="img-responsive" style={{ marginLeft: '10px', padding: '2px' }} />
                       </Link>
                     </td>
-                    <td><strong>Kadosh Dental</strong></td>
+                    <td><strong>Colegio Luces Del Futuro</strong></td>
                   </tr>
                 </tbody>
               </table>
