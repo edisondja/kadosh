@@ -64,7 +64,7 @@ class BuscandoProcedimiento extends  React.Component{
     }
 
     render(){
-       /* if(this.state.actualizar==true){
+        if(this.state.actualizar==true){
 
                 return <Actualizar id_procedimiento={this.state.id_procedimiento}/>;
         
@@ -72,7 +72,7 @@ class BuscandoProcedimiento extends  React.Component{
 
         return (<div><br/><input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
                 <img src={Loading}/></div>);
-        }*/
+        }
 
         return (
             <div className="col-md-10"><hr/>
