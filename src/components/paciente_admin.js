@@ -167,7 +167,7 @@ class PacienteAdmin extends  React.Component{
 						</div>
 
 						<div className="mac-form-group">
-							<label>Ingresado por Doctor</label>
+							<label>Agregar a curso</label>
 							<select
 							id="doctores_select"
 							className="mac-input"

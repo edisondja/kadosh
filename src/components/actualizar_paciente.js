@@ -187,7 +187,7 @@ class ActualizarPaciente extends React.Component{
                         <strong>Correo electronico</strong><br/>
                         <input type='email'  id="correo" onChange={this.actualizar_paciente} value={this.state.paciente.correo_electronico} className="form-control"/><br/>
 
-                        <strong>Ingresado por doctor</strong><br/>
+                        <strong>Ingresar en curso</strong><br/>
                         <select id="doctores_select" className="form-control">
                             {this.state.doctores.map((data=>(
                                         <option value={data.id}>{data.nombre} {data.apellido}</option>
