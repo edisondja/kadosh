@@ -280,7 +280,7 @@ const Agenda = () => {
               </div>
               <form onSubmit={(e) => handleSubmitEvent(e, editando ? 'actualizar' : 'guardar')} className="p-3">
                 <div className="modal-body">
-                  <label>Buscar paciente</label>
+                  <label>Buscar estudiante</label>
                   <input
                     type="text"
                     className="form-control mb-3"

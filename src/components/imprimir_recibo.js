@@ -31,14 +31,45 @@ class ImprimirRecibo extends React.Component {
         this.setState({ redirectPerfil: true });
     };
 
-    Imprimir = () => {
+ Imprimir = () => {
         const ficha = document.getElementById("recibo");
-        const ventimp = window.open('', 'popimpr');
-        ventimp.document.write(ficha.innerHTML);
+
+        // Abrir nueva ventana
+        const ventimp = window.open('', 'popimpr', 'width=800,height=600');
+
+        // Obtener todos los estilos de la página actual
+        const estilos = Array.from(document.querySelectorAll("link[rel='stylesheet'], style"))
+            .map(hoja => hoja.outerHTML)
+            .join('\n');
+
+        // Escribir contenido completo con estilos
+        ventimp.document.write(`
+            <html>
+                <head>
+                    <title>Imprimir</title>
+                    ${estilos}
+                    <style>
+                        /* Ajustes opcionales para impresión */
+                        img { max-width: 100%; height: auto; }
+                        body { margin: 0; padding: 10px; font-family: sans-serif; }
+                    </style>
+                </head>
+                <body>
+                    ${ficha.outerHTML}
+                </body>
+            </html>
+        `);
+
         ventimp.document.close();
-        ventimp.print();
-        ventimp.close();
+
+        // Esperar a que cargue todo antes de imprimir
+        ventimp.onload = () => {
+            ventimp.focus();
+            ventimp.print();
+            ventimp.close();
+        };
     };
+
 
     cargar_factura = async (id_factura) => {
         try {
@@ -127,7 +158,8 @@ class ImprimirRecibo extends React.Component {
 
                 <div className="card" id="recibo" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                        <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
+                        <img src="/static/media/logo.e32bde04.jpg" alt="Logo" width="100"/><hr/>
+                        <strong style={{ fontSize: '16px' }}>
                             COLEGIO LUCES DEL FUTURO<br />
                             <span style={{ fontSize: '14px' }}>Calle David #38, Residencial Antonia, Manoguayabo, Santo Domingo Oeste, República Dominicana</span>
                         </strong>

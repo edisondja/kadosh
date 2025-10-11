@@ -334,7 +334,7 @@ class  Cita extends React.Component{
 				</div>
 				<hr />
 				
-				<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+				<input type="text" placeholder="Buscar estudiante" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
 				
 				<hr />
 				<div className="interfaz_cliente">
