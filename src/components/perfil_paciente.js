@@ -24,45 +24,135 @@ import { Link } from 'react-router-dom';
 
 class PerfilPaciente extends React.Component{
 
+	/*
+		Cuando existan datos de ficha clinica y abra la modal, cargar los datos en los campos en estado 
+		disable y un boton que lo habilite para editarlos y guardarlos
 
+	*/
 	
-		constructor(props){
-
-			
+		constructor(props) {
 			super(props);
 			this.state = {
 				id_doc: 0,
 				id_paciente: 0,
 				actualizo: 0,
 				deuda_total: 0,
+
 				doctor: {
 					nombre: '',
 					apellido: ''
 				},
+
 				paciente: {
 					nombre: null,
 					apellido: null
 				},
+
 				select: 'perfil_paciente',
 				lista_citas: [],
 				cita: '',
 				id_cita: '',
 				eliminar: 0,
-				modal_nota_visable:false,
+
+				// Modales
+				modal_nota_visible: false,
+				
 				modal_documento_visible: false,
-		
+				modal_ver_notas_visible: false,
+				modal_ficha_medica_visible: false,
+				desactivar_campos_ficha: false, 
+
+				// Notas y Documentos
 				nota_texto: '',
-				modal_ver_notas_visable:false,
 				documentos: [],
-				notasPaciente: []
-				};
+				notasPaciente: [],
+				tiene_ficha_medica:false,
+
+				// Ficha médica
+					created_at:'',
+					direccion: '',
+					ocupacion: '',
+					tratamiento_actual: 'No',
+					tratamiento_detalle: '',
+					enfermedades: [],
+					medicamentos: [],
+					tabaquismo: '',
+					alcohol: '',
+					otros_habitos: '',
+					antecedentes_familiares: '',
+					alergias: [],
+					alergias_detalle: '',
+
+			};
 		}
 
+		cargar_ficha_medica = (id_paciente) => { 
+
+			
+
+			Axios.get(`${Verficar.url_base}/api/cargar_ficha_medica/${id_paciente}`)
+				.then((res) => {
+
+					this.setState({
+						direccion: res.data.direccion,
+						ocupacion: res.data.ocupacion,
+						tratamiento_actual: res.data.tratamiento_actual,
+						tratamiento_detalle: res.data.tratamiento_detalle,  
+						enfermedades: res.data.enfermedades ? res.data.enfermedades.split(',') : [],
+						medicamentos: res.data.medicamentos ? res.data.medicamentos.split(',') : [],
+						tabaquismo: res.data.tabaquismo,
+						alcohol: res.data.alcohol,
+						otros_habitos: res.data.otros_habitos,
+						alergias: res.data.alergias ? res.data.alergias.split(',') : [],
+						created_at: res.data.created_at,
+						alergias_detalle: res.data.alergias_detalle
+						});
+
+						this.setState({ desactivar_campos_ficha: true });
+
+					console.log('Ficha medica '+res.data);
+					this.setState({ tiene_ficha_medica: !!res.data });
+				})
+				.catch((err) => {
+					console.log(err);
+					this.setState({ tiene_ficha_medica: false });
+
+				});
+		}
+
+		guardar_ficha_medica = () => {
+			const fichaData = {
+				paciente_id: this.props.match.params.id,
+				direccion: this.state.direccion,
+				ocupacion: this.state.ocupacion,
+				tratamiento_actual: this.state.tratamiento_actual,
+				tratamiento_detalle: this.state.tratamiento_detalle,
+				enfermedades: this.state.enfermedades.toString(),
+				medicamentos: this.state.medicamentos.toString(),
+				tabaquismo: this.state.tabaquismo,
+				alcohol: this.state.alcohol,
+				otros_habitos: this.state.otros_habitos,
+				alergias: this.state.alergias.toString(),
+				alergias_detalle: this.state.alergias_detalle
+			
+			};
+
+			Axios.post(`${Verficar.url_base}/api/guardar_ficha_medica`, fichaData)
+				.then((res) => {
+					alertify.success('Ficha médica guardada con éxito');
+					this.setState({ modal_ficha_medica_visible: false });
+					this.cargar_ficha_medica(this.props.match.params.id);
+				})
+				.catch((err) => {
+					console.log(err);
+					alertify.error('Error al guardar la ficha médica');
+				});
+		}
 
 		ver_notas = () => {
 				this.cargarNotas();
-				this.setState({ modal_ver_notas_visable: true });
-				
+				this.setState({ modal_ver_notas_visible: true });
+
 		}
 
 		openModalNota = () => {
@@ -80,7 +170,9 @@ class PerfilPaciente extends React.Component{
 
 			this.setState({nota_texto:valor});
 
-		}
+		}	
+		
+		
 
 		guardarNota=()=>{
  
@@ -108,11 +200,10 @@ class PerfilPaciente extends React.Component{
 
 			//alert(this...id_paciente);
 
-			
 			const id = this.props.match.params.id;
 			const id_doc = this.props.match.params.id_doc;
 
-
+			this.cargar_ficha_medica(id);
 			this.consultarPaciente(id);
 			this.cargar_citas_paciente(id);
 			this.cargar_doctor(id_doc);
@@ -121,8 +212,34 @@ class PerfilPaciente extends React.Component{
 			this.consultar_deuda_paciente(id);
 			//this.cargar_notas();
 
-
+			if(this.state.tiene_ficha_medica){
+				this.setState({ desactivar_campos_ficha: true });
+			}
 		}
+
+		handleChange = (e) => {
+			const { name, value, type, checked } = e.target;
+
+			if (type === "checkbox" && name === "enfermedades") {
+				this.setState((prevState) => {
+					const enfermedades = prevState.enfermedades || [];
+					if (checked) {
+						// Agregar al array
+						return { enfermedades: [...enfermedades, value] };
+					} else {
+						// Quitar del array
+						return { enfermedades: enfermedades.filter((item) => item !== value) };
+					}
+				});
+			} else {
+				// Para otros campos
+				this.setState({ [name]: value });
+			}
+		};
+
+		handleEdit = () => {
+			this.setState({ desactivar_campos_ficha: false });
+		};
 
 		crear_presupuesto =()=>{
 
@@ -130,7 +247,13 @@ class PerfilPaciente extends React.Component{
 
 		}
 
+		handleSubmit=(e)=>{
 
+			this.guardar_ficha_medica();
+			e.preventDefault();
+			const form = e.target;
+
+		}
 
 		cargarNotas = () => {
 
@@ -409,6 +532,15 @@ class PerfilPaciente extends React.Component{
 						</button>
 						</Link>
 
+						<button onClick={() => this.setState({ modal_ficha_medica_visible: true })}
+							className="icon-btn"
+							title="Ficha Medica"
+							aria-label="Ficha Medica">
+
+							<i className="fas fa-file-medical"></i>
+							<span>Ficha médica</span>
+						</button>
+
 						<button
 							className="icon-btn"
 							onClick={this.ver_notas}
@@ -510,6 +642,18 @@ class PerfilPaciente extends React.Component{
 
 					<hr />
 
+					<strong className="mb-3 d-block">Ficha Medica</strong>
+					<div className="mb-4">
+						{this.state.tiene_ficha_medica ? (
+							<>
+								<p><strong>Fecha ficha creada:</strong> {this.state.created_at}</p>
+								<p><strong>Dirección:</strong> {this.state.direccion}</p>
+							</>
+						) : (
+							<p>No tiene ficha médica registrada.</p>
+						)}
+					</div>
+
 					<strong className="mb-3 d-block">Lista de citas</strong>
 					<div className="mb-4">
 					<h5 className="text-xl font-semibold mb-4 text-gray-800">📋 Lista de citas</h5>
@@ -537,88 +681,259 @@ class PerfilPaciente extends React.Component{
 						</table>
 					</div>
 				</div>
-				{this.state.modal_nota_visable && (
-				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
-					<div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
-					<div className="mac-box p-4 rounded-3 shadow-lg" style={{ width: '100%' }}>
-						<div className="d-flex justify-content-between align-items-center mb-3">
-						<h5 className="fw-bold">📝 Escribir Nota del Paciente</h5>
-						<button
-							type="button"
-							className="btn-close"
-							onClick={this.closeModalNota}
-						></button>
-						</div>
+				{this.state.modal_ficha_medica_visible && (
+					<div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
+						<div
+						className="modal-dialog modal-xxl modal-dialog-centered"
+						style={{ maxWidth: "95%" }}
+						>
+						<div className="modal-content shadow">
+							{/* Header */}
+							<div className="modal-header bg-light">
+							<h5 className="modal-title">🦷 Ficha Médica del Paciente</h5>
+							<button
+								type="button"
+								className="btn-close"
+								onClick={() =>
+								this.setState({ modal_ficha_medica_visible: false })
+								}
+							></button>
+							</div>
 
-						<textarea
-						className="mac-input w-100"
-						placeholder="Escribe aquí la nota..."
-						rows={6}
-						value={this.state.nota_texto}
-						onChange={(e) => this.setNotaTexto(e.target.value)}
-						style={{ resize: 'vertical' }}
-						></textarea>
+							{/* Body */}
+							<div
+							className="modal-body"
+							style={{ maxHeight: "80vh", overflowY: "auto" }}
+							>
+							<form id="form-paciente" autoComplete="off" className="container-fluid">
+								{/* DATOS PERSONALES */}
+								<fieldset className="mb-4">
+								<legend className="fw-semibold mb-3">Datos Personales</legend>
+								<div className="row g-3">
+							
 
-						<div className="d-flex justify-content-end gap-2 mt-4">
-						<button className="mac-btn mac-btn-green" onClick={this.guardarNota}>
-							💾 Guardar
-						</button>
-						<button className="mac-btn mac-btn-gray" onClick={this.closeModalNota}>
-							❌ Cancelar
-						</button>
-						</div>
-					</div>
-					</div>
-				</div>
-				)}
-				{this.state.modal_ver_notas_visable && (
-				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
-					<div className="modal-dialog modal-lg modal-dialog-centered">
-					<div className="modal-content" style={{ borderRadius: '12px' }}>
-						<div className="modal-header">
-						<h5 className="modal-title">Notas del Paciente 🗒️</h5>
-						<button className="btn-close" onClick={() => this.setState({ modal_ver_notas_visable: false })}></button>
-						</div>
-						<div className="modal-body">
-						<table className="table">
-							<thead>
-							<tr>
-								<th>Contenido</th>
-								<th>Fecha</th>
-								<th colSpan="2">Eliminar</th>
-							</tr>
-							</thead>
-							<tbody>
-							{this.state.notasPaciente.map((nota) => (
-								<tr key={nota.id}>
-								<td style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>
-									<p style={{ margin: 0 }}>{nota.descripcion}</p>
-								</td>
-								<td>{nota.updated_at}</td>
-						
-								<td>
-									<button
-									className="btn btn-outline-danger btn-sm"
-									onClick={() => this.eliminarNota(nota.id)}
-									title="Eliminar nota"
+			
+									<div className="col-md-6 col-lg-6">
+									<label className="form-label">Dirección</label>
+									<input
+										disabled={this.state.desactivar_campos_ficha}
+										name="direccion"
+										type="text"
+										className="form-control"
+										value={this.state.direccion || ""}
+										onChange={this.handleChange}
+									/>
+									</div>
+
+									<div className="col-md-6 col-lg-6">
+									<label className="form-label">Ocupación</label>
+									<input
+										disabled={this.state.desactivar_campos_ficha}
+										name="ocupacion"
+										type="text"
+										className="form-control"
+										value={this.state.ocupacion || ""}
+										onChange={this.handleChange}
+									/>
+									</div>
+								</div>
+								</fieldset>
+
+							
+
+								{/* ANTECEDENTES MÉDICOS */}
+								<fieldset className="mb-4">
+								<legend className="fw-semibold mb-3">Antecedentes Médicos</legend>
+
+								{/* Tratamiento actual */}
+							<div className="mb-4">
+							<label className="form-label d-block mb-2">
+								¿Está bajo tratamiento médico actualmente?
+							</label>
+							<div className="d-flex gap-3">
+								<div className="form-check form-check-inline">
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								
+								<input
+									disabled={this.state.desactivar_campos_ficha}
+									className="form-check-input"
+									type="radio"
+									name="tratamiento_actual"
+									id="tratamientoSi"
+									value="Si"
+									checked={this.state.tratamiento_actual === "Si"}
+									onChange={this.handleChange}
+								/>
+								<label className="" htmlFor="tratamientoSi">
+									Sí&nbsp;&nbsp;
+								</label>
+								</div>
+								
+								<div className="form-check form-check-inline">&nbsp;&nbsp;&nbsp;
+								<input
+									disabled={this.state.desactivar_campos_ficha}
+									className="form-check-input"
+									type="radio"
+									name="tratamiento_actual"
+									id="tratamientoNo"
+									value="No"
+									checked={this.state.tratamiento_actual === "No"}
+									onChange={this.handleChange}
+								/>
+								<label className="" htmlFor="tratamientoNo">
+									No
+								</label>
+								</div>
+							</div>
+							</div>
+								{/*Problemas con la anestecia*/}
+								<fieldset className="mb-4">
+									<div className="col-md-6 col-lg-6">
+										<label className="form-label">¿Ha tenido problemas con la anestesia?</label><br/>
+										<input  disabled={this.state.desactivar_campos_ficha} type='radio' name='problemas_anestesia' value='si' checked={this.state.problemas_anestesia === 'si'} onChange={this.handleChange} /> Sí &nbsp;&nbsp;
+										<input disabled={this.state.desactivar_campos_ficha} type='radio' name='problemas_anestesia' value='no' checked={this.state.problemas_anestesia === 'no'} onChange={this.handleChange} /> No
+								</div>
+								</fieldset>
+
+
+								{/* Alergias */}
+								<div className="mb-3">
+									<label className="form-label">Alergias</label>
+									<div className="row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									{["Medicamentos", "Anestesia", "Alimentos", "Otros"].map((a) => (
+										<div className="col-md-3 col-lg-2" key={a}>
+										<div className="form-check">
+											<input disabled={this.state.desactivar_campos_ficha}
+											className="form-check-input"
+											type="checkbox"
+											name="alergias"
+											value={a}
+											checked={this.state.alergias?.includes(a) || false}
+											onChange={this.handleChange}
+											/>
+											<label className="form-check-label">{a}</label>
+										</div>
+										</div>
+									))}
+									</div>
+									<input
+									type="text" disabled={this.state.desactivar_campos_ficha}
+									name="alergias_detalle"
+									placeholder="Especifique (ej. Penicilina)"
+									className="form-control mt-2"
+									value={this.state.alergias_detalle || ""}
+									onChange={this.handleChange}
+									/>
+								</div>
+
+								{/*Enfermedades */}
+								<label className="form-label">Enfermedades</label>			
+								<div className="row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									{["Hipertensión", "Diabetes", "Asma", "Cardiopatías", "Epilepsia", "Cáncer", "Hepatitis", "VIH/SIDA", "Otras"].map((e) => (
+										<div className="col-md-3 col-lg-2" key={e}>
+											<div className="form-check">
+
+												{e === "Cáncer" && (
+													<span style={{ textDecoration: 'underline' }}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+												)}
+
+												<input
+													className="form-check-input"
+													type="checkbox"
+													name="enfermedades"
+													disabled={this.state.desactivar_campos_ficha}
+													value={e}
+													checked={this.state.enfermedades?.includes(e) || false}
+													onChange={this.handleChange}
+												/> 
+												<label className="form-check-label">{e}</label>
+											</div>
+										</div>
+									))}
+								</div> 
+
+								</fieldset>
+
+								{/* HÁBITOS */}
+								<fieldset className="mb-3">
+								<legend className="fw-semibold mb-3">Hábitos</legend>
+								<div className="row g-3">
+									<div className="col-md-4 col-lg-3">
+									<label className="form-label">Tabaquismo</label>
+									<select
+										name="tabaquismo"
+										className="form-control"
+										disabled={this.state.desactivar_campos_ficha}
+										value={this.state.tabaquismo || ""}
+										onChange={this.handleChange}
 									>
-									<i className="icon icon-trash" />
-									</button>
-								</td>
-								</tr>
-							))}
-							</tbody>
-						</table>
+										<option value="">--</option>
+										<option>Nunca</option>
+										<option>Actual</option>
+										<option>Ex-fumador</option>
+									</select>
+									</div>
+
+									<div className="col-md-4 col-lg-3">
+									<label className="form-label">Consumo de alcohol</label>
+									<select
+										name="alcohol"
+										className="form-control"
+										disabled={this.state.desactivar_campos_ficha}
+										value={this.state.alcohol || ""}
+										onChange={this.handleChange}
+									>
+										<option value="">--</option>
+										<option>Nunca</option>
+										<option>Ocasional</option>
+										<option>Frecuente</option>
+									</select>
+									</div>
+
+									<div className="col-md-4 col-lg-6">
+									<label className="form-label">Otros hábitos</label>
+									<input
+										disabled={this.state.desactivar_campos_ficha}
+										type="text"
+										name="otros_habitos"
+										className="form-control"
+										value={this.state.otros_habitos || ""}
+										onChange={this.handleChange}
+									/>
+									</div>
+								</div>
+								</fieldset>
+							</form>
+							</div>
+
+							{/* Footer */}
+							<div className="modal-footer">
+							{this.state.tiene_ficha_medica && (
+								//boton de editar
+								<button className='btn btn-warning' onClick={this.handleEdit}>Editar</button>
+							)}
+								<button
+								type="button"
+								className="btn btn-secondary"
+								onClick={() =>
+								this.setState({ modal_ficha_medica_visible: false })
+								}
+							>
+								❌ Cerrar
+							</button>
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={this.handleSubmit}
+							>
+								💾 Guardar
+							</button>
+							</div>
 						</div>
-						<div className="modal-footer">
-						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visable: false })}>
-							Cerrar
-						</button>
 						</div>
 					</div>
-					</div>
-				</div>
-				)}
+					)}
+
 				{this.state.modal_documento_visible && (
 				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
 					<div className="modal-dialog modal-xl modal-dialog-centered">

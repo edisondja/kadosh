@@ -37,6 +37,9 @@ import Configuracion from './configuracion';
 import AgregarCita from './agregar_cita';
 import Modulo_p from './modulo_p';
 import ActulizarPaciente from './actualizar_paciente';
+import Odontograma from './odontograma';  
+import FichaMedica from './ficha_medica';
+import Axios from 'axios';
 
 class MenuDashboard extends React.Component {
   constructor(props) {
@@ -168,6 +171,8 @@ class MenuDashboard extends React.Component {
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura" component={ImprimirRecibo} />
+              <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />
+              <Route path="/odontograma/:id_paciente/" component={Odontograma} />
               <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();

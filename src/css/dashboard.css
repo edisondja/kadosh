@@ -1,4 +1,31 @@
 /* macOS-inspired styles */
+.odontograma-table {
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+
+.odontograma-table td {
+  padding: 5px;
+  text-align: center;
+}
+
+.tooth-btn {
+  width: 40px;
+  height: 40px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.tooth-btn:hover {
+  background-color: #d9eaff;
+}
+
+
+
 .mac-btn {
   padding: 12px 26px;
   font-size: 16px;
