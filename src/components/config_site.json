@@ -1,0 +1,32 @@
+{
+
+  "api_url_dev": "http://clinica1.miapp.local:8000",
+  "api_url": "https://service.clinickadosh.com/",
+  "name_company": "CLÍNICA DENTAL KADOSH OR SRL",
+  "app_version": "1.0.0",
+  "app_description": "Sistema de gestión de pacientes",
+  "app_author": "Edison De Jesus Abreu",
+  "app_email": "serive@odontoed.com",
+  "app_phone": "809-620-8641",
+  "app_address": "Santo Domingo, República Dominicana",
+  "app_logo": "/assets/leonardo_batista.jpeg",
+  "app_favicon": "/assets/images/favicon.ico",
+  "website": "https://odontoed.com",
+  "default_language": "es",
+  "supported_languages": ["es", "en", "fr", "de"],
+  "rnc_company": "131-76629-3",
+  "menu_items": [
+    "Agregar ppaciente",
+    "Agregar Usuario",
+    "Agregar Cita",
+    "Administracion de Citas",
+    "Agregar Doctor",
+    "Agregar procedimientos",
+    "Generar reportes",
+    "Contabilidad",
+    "Cerrar Sesion",
+    "Dispositivos conectados",
+    "Auditoria",
+    "Configuracion"
+  ]
+}

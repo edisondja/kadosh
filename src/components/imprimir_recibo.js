@@ -83,18 +83,28 @@ class ImprimirRecibo extends React.Component {
             const formData = new FormData();
             formData.append('pdf', pdfBlob, 'recibo.pdf');
             formData.append('email', this.state.recibo.factura.paciente.correo_electronico || '');
-            formData.append('asunto', 'Recibo de Pago - Clínica Kadosh');
+            formData.append('asunto', `Recibo de Pago - ${Core.Config.name_company}`);
 
             await Axios.post(`${Core.url_base}/api/enviar_recibo`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            }).then(response => {
+                            Alertify.success('Recibo enviado por correo correctamente');
 
-            Alertify.success('Recibo enviado por correo correctamente');
+                console.log(response.data);
+            }).catch(error=>{
+
+                    console.error(error);
+            });
+        
+
         } catch (error) {
             console.error(error);
+            console.log(error.data);
             Alertify.error('Error al generar o enviar el PDF');
         }
     };
+    
+
 
     render() {
         const { factura, recibo, redirectPerfil } = this.state;
@@ -128,10 +138,10 @@ class ImprimirRecibo extends React.Component {
                 <div className="card" id="recibo" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
                     <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                         <strong className="titulo_kadosh" style={{ fontSize: '16px' }}>
-                            CLÍNICA DENTAL KADOSH OR SRL<br />
+                            {Core.Config.name_company}<br />
                             <span style={{ fontSize: '14px' }}>C/San Antonio #33A Los Alcarrizos<br />Santo Domingo, R.D</span>
                         </strong>
-                        <p>TEL: 809-620-8641 &nbsp;&nbsp; RNC: 131-76629-3</p>
+                        <p>TEL: {Core.Config.app_phone} &nbsp;&nbsp; RNC: {Core.Config.app_rnc}</p>
                     </div>
 
                     <hr />

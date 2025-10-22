@@ -9,7 +9,15 @@ import alertify from 'alertifyjs';
 import { Link,Redirect } from 'react-router-dom';
 
 
-moment.locale('es');
+  // **AQUÍ ESTÁ LA CLAVE**
+moment.locale('es', {
+    // Sobreescribe el formato de los días de la semana para que no se abrevien
+    weekdaysMin: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], // Mantener abreviación mínima si se requiere
+    weekdaysShort: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+    // Usamos 'ddd' o 'dddd' para el formato de encabezado de día,
+    // que toma los valores de 'weekdaysShort' o 'weekdays'
+});
+// ------------------------------------------------------------------
 const localizer = momentLocalizer(moment);
 
 const Agenda = () => {
@@ -31,7 +39,9 @@ const Agenda = () => {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       };
 
-  
+
+
+const localizer = momentLocalizer(moment)
   useEffect(() => {
     Axios.get(`${Core.url_base}/api/doctores`)
       .then((data) => setDoctors(data.data))
@@ -79,7 +89,14 @@ const Agenda = () => {
       .then((response) => {
         const citas = response.data.map((cita) => ({
           ...cita,
+          // Guardamos las IDs en el objeto del evento para usarlas al editar/ver paciente
+          paciente_id: cita.paciente_id, 
+          doctor_id: cita.doctor_id,
+          // El title completo incluye el nombre del paciente
           title: cita.motivo + (cita.paciente ? ` - ${cita.paciente.nombre} ${cita.paciente.apellido}` : ''),
+          // Agregamos el nombre completo para el tooltip y edición
+          paciente_nombre: cita.paciente ? `${cita.paciente.nombre} ${cita.paciente.apellido}` : '',
+          doctor_nombre: doctors.find(d => d.id == cita.doctor_id) ? `${doctors.find(d => d.id == cita.doctor_id).nombre} ${doctors.find(d => d.id == cita.doctor_id).apellido}` : '',
           start: new Date(cita.inicio),
           end: new Date(cita.fin)
         }));
@@ -139,17 +156,22 @@ const Agenda = () => {
 
           const nuevoEvento = {
             ...evento,
+            id: citaGuardada.id, // Es crucial tener el ID para futuras ediciones/eliminaciones
             start: new Date(newEvent.start),
             end: new Date(newEvent.end),
-            title: newEvent.title,
+            title: newEvent.title + ` - ${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             paciente_nombre: `${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             doctor_nombre: `${doctor.nombre} ${doctor.apellido}`,
           };
 
           setEvents([...events, nuevoEvento]);
           cerrarModal();
+          alertify.success('Cita guardada con éxito.');
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error(err);
+          alertify.error('Error al guardar la cita.');
+        });
     } else if (config === 'actualizar') {
       Axios.put(`${Core.url_base}/api/actualizar_cita/${eventoSeleccionado.id}`, evento, { headers: headers_s })
         .then((res) => {
@@ -161,15 +183,19 @@ const Agenda = () => {
             id: citaActualizada.id,
             start: new Date(newEvent.start),
             end: new Date(newEvent.end),
-            title: newEvent.title,
+            title: newEvent.title + ` - ${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             paciente_nombre: `${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             doctor_nombre: `${doctor.nombre} ${doctor.apellido}`,
           };
 
           setEvents(events.map((e) => (e.id === citaActualizada.id ? eventoActualizado : e)));
           cerrarModal();
+          alertify.success('Cita actualizada con éxito.');
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error(err);
+          alertify.error('Error al actualizar la cita.');
+        });
     }
   };
 
@@ -179,28 +205,53 @@ const Agenda = () => {
     setNewEvent({ title: '', start: '', end: '' });
     setBusqueda('');
     setPacienteSeleccionado(null);
-    setDoctorSeleccionado('');
+    // IMPORTANTE: No reseteamos doctorSeleccionado aquí para que la vista del calendario se mantenga.
     setEventoSeleccionado(null);
   };
 
   const manejarEventoSeleccionado = (evento) => {
-
-
+    // Busca el paciente completo si solo tienes el nombre/ID
+    // Por ahora, usamos lo que tenemos en el evento
     setIdsEntidades({ id_paciente: evento.paciente_id, id_doctor: evento.doctor_id });
     setEventoSeleccionado(evento);
     setNewEvent({
-      title: evento.title,
+      // Extrae solo el motivo si el título incluye el nombre del paciente
+      title: evento.motivo || evento.title.split(' - ')[0], 
       start: moment(evento.start).format('YYYY-MM-DDTHH:mm'),
       end: moment(evento.end).format('YYYY-MM-DDTHH:mm'),
     });
     setBusqueda(evento.paciente_nombre);
-    setPacienteSeleccionado({ nombre: evento.paciente_nombre });
+    // Para edición, necesitamos el ID del paciente, pero si no está en el evento, lo simulamos.
+    setPacienteSeleccionado({ nombre: evento.paciente_nombre, id: evento.paciente_id }); 
     setDoctorSeleccionado(evento.doctor_id || '');
     setEditando(true);
     setModalOpen(true);
   };
 
+  // NUEVA FUNCIÓN PARA SELECCIÓN DE SLOT (SOMBRADO)
+  const manejarSeleccionSlot = ({ start, end }) => {
+    if (!doctorSeleccionado) {
+      alertify.error('Por favor, selecciona un doctor primero para agendar.');
+      return;
+    }
 
+    // Restablecer estados para una nueva cita
+    setEditando(false); 
+    setEventoSeleccionado(null);
+    setPacienteSeleccionado(null);
+    setBusqueda('');
+    setResultadosPacientes([]);
+
+    // Pre-llenar las fechas en el formulario de la nueva cita
+    setNewEvent({
+      title: '',
+      start: moment(start).format('YYYY-MM-DDTHH:mm'),
+      end: moment(end).format('YYYY-MM-DDTHH:mm'),
+    });
+    
+    setModalOpen(true); 
+  };
+  // FIN NUEVA FUNCIÓN
 
 
   return (
@@ -232,7 +283,19 @@ const Agenda = () => {
           <div className="col-md-4 mb-3">
             <button
               className="btn btn-primary w-100"
-              onClick={() => setModalOpen(true)}
+              onClick={() => {
+                // Abre el modal para crear cita manual si hay doctor seleccionado
+                if (doctorSeleccionado) {
+                    setEditando(false);
+                    setEventoSeleccionado(null);
+                    setNewEvent({ title: '', start: '', end: '' });
+                    setBusqueda('');
+                    setPacienteSeleccionado(null);
+                    setModalOpen(true);
+                } else {
+                    alertify.error('Por favor, selecciona un doctor primero.');
+                }
+              }}
               disabled={!doctorSeleccionado}>
               Agregar Cita
             </button>
@@ -243,7 +306,13 @@ const Agenda = () => {
      <Calendar
       localizer={localizer}
       events={events}
+      step={30} // Intervalo de 30 minutos
+      timeslots={2} 
       onSelectEvent={manejarEventoSeleccionado}
+      // PROPIEDADES AÑADIDAS PARA PERMITIR EL SOMBREADO
+      selectable={true} 
+      onSelectSlot={manejarSeleccionSlot}
+      // ------------------------------------------------
       startAccessor="start"
       endAccessor="end"
       style={{ height: '80vh' }}
@@ -264,7 +333,7 @@ const Agenda = () => {
         `Paciente: ${event.paciente_nombre}\nDoctor: ${event.doctor_nombre}\nMotivo: ${event.title}`
       }
       titleAccessor={(event) =>
-        `${event.title} - ${event.paciente_nombre || ''}`
+        `${event.title}` // Ya incluimos el nombre del paciente en cargarCitasDoctor
       }
       min={new Date(0, 0, 0, 8, 0, 0)} // Empieza a mostrar desde las 8:00 AM
     />

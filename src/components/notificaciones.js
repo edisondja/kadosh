@@ -23,7 +23,7 @@ class Notificacion extends React.Component {
 
    
     compartirWhatsapp = (telefono, nombre) => {
-        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de Kadosh Dental te desea un feliz cumpleaños 🎈.`;
+        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de ${FuncionesExtras.Config.name_company} te desea un feliz cumpleaños 🎈.`;
         const url = `https://web.whatsapp.com/send?phone=1${telefono}&text=${encodeURIComponent(mensaje)}`;
 
         if (this.waWindow && !this.waWindow.closed) {

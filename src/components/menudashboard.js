@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import MenuDashBoard from  './menudashboard';
 import Citas from './citas_c';
 import Select from  '../select.png';
-import Logo from  '../logo.jpg';
+import Logo from  '../logos.jpg';
 import Paciente from './paciente_admin';
 import Doctor from './admin_doctor';
 import ProcedimientoForm from './agregar_procedimiento';
@@ -138,7 +138,7 @@ class MenuDashboard extends React.Component {
                         <img src={Logo} width="30" className="img-responsive" style={{ marginLeft: '10px', padding: '2px' }} />
                       </Link>
                     </td>
-                    <td><strong>Kadosh Dental</strong></td>
+                    <td><strong>{FuncionesExtras.Config.name_company}</strong></td>
                   </tr>
                 </tbody>
               </table>

@@ -19,9 +19,18 @@ class PacienteAdmin extends  React.Component{
 				telefono:'',
 				customFlags: {
 					DO: doFlag
-			}
-		};
-			
+				},
+				nombre: '',
+				apellido: '',
+				cedula: '',
+				fecha_nacimiento: '',
+				correo_electronico: '',
+				fecha_nacimiento:'',
+				sexo: 'm',
+				enfermedades: '',
+				observaciones: '',
+				es_pediatrico: 'no'
+			};
 
 	}
 
@@ -46,7 +55,10 @@ class PacienteAdmin extends  React.Component{
 
 		}
 	}
-
+	handleChange = (event) => {
+		const { name, value } = event.target;
+		this.setState({ [name]: value });
+	}
 
 	capturar_telefono = (telefono) => {
 
@@ -56,24 +68,22 @@ class PacienteAdmin extends  React.Component{
 
 	guardar_paciente=()=>{
 		
-		
-		if(this.state.boton_estado==false){
-
 
 				var formData = new FormData();
 				var imagefile = document.querySelector('#foto_paciente');
 				if(imagefile.files.length>0){
 					formData.append("foto_paciente", imagefile.files[0]);
 				}
-				formData.append("nombre",document.getElementById("nombre").value);
-				formData.append("apellido",document.getElementById("apellido").value);
-				formData.append("cedula",document.getElementById("cedula").value);
+				//SE AGREGAN LOS DEMÁS DATOS AL FORM DATA
+
+				formData.append("nombre",this.state.nombre);
+				formData.append("apellido",this.state.apellido);
+				formData.append("cedula",this.state.cedula);
 				formData.append("telefono",this.state.telefono);
 				formData.append("id_doctor",document.getElementById("doctores_select").value);
-				formData.append("fecha_nacimiento",document.getElementById("fecha_nacimiento").value);
-				formData.append("correo_electronico",document.getElementById("correo_electronico").value);
-				formData.append("sexo",document.getElementById("sexo").value);
-
+				formData.append("fecha_nacimiento",this.state.fecha_nacimiento);
+				formData.append("correo_electronico",this.state.correo_electronico);
+				formData.append("sexo",this.state.sexo);
 			
 			Axios.post(`${FuncionesExtras.url_base}/api/guardar_paciente`,formData).then(data=>{
 					document.getElementById("cargar_pacientes").click();
@@ -83,11 +93,8 @@ class PacienteAdmin extends  React.Component{
 					alert("error");
 			})
 
-			this.setState({boton_estado:true});
-		}else{
-
-			alertify.message("Ya me registrate");
-		}
+			
+	
 	}
 
 	render(){
@@ -108,26 +115,69 @@ class PacienteAdmin extends  React.Component{
 
 						<div className="mac-form-group">
 							<label>Nombre</label>
-							<input type="text" id="nombre" className="mac-input" />
+							<input type="text" id="nombre" name="nombre" className="mac-input" value={this.state.nombre} onChange={this.handleChange} />
 						</div>
 
 						<div className="mac-form-group">
 							<label>Apellido</label>
-							<input type="text" id="apellido" className="mac-input" />
+							<input type="text" id="apellido" name="apellido" className="mac-input" value={this.state.apellido} onChange={this.handleChange} />
 						</div>
 
 						<div className="mac-form-group">
-							<label>DNI</label>
-							<input type="text" id="cedula" className="mac-input" />
+						<hr />
+						<div className="mac-form-group" style={{ justifyContent: "space-between" }}>
+							<label htmlFor="es_pediatrico" className="mac-label">
+							¿Es pediátrico?
+							</label>
+							<label className="mac-switch">&nbsp;&nbsp;
+							<input
+								type="checkbox"
+								id="es_pediatrico"
+								name="es_pediatrico"
+								checked={this.state.es_pediatrico === "si"}
+								onChange={(e) =>
+								this.setState({ es_pediatrico: e.target.checked ? "si" : "no" })
+								}
+							/>
+							<span className="mac-slider"></span>
+							</label>
+						</div>
+
+						{this.state.es_pediatrico === "si" && (
+							<div className="mac-form-group full-width">
+							<label htmlFor="nombre_padre" className="mac-label">
+								Nombre del Tutor
+							</label>
+							<input
+								type="text"
+								id="nombre_padre"
+								name="nombre_padre"
+								className="mac-input"
+								placeholder="Nombre del tutor"
+								value={this.state.nombre_padre}
+								onChange={this.handleChange}
+								style={{ width: "100%" }}
+							/>
+							</div>
+						)}
+						</div>
+
+
+						<div className="mac-form-group">
+							<label>Cedula o pasaporte</label>
+							<input type="text" id="cedula" name="cedula" className="mac-input" value={this.state.cedula} onChange={this.handleChange} />
 						</div>
 
 						<div className="mac-form-group">
 							<label>Correo Electrónico</label>
-							<input
+							<input 
 							type="text"
 							id="correo_electronico"
+							name="correo_electronico"
 							className="mac-input"
 							placeholder="ejemplo --- edisondja@gmail.com"
+							value={this.state.correo_electronico}
+							onChange={this.handleChange}
 							/>
 						</div>
 
@@ -138,7 +188,7 @@ class PacienteAdmin extends  React.Component{
 
 						<div className="mac-form-group">
 							<label>Sexo</label>
-							<select id="sexo" className="mac-input">
+							<select id="sexo" name="sexo" className="mac-input" value={this.state.sexo} onChange={this.handleChange}>
 							<option value="h">Masculino</option>
 							<option value="m">Femenino</option>
 							</select>
@@ -146,7 +196,7 @@ class PacienteAdmin extends  React.Component{
 
 						<div className="mac-form-group">
 							<label>Fecha de Nacimiento</label>
-							<input type="date" id="fecha_nacimiento" className="mac-input" />
+							<input type="date" id="fecha_nacimiento" name="fecha_nacimiento" className="mac-input" value={this.state.fecha_nacimiento} onChange={this.handleChange} />
 						</div>
 
 						<div className="mac-form-group">

@@ -46,7 +46,7 @@ class  Cita extends React.Component{
 	componentDidMount(){
 		
 		this.cargar_citas();
-		this.Cargar_generos_paciente();
+		//this.Cargar_generos_paciente();
 		this.Procedimientos_realizados();
 		this.cargar_cantidad_de_pacientes();
 	}

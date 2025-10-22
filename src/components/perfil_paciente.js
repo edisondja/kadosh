@@ -644,14 +644,34 @@ class PerfilPaciente extends React.Component{
 
 					<strong className="mb-3 d-block">Ficha Medica</strong>
 					<div className="mb-4">
-						{this.state.tiene_ficha_medica ? (
-							<>
-								<p><strong>Fecha ficha creada:</strong> {this.state.created_at}</p>
-								<p><strong>Dirección:</strong> {this.state.direccion}</p>
-							</>
-						) : (
-							<p>No tiene ficha médica registrada.</p>
-						)}
+						<table className="table table-bordered shadow-sm">
+						<thead>
+							<tr>
+								<th>Fecha</th>
+								<th>Dirección</th>
+								<th>Alergias</th>
+								<th>Enfermedades</th>
+						</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{this.state.created_at}</td>
+								<td>{this.state.direccion}</td>
+								<td>
+									{this.state.alergias || "No especificadas"},&nbsp;
+									{this.state.alergias_detalle}
+								</td>
+								<td>
+									{this.state.enfermedades.map((enfermedad, index) => (
+							
+										<span key={index}>{enfermedad},&nbsp;</span>
+									))
+								}
+								</td>
+
+							</tr>
+						</tbody>
+					</table>
 					</div>
 
 					<strong className="mb-3 d-block">Lista de citas</strong>
@@ -933,8 +953,44 @@ class PerfilPaciente extends React.Component{
 						</div>
 					</div>
 					)}
+					
+					{this.state.modal_nota_visable && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+					<div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
+					<div className="mac-box p-4 rounded-3 shadow-lg" style={{ width: '100%' }}>
+						<div className="d-flex justify-content-between align-items-center mb-3">
+						<h5 className="fw-bold">📝 Escribir Nota del Paciente</h5>
+						<button
+							type="button"
+							className="btn-close"
+							onClick={this.closeModalNota}
+						></button>
+						</div>
 
-				{this.state.modal_documento_visible && (
+						<textarea
+						className="mac-input w-100"
+						placeholder="Escribe aquí la nota..."
+						rows={6}
+						value={this.state.nota_texto}
+						onChange={(e) => this.setNotaTexto(e.target.value)}
+						style={{ resize: 'vertical' }}
+						></textarea>
+
+						<div className="d-flex justify-content-end gap-2 mt-4">
+						<button className="mac-btn mac-btn-green" onClick={this.guardarNota}>
+							💾 Guardar
+						</button>
+						<button className="mac-btn mac-btn-gray" onClick={this.closeModalNota}>
+							❌ Cancelar
+						</button>
+						</div>
+					</div>
+					</div>
+				</div>
+				)}
+				
+
+			{this.state.modal_documento_visible && (
 				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
 					<div className="modal-dialog modal-xl modal-dialog-centered">
 					<div className="modal-content">
@@ -989,7 +1045,54 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
-
+				{this.state.modal_ver_notas_visable && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+					<div className="modal-dialog modal-lg modal-dialog-centered">
+					<div className="modal-content" style={{ borderRadius: '12px' }}>
+						<div className="modal-header">
+						<h5 className="modal-title">Notas del Paciente 🗒️</h5>
+						<button className="btn-close" onClick={() => this.setState({ modal_ver_notas_visable: false })}></button>
+						</div>
+						<div className="modal-body">
+						<table className="table">
+							<thead>
+							<tr>
+								<th>Contenido</th>
+								<th>Fecha</th>
+								<th colSpan="2">Eliminar</th>
+							</tr>
+							</thead>
+							<tbody>
+							{this.state.notasPaciente.map((nota) => (
+								<tr key={nota.id}>
+								<td style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>
+									<p style={{ margin: 0 }}>{nota.descripcion}</p>
+								</td>
+								<td>{nota.updated_at}</td>
+						
+								<td>
+									<button
+									className="btn btn-outline-danger btn-sm"
+									onClick={() => this.eliminarNota(nota.id)}
+									title="Eliminar nota"
+									>
+									<i className="icon icon-trash" />
+									</button>
+								</td>
+								</tr>
+							))}
+							</tbody>
+						</table>
+						</div>
+						<div className="modal-footer">
+						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visable: false })}>
+							Cerrar
+						</button>
+						</div>
+					</div>
+					</div>
+				</div>
+				)}
 
 			</div>
 				);

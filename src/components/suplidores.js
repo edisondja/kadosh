@@ -78,12 +78,13 @@ class Suplidores extends React.Component {
       rnc_suplidor: rnc_suplidor.trim(),
     };
     Axios.post(`${Core.url_base}/api/registrar_suplidor`, suplidor)
-      .then(() => {
+      .then((data) => {
         Alertify.success('Suplidor registrado correctamente');
         this.cargar_suplidores();
-        this.cerrarModalRegistrar();
+       // this.cerrarModalRegistrar();
+        console.log("Suplidor registrado:",data.data);
       })
-      .catch(() => Alertify.error('Error al registrar suplidor'));
+      .catch((error) =>  console.log(error));
   };
 
   // Abrir modal actualizar
