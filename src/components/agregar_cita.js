@@ -93,9 +93,10 @@ const localizer = momentLocalizer(moment)
           paciente_id: cita.paciente_id, 
           doctor_id: cita.doctor_id,
           // El title completo incluye el nombre del paciente
-          title: cita.motivo + (cita.paciente ? ` - ${cita.paciente.nombre} ${cita.paciente.apellido}` : ''),
+      
           // Agregamos el nombre completo para el tooltip y edición
           paciente_nombre: cita.paciente ? `${cita.paciente.nombre} ${cita.paciente.apellido}` : '',
+          title: cita.paciente ? `${cita.paciente.nombre} ${cita.paciente.apellido} - ${cita.motivo}` : cita.motivo,
           doctor_nombre: doctors.find(d => d.id == cita.doctor_id) ? `${doctors.find(d => d.id == cita.doctor_id).nombre} ${doctors.find(d => d.id == cita.doctor_id).apellido}` : '',
           start: new Date(cita.inicio),
           end: new Date(cita.fin)
@@ -355,7 +356,7 @@ const localizer = momentLocalizer(moment)
                     className="form-control mb-3"
                     value={busqueda}
                     onChange={handleSearchPaciente}
-                    disabled={editando}
+                    disabled={editando} 
                   />
                   {resultadosPacientes.length > 0 && (
                     <ul className="list-group">

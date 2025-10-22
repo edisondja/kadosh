@@ -29,7 +29,6 @@ class PerfilPaciente extends React.Component{
 		disable y un boton que lo habilite para editarlos y guardarlos
 
 	*/
-	
 		constructor(props) {
 			super(props);
 			this.state = {
@@ -392,10 +391,9 @@ class PerfilPaciente extends React.Component{
 					});
 			};
 
-
 			eliminarDocumento = (id) => {
 
-				Axios.delete(`${Verficar.url_base}/api/eliminar_radiografia/${id}`)
+				Axios.post(`${Verficar.url_base}/api/eliminar_radiografia`,{id_radiografia:id})
 					.then(() => {
 					Alertify.success("Documento eliminado");
 					this.cargar_documentos();
@@ -405,8 +403,6 @@ class PerfilPaciente extends React.Component{
 					});
 
 			};
-
-
 
 
 			cargar_documentos = () => {
@@ -612,8 +608,19 @@ class PerfilPaciente extends React.Component{
 					<button className="btn btn-secondary mb-3" onClick={this.detras}>
 						← Atrás
 					</button>
-
-					<table className="table table-hover shadow-sm">
+				   {this.state.paciente.nombre_tutor!==null && (
+						<table className='table'>
+							<thead className="">
+							<tr>
+								<th><i class="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
+									&nbsp;Nombre del Tutor:&nbsp;&nbsp;
+									<strong style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.nombre_tutor}</strong>
+									</strong></th>
+							</tr>
+							</thead>
+						</table>
+					)}
+						<table className="table table-hover shadow-sm">
 						<thead className="table-primary">
 						<tr>
 							<th>Nombre</th>
@@ -729,10 +736,7 @@ class PerfilPaciente extends React.Component{
 								{/* DATOS PERSONALES */}
 								<fieldset className="mb-4">
 								<legend className="fw-semibold mb-3">Datos Personales</legend>
-								<div className="row g-3">
-							
-
-			
+								<div className="row g-3">		
 									<div className="col-md-6 col-lg-6">
 									<label className="form-label">Dirección</label>
 									<input
@@ -988,56 +992,142 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
-				
-
 			{this.state.modal_documento_visible && (
-				<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
-					<div className="modal-dialog modal-xl modal-dialog-centered">
-					<div className="modal-content">
-						<div className="modal-header">
-						<h5 className="modal-title">📁 Documentos del Paciente</h5>
-						<button className="btn-close" onClick={() => this.setState({ modalDocumentosVisible: false })}></button>
+				<div
+					className="modal d-block"
+					style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+				>
+					<div
+					className="modal-dialog modal-xxl modal-dialog-centered"
+					style={{ maxWidth: "90%" }}
+					>
+					<div className="modal-content mac-box">
+						<div className="modal-header border-0">
+						<h4 className="modal-title flex items-center gap-2">
+							<i class="fa-solid fa-folder"></i>
+							<span>&nbsp;Documentos del paciente</span>
+						</h4>
+						<button
+							className="btn-close"
+							onClick={() => this.setState({ modal_documento_visible: false })}
+						></button>
 						</div>
-						<div className="modal-body">
-						<table className="table">
-							<thead>
-							<tr>
-								<th>Documento</th>
+
+						<div className="modal-body bg-gray-50 rounded-xl p-4">
+						{/* Vista en modo lista */}
+						{this.state.documentos.length === 0 ? (
+							<div className="text-center text-gray-500 py-5">
+							<p>📁 No hay documentos registrados aún.</p>
+							</div>
+						) : (
+							<table className="table table-hover align-middle">
+							<thead className="bg-gray-200">
+								<tr>
+								<th style={{ width: "60px" }}>Vista</th>
 								<th>Comentarios</th>
+								<th>Tipo</th>
 								<th>Fecha</th>
-								<th>Eliminar</th>
-							</tr>
+								<th style={{ width: "100px" }}>Acción</th>
+								</tr>
 							</thead>
 							<tbody>
-							{this.state.documentos.map((doc) => (
-								<tr key={doc.id}>
-								<td><a href={`${Verficar.url_base}/storage/${doc.ruta_radiografia}`} target="_blank" rel="noopener noreferrer">Ver documento</a></td>
-								<td>{doc.comentarios}</td>
-								<td>{doc.updated_at}</td>
-								<td>
-									<button className="btn btn-warning btn-sm" onClick={() => this.eliminarDocumento(doc.id)}>
-									Eliminar
-									</button>
-								</td>
-								</tr>
-							))}
-							</tbody>
-						</table>
+								{this.state.documentos.map((doc) => {
+								const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+								const esImagen = /\.(jpg|jpeg|png|gif|bmp)$/i.test(
+									doc.ruta_radiografia
+								);
+								const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
+								const tipo = esImagen ? "Imagen" : esPdf ? "PDF" : "Archivo";
 
-						<hr />
-						<h6>➕ Agregar nuevo documento</h6>
-						<input type="file" className="form-control mb-2" onChange={(e) => this.setState({ nuevoArchivo: e.target.files[0] })} />
-						<textarea
-							className="form-control mb-2"
+								return (
+									<tr key={doc.id} className="hover:bg-gray-100 transition">
+									<td>
+										{esImagen ? (
+										<a
+											href={url}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<img
+											src={url}
+											alt="Documento"
+											width={50}
+											height={50}
+											className="rounded-lg border shadow-sm"
+											/>
+										</a>
+										) : esPdf ? (
+										<a
+											href={url}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="text-red-600 text-lg"
+										>
+											📄
+										</a>
+										) : (
+										<span className="text-blue-600 text-lg">📁</span>
+										)}
+									</td>
+
+									<td>{doc.comentarios || "Sin comentarios"}</td>
+									<td>{tipo}</td>
+									<td>{new Date(doc.updated_at).toLocaleDateString()}</td>
+									<td>
+										<button
+										className="btn btn-danger btn-sm"
+										onClick={() => {
+											alertify.confirm(
+											"Confirmar eliminación",
+											`¿Deseas eliminar el documento "${doc.comentarios || "sin nombre"}"?`,
+											() => {
+												this.eliminarDocumento(doc.id);
+												alertify.success("Documento eliminado");
+											},
+											() => {
+												alertify.message("Cancelado");
+											}
+											);
+										}}
+										>
+										Eliminar
+										</button>
+									</td>
+									</tr>
+								);
+								})}
+							</tbody>
+							</table>
+						)}
+
+						{/* Subir nuevo documento */}
+						<hr className="my-4" />
+						<h6 className="text-lg font-semibold mb-3">📤 Agregar nuevo documento</h6>
+
+						<div className="bg-white p-4 rounded-2xl shadow-sm mac-card">
+							<input
+							type="file"
+							className="form-control mb-3"
+							onChange={(e) => this.setState({ nuevoArchivo: e.target.files[0] })}
+							/>
+							<textarea
+							className="form-control mb-3"
 							placeholder="Comentarios del documento"
 							rows="3"
 							value={this.state.nuevoComentario}
 							onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
-						/>
-						<button className="btn btn-primary" onClick={this.subirDocumento}>Subir Documento</button>
+							/>
+							<button className="mac-btn" onClick={this.subirDocumento}>
+							Subir Documento
+							</button>
 						</div>
-						<div className="modal-footer">
-						<button className="btn btn-secondary" onClick={() => this.setState({ modal_documento_visible: false })}>
+						</div>
+
+						<div className="modal-footer border-0">
+						<button
+							className="btn btn-secondary"
+							onClick={() => this.setState({ modal_documento_visible: false })}
+						>
 							Cerrar
 						</button>
 						</div>
@@ -1045,6 +1135,7 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
+	
 				{this.state.modal_ver_notas_visable && (
 					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
 					<div className="modal-dialog modal-lg modal-dialog-centered">

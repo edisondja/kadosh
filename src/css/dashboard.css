@@ -726,3 +726,48 @@ body{
 	overflow-y: scroll;
 	height: 400px;;
 }
+
+
+.file-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.file-thumb:hover {
+  transform: scale(1.05);
+}
+
+.delete-overlay-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(255, 0, 0, 0.9);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+.delete-overlay-btn:hover {
+  background: rgba(200, 0, 0, 1);
+}
+
+.file-icon-card {
+  text-align: center;
+  cursor: pointer;
+}
+
+.file-icon-card:hover .file-thumb {
+  transform: scale(1.05);
+}

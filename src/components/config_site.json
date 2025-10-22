@@ -1,8 +1,9 @@
 {
-
-  "api_url_dev": "http://clinica1.miapp.local:8000",
-  "api_url": "https://service.clinickadosh.com/",
-  "name_company": "CLÍNICA DENTAL KADOSH OR SRL",
+  "api_url3":"https://leonardobatista.odontoed.com/",
+  "api_url2": "https://service.clinickadosh.com/",
+  "api_url": "http://clinica1.miapp.local:8000",
+  "name_company": "Clinica Dr.Leonardo Batista",
+  "passowrd_admin":"batista2025",
   "app_version": "1.0.0",
   "app_description": "Sistema de gestión de pacientes",
   "app_author": "Edison De Jesus Abreu",
@@ -11,8 +12,10 @@
   "app_address": "Santo Domingo, República Dominicana",
   "app_logo": "/assets/leonardo_batista.jpeg",
   "app_favicon": "/assets/images/favicon.ico",
-  "website": "https://odontoed.com",
+  "website": "www.odontoed.com",
   "default_language": "es",
+  "developer":"Edison De Jesus Abreu",
+  "info_app":"Copyright 2020 © 2025 Odontoed, All Rights Reserved by",
   "supported_languages": ["es", "en", "fr", "de"],
   "rnc_company": "131-76629-3",
   "menu_items": [

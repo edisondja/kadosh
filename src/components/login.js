@@ -83,18 +83,19 @@ class Login extends React.Component{
 
 			}else{	
 
-					dashboard=<div className="row"> 
+					dashboard=<div className="row">
 					<div className="col-md-4"></div>
-		
+					
 						<div className="col-md-4 stilo_login"  onKeyPress={this.onKeyUp}><br/><br/>
-						<img src={Logo} width="150" style={this.logo_stilo}  /><br/> 
+						<img src={Verificar.LogoApp} width="150" style={this.logo_stilo}  /><br/> 
 							<storng>Usuario</storng><br/>
 							<input type='text' placeholder="&#9670; Usuario" className="form-control" id="usuario" /><br/>
 							<storng className="padding_text">Contraseña</storng><br/>
 							<input type='password' placeholder="&#9673; Clave" className="form-control" id="clave" /><br/>
 							<button className="btn btn-primary boton_login" onClick={this.iniciar_sesion} id="boton_login">Login</button>
 							<hr/>
-							 <p>Copyright 2020 © 2025 Odontoed ABC All Rights Reserved.</p>
+							 <p >{Verificar.Config.info_app} {Verificar.Config.website}</p>
+					
 						</div>
 						<div>
 						</div>

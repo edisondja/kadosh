@@ -3,10 +3,10 @@ import Alertify from 'alertifyjs';
 import alertify from 'alertifyjs';
 import Cargar_generos from './funciones_extras.js';
 import Config from './config_site.json';
-
+import LogoApp from '../leonardo_batista.jpeg';
 
 //var password= "kadosh2019";
-var password = "batista2025";
+var password = "kadosh2019";
 //var url_base =  "https://service.clinickadosh.com";
 //var url_base =  "http://clinica1.miapp.local:8000";
 var url_base =  Config.api_url;
@@ -15,7 +15,7 @@ var url_base =  Config.api_url;
 //var url_base = "https://dc05-152-167-237-144.ngrok-free.app"; 
 var login_status = false;
 //var clave_secreta ="kadoshor2020";
-var clave_secreta ="batista2025";
+var clave_secreta ="kadosh2019";
 
 
 function cargar_doctores(el){
@@ -225,6 +225,7 @@ export default {eliminar_nota,
                 url_base,
                 notificar_cumple,
                 cargar_doctor,
-                Config
+                Config,
+                LogoApp
         };
 

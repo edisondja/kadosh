@@ -72,6 +72,7 @@ class ActualizarPaciente extends React.Component{
                             id_doctor:doctor_select,
                             telefono:telefono,
                             correo_electronico:correo,
+                            nombre_tutor:this.state.paciente.nombre_tutor,
                             id: this.props.match.params.id
                     };
                     
@@ -137,6 +138,10 @@ class ActualizarPaciente extends React.Component{
                     paciente.correo_electronico = e.target.value;
                     this.setState({paciente:paciente});
                 
+                }else if(e.target.id=="nombre_tutor"){
+                    let paciente = this.state.paciente;
+                    paciente.nombre_tutor = e.target.value;
+                    this.setState({paciente:paciente});
                 }
         }
 
@@ -162,6 +167,10 @@ class ActualizarPaciente extends React.Component{
                         <strong>Apellido</strong><br/>
 
                         <input type='text' value={this.state.paciente.apellido} onChange={this.actualizar_paciente} id="apellido" className="form-control"/><br/>
+
+                        <strong>Nombre del tutor</strong><br/>
+
+                        <input type='text' id="nombre_tutor" value={this.state.paciente.nombre_tutor} onChange={this.actualizar_paciente} className="form-control"/><br/>
 
                         <strong>DNI</strong><br/>
 
