@@ -134,8 +134,6 @@ class  Cita extends React.Component{
 	 cargar_citas(token)
 	{
 		
-	
-		
 
 		let config = {
 			headers: {
@@ -155,9 +153,7 @@ class  Cita extends React.Component{
 
 				console.log(error);
 				this.cargar_citas();
-		  });
-
-				
+		  });				
 	}
 
 	asignar_cita=(id,nombre)=>{
@@ -323,33 +319,33 @@ class  Cita extends React.Component{
 					<div className="col-md-10">
 					<table className="table">
 						<tr>
-						<td>Cantidad de pacientes registrados</td>
+						<td>{Url.lenguaje.citas_c.cantidad_de_pacientes}</td>
 						<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
-						<td>Cantidad de procedimientos realizados</td>
+						<td>{Url.lenguaje.citas_c.cantidad_de_procedimiento}</td>
 						<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
-						<td style={{ color: 'black' }}>Hoy es {this.dia_actual()}</td>	
+						<td style={{ color: 'black' }}>{Url.lenguaje.citas_c.hoy_es}  {this.dia_actual()}</td>	
 						</tr>
 					</table>
 					</div>
 				</div>
 				<hr />
 				
-				<input type="text" placeholder="Buscar paciente" className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
+				<input type="text" placeholder={Url.lenguaje.citas_c.buscar_paciente}  className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
 				
 				<hr />
 				<div className="interfaz_cliente">
 					<table className='table table-hover'>
 					<thead>
 						<tr className="fijar_columnas">
-						<th scope="col">Nombre</th>
-						<th scope="col">Apellido</th>
-						<th scope="col">Doctor</th>
-						<th scope="col">Cédula</th>
-						<th scope="col">Teléfono</th>
-						<th scope="col">Deuda</th> 
-						<th scope="col">Ver Perfil</th>
-						<th scope="col">Asignar Cita</th>
-						<th scope="col">Actualizar</th>
+						<th scope="col">{Url.lenguaje.citas_c.nombre}</th>
+						<th scope="col">{Url.lenguaje.citas_c.apellido} </th>
+						<th scope="col">{Url.lenguaje.citas_c.doctor} </th>
+						<th scope="col">{Url.lenguaje.citas_c.cedula} </th>
+						<th scope="col">{Url.lenguaje.citas_c.telefono} </th>
+						<th scope="col">{Url.lenguaje.citas_c.deuda} </th> 
+						<th scope="col">{Url.lenguaje.citas_c.ver_perfil} </th>
+						<th scope="col">{Url.lenguaje.citas_c.asigar_cita} </th>
+						<th scope="col">{Url.lenguaje.citas_c.actualizar} </th>
 						</tr>
 					</thead>
 					<tbody>

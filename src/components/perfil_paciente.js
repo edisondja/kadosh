@@ -514,7 +514,7 @@ class PerfilPaciente extends React.Component{
 							aria-label="Agregar Factura"
 						>
 							<i className="fas fa-file-invoice-dollar"></i>
-							<span>Factura</span>
+							<span>{Verficar.perfil_paciente.factura}</span>
 						</button>
 						</Link>
 						<Link to={`/ver_facturas/${this.props.match.params.id}`}>
@@ -524,7 +524,7 @@ class PerfilPaciente extends React.Component{
 							aria-label="Ver Facturas"
 						>
 							<i className="fas fa-file-alt"></i>
-							<span>Ver Facturas</span>
+							<span>{Verficar.perfil_paciente.ver_facturas}</span>
 						</button>
 						</Link>
 
@@ -534,7 +534,7 @@ class PerfilPaciente extends React.Component{
 							aria-label="Ficha Medica">
 
 							<i className="fas fa-file-medical"></i>
-							<span>Ficha médica</span>
+							<span>{Verficar.perfil_paciente.ficha_medica.nombre}</span>
 						</button>
 
 						<button
@@ -544,27 +544,25 @@ class PerfilPaciente extends React.Component{
 							aria-label="Notas"
 						>
 							<i className="fas fa-sticky-note"></i>
-							<span>Notas</span>
+							<span>{Verficar.perfil_paciente.notas}</span>
 						</button>
 
 						<button
 							className="icon-btn"
 							onClick={this.openModalNota}
 							title="Agregar Nota"
-							aria-label="Agregar Nota"
-						>
+							aria-label="Agregar Nota">
 							<i className="fas fa-plus-circle"></i>
-							<span>Agregar Nota</span>
+							<span>{Verficar.perfil_paciente.agregar_nota}</span>
 						</button>
 
 						<button
 							className="icon-btn"
 							onClick={this.cargar_documentos}
 							title="Documentos"
-							aria-label="Documentos"
-						>
+							aria-label="Documentos">
 							<i className="fas fa-folder-open"></i>
-							<span>Documentos</span>
+							<span>{Verficar.perfil_paciente.documentos}</span>
 						</button>
 						
 					<Link to={`/crear_prepuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
@@ -574,7 +572,7 @@ class PerfilPaciente extends React.Component{
 						aria-label="Crear Presupuesto"
 					>
 						<i className="fas fa-file-signature"></i>
-						<span>Presupuesto</span>
+						<span>{Verficar.perfil_paciente.presupuesto}</span>
 					</button>
 					</Link>
 
@@ -582,20 +580,18 @@ class PerfilPaciente extends React.Component{
 					<button
 						className="icon-btn"
 						title="Ver Presupuestos"
-						aria-label="Ver Presupuestos"
-					>
+						aria-label="Ver Presupuestos">
 						<i className="fas fa-file-alt"></i>
-						<span>Ver Presupuestos</span>
+						<span>{Verficar.perfil_paciente.ver_presupuestos}</span>
 					</button>
 					</Link>
 						<button
 							className="icon-btn danger"
 							onClick={() => this.eliminar_paciente(this.state.paciente.id)}
 							title="Eliminar Paciente"
-							aria-label="Eliminar Paciente"
-						>
+							aria-label="Eliminar Paciente">
 							<i className="fas fa-trash-alt"></i>
-							<span>Eliminar</span>
+							<span>{Verficar.perfil_paciente.eliminar}</span>
 						</button>
 
 					</div>
@@ -606,14 +602,14 @@ class PerfilPaciente extends React.Component{
 
 					<div className="interfaz_perfil mb-4">
 					<button className="btn btn-secondary mb-3" onClick={this.detras}>
-						← Atrás
+						← 
 					</button>
 				   {this.state.paciente.nombre_tutor!==null && (
 						<table className='table'>
 							<thead className="">
 							<tr>
 								<th><i class="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
-									&nbsp;Nombre del Tutor:&nbsp;&nbsp;
+									&nbsp;{Verficar.perfil_paciente.nombre_tutor}:&nbsp;&nbsp;
 									<strong style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.nombre_tutor}</strong>
 									</strong></th>
 							</tr>

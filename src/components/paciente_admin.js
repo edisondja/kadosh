@@ -82,7 +82,7 @@ class PacienteAdmin extends  React.Component{
 				formData.append("cedula",this.state.cedula);
 				formData.append("telefono",this.state.telefono);
 				formData.append("id_doctor",document.getElementById("doctores_select").value);
-				formData.append("nombre_tutor",this.nombre_tutor);
+				formData.append("nombre_tutor",this.state.nombre_tutor);
 				formData.append("fecha_nacimiento",this.state.fecha_nacimiento);
 				formData.append("correo_electronico",this.state.correo_electronico);
 				formData.append("sexo",this.state.sexo);

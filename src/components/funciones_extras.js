@@ -10,6 +10,7 @@ var password = "kadosh2019";
 //var url_base =  "https://service.clinickadosh.com";
 //var url_base =  "http://clinica1.miapp.local:8000";
 var url_base =  Config.api_url;
+var lenguaje =  Config.app_lang.es;
 
 
 //var url_base = "https://dc05-152-167-237-144.ngrok-free.app"; 
@@ -226,6 +227,7 @@ export default {eliminar_nota,
                 notificar_cumple,
                 cargar_doctor,
                 Config,
-                LogoApp
+                LogoApp,
+                lenguaje
         };
 

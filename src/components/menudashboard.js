@@ -39,17 +39,18 @@ import ActulizarPaciente from './actualizar_paciente';
 import Odontograma from './odontograma';  
 import FichaMedica from './ficha_medica';
 import Axios from 'axios';
-
 class MenuDashboard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { notificaciones: [], notificado: false };
+    this.state = { notificaciones: [], notificado: false};
     this.estilos = { listStyleType: "none" };
+   
   }
 
   componentDidMount() {
     FuncionesExtras.notificar_cumple(this);
     this.contador_de_sesion();
+
   }
 
   contador_de_sesion() {
@@ -84,18 +85,18 @@ class MenuDashboard extends React.Component {
     if (localStorage.getItem("roll") === "Administrador") {
       Menu = (
         <ul style={this.estilos} className="menuStilos ">
-          <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;Notificaciones</Link></li>
-          <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;Agregar Paciente</Link></li>
-          <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;Agregar Usuario</Link></li>
-          <li><Link to="/agregar_cita"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;Administracion de Citas</Link></li>
-          <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;Agregar Doctor</Link></li>
-          <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;Agregar Procedimientos</Link></li>
-          <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;Generar Reportes</Link></li>
-          <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;Contabilidad</Link></li>
-          <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;Cerrar Sesión</Link></li>
-          <li><Link to="/dispositivos" id="dispositivos"><i className="fa fa-plug img_estilo"></i>&nbsp;Dispositivos conectados</Link></li>
-          <li><Link to="/auditoria" id="auditoria"><i className="fa fa-eye img_estilo"></i>&nbsp;Auditoría</Link></li>
-          <li><Link to="/configuracion" id="configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;Configuración</Link></li>
+          <li><Link to="/notificaciones"><i className="fas fa-bell img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.notifiaciones}</Link></li>
+          <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_paciente}</Link></li>
+          <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_usuario}</Link></li>
+          <li><Link to="/agregar_cita"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.administracion_citas}</Link></li>
+          <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_doctor}</Link></li>
+          <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_procedimiento}</Link></li>
+          <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.generar_reportes}</Link></li>
+          <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.contabilidad}</Link></li>
+          <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.cerrar_sesion}</Link></li>
+          <li><Link to="/dispositivos" id="dispositivos"><i className="fa fa-plug img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.dispositivos_conectados}</Link></li>
+          <li><Link to="/auditoria" id="auditoria"><i className="fa fa-eye img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.auditoria} </Link></li>
+          <li><Link to="/configuracion" id="configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.auditoria}</Link></li>
         </ul>
       );
     } else if (localStorage.getItem("roll") === "Contable") {
