@@ -532,7 +532,7 @@ procesar_pago = (id_factura, precio_estatus) => {
                             <td>{data.tipo_de_pago}</td>
                             <td>{data.fecha_pago}</td>
                             <td>
-                                <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}`}>
+                                <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}/${this.props.match.params.id}/${this.state.factura.id}`}>
                                     <button className="btn btn-success">Imprimir</button>
                                 </Link>
                             </td> 

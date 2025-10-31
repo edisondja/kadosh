@@ -1,22 +1,12 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Alertify from 'alertifyjs';
 import Axios from 'axios';
 import '../css/dashboard.css';
 import AgregarCita from './agregar_cita';
-import VerFacturas from './ver_facturas';
 import Verficar from './funciones_extras';
 import Pacientes from './citas_c';
 import alertify from 'alertifyjs';
-import ImagenNota from '../enviar.png';
-import ProcedimientoImg from '../procedimiento.png';
-import FacturasImg from '../factura_hechas.png';
-import FacturaSaldada from '../factura_saldada.png';
-import RecibosImg from '../cheque.png';
-import  { Redirect } from 'react-router-dom';
-import DocumentoImg from '../adjunto.png';
 import ImagenPerfil from '../usuario_listo.png'
-import ImagenMas from '../mas.png';
 import { Link } from 'react-router-dom';
 
 
@@ -54,8 +44,8 @@ class PerfilPaciente extends React.Component{
 				eliminar: 0,
 
 				// Modales
-				modal_nota_visible: false,
 				
+				modal_nota_visible: false,
 				modal_documento_visible: false,
 				modal_ver_notas_visible: false,
 				modal_ficha_medica_visible: false,
@@ -155,13 +145,13 @@ class PerfilPaciente extends React.Component{
 		}
 
 		openModalNota = () => {
-			this.setState({ modal_nota_visable: true });
+			this.setState({ modal_nota_visible: true });
 
 		}
 
 		closeModalNota = () => {
 
-			this.setState({ modal_nota_visable: false, nota_texto: '' });
+			this.setState({modal_nota_visible : false, nota_texto: '' });
 		}
 		
 
@@ -188,7 +178,7 @@ class PerfilPaciente extends React.Component{
 				console.log(data);
 				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
 				
-					this.setState({ modal_nota_visable: false, nota_texto: '' });
+					this.setState({ modal_nota_visible: false, nota_texto: '' });
 				})
 				.catch((error) => {
 				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
@@ -511,20 +501,19 @@ class PerfilPaciente extends React.Component{
 						<button
 							className="icon-btn"
 							title="Agregar Factura"
-							aria-label="Agregar Factura"
-						>
+							aria-label="Agregar Factura">
+						
 							<i className="fas fa-file-invoice-dollar"></i>
-							<span>{Verficar.perfil_paciente.factura}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.factura}</span>
 						</button>
 						</Link>
 						<Link to={`/ver_facturas/${this.props.match.params.id}`}>
 						<button
 							className="icon-btn"
 							title="Ver Facturas"
-							aria-label="Ver Facturas"
-						>
+							aria-label="Ver Facturas">
 							<i className="fas fa-file-alt"></i>
-							<span>{Verficar.perfil_paciente.ver_facturas}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.ver_facturas}</span>
 						</button>
 						</Link>
 
@@ -534,17 +523,16 @@ class PerfilPaciente extends React.Component{
 							aria-label="Ficha Medica">
 
 							<i className="fas fa-file-medical"></i>
-							<span>{Verficar.perfil_paciente.ficha_medica.nombre}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}</span>
 						</button>
 
 						<button
 							className="icon-btn"
 							onClick={this.ver_notas}
 							title="Notas"
-							aria-label="Notas"
-						>
+							aria-label="Notas">
 							<i className="fas fa-sticky-note"></i>
-							<span>{Verficar.perfil_paciente.notas}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.notas}</span>
 						</button>
 
 						<button
@@ -553,7 +541,7 @@ class PerfilPaciente extends React.Component{
 							title="Agregar Nota"
 							aria-label="Agregar Nota">
 							<i className="fas fa-plus-circle"></i>
-							<span>{Verficar.perfil_paciente.agregar_nota}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.agregar_nota}</span>
 						</button>
 
 						<button
@@ -562,17 +550,17 @@ class PerfilPaciente extends React.Component{
 							title="Documentos"
 							aria-label="Documentos">
 							<i className="fas fa-folder-open"></i>
-							<span>{Verficar.perfil_paciente.documentos}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.documentos}</span>
 						</button>
 						
 					<Link to={`/crear_prepuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
 					<button
 						className="icon-btn"
 						title="Crear Presupuesto"
-						aria-label="Crear Presupuesto"
-					>
+						aria-label="Crear Presupuesto">
+					
 						<i className="fas fa-file-signature"></i>
-						<span>{Verficar.perfil_paciente.presupuesto}</span>
+						<span>{Verficar.lenguaje.perfil_paciente.presupuesto}</span>
 					</button>
 					</Link>
 
@@ -582,7 +570,7 @@ class PerfilPaciente extends React.Component{
 						title="Ver Presupuestos"
 						aria-label="Ver Presupuestos">
 						<i className="fas fa-file-alt"></i>
-						<span>{Verficar.perfil_paciente.ver_presupuestos}</span>
+						<span>{Verficar.lenguaje.perfil_paciente.ver_presupuestos}</span>
 					</button>
 					</Link>
 						<button
@@ -591,25 +579,24 @@ class PerfilPaciente extends React.Component{
 							title="Eliminar Paciente"
 							aria-label="Eliminar Paciente">
 							<i className="fas fa-trash-alt"></i>
-							<span>{Verficar.perfil_paciente.eliminar}</span>
+							<span>{Verficar.lenguaje.perfil_paciente.eliminar}</span>
 						</button>
 
 					</div>
-
 
 				
 					</div>
 
 					<div className="interfaz_perfil mb-4">
 					<button className="btn btn-secondary mb-3" onClick={this.detras}>
-						← 
+						← {Verficar.lenguaje.perfil_paciente.atras}
 					</button>
 				   {this.state.paciente.nombre_tutor!==null && (
 						<table className='table'>
 							<thead className="">
 							<tr>
 								<th><i class="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
-									&nbsp;{Verficar.perfil_paciente.nombre_tutor}:&nbsp;&nbsp;
+									&nbsp;{Verficar.lenguaje.perfil_paciente.nombre_tutor}:&nbsp;&nbsp;
 									<strong style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.nombre_tutor}</strong>
 									</strong></th>
 							</tr>
@@ -619,13 +606,13 @@ class PerfilPaciente extends React.Component{
 						<table className="table table-hover shadow-sm">
 						<thead className="table-primary">
 						<tr>
-							<th>Nombre</th>
-							<th>Cédula</th>
-							<th>Teléfono</th>
-							<th>Email</th>
-							<th>Ingreso</th>
-							<th>Doctor</th>
-							<th>Deuda Total</th>
+							<th>{Verficar.lenguaje.paciente_admin.nombre}</th>
+							<th>{Verficar.lenguaje.paciente_admin.cedula}</th>
+							<th>{Verficar.lenguaje.paciente_admin.telefono} </th>
+							<th>{Verficar.lenguaje.paciente_admin.correo_electronico}</th>
+							<th>{Verficar.lenguaje.paciente_admin.fecha_de_ingreso}</th>
+							<th>{Verficar.lenguaje.paciente_admin.ingresado}</th>
+							<th>{Verficar.lenguaje.citas_c.deuda}</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -650,10 +637,10 @@ class PerfilPaciente extends React.Component{
 						<table className="table table-bordered shadow-sm">
 						<thead>
 							<tr>
-								<th>Fecha</th>
-								<th>Dirección</th>
-								<th>Alergias</th>
-								<th>Enfermedades</th>
+								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}</th>
+								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.direccion}</th>
+								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.alergias}</th>
+								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.enfermedades}</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -677,18 +664,17 @@ class PerfilPaciente extends React.Component{
 					</table>
 					</div>
 
-					<strong className="mb-3 d-block">Lista de citas</strong>
 					<div className="mb-4">
-					<h5 className="text-xl font-semibold mb-4 text-gray-800">📋 Lista de citas</h5>
+					<h5 className="text-xl font-semibold mb-4 text-gray-800">📋 {Verficar.lenguaje.perfil_paciente.lista_de_citas.nombre}</h5>
 
 					<div className="overflow-x-auto">
 						<table className="table min-w-full border-collapse bg-white rounded-xl shadow-md">
 						<thead className="bg-gray-50 border-b">
 							<tr>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">Inicio</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">Fin</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">Motivo</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">Doctor</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.inicio}</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.fin}</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.motivo}</th>
+							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.doctor}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -953,18 +939,31 @@ class PerfilPaciente extends React.Component{
 						</div>
 					</div>
 					)}
-					
-					{this.state.modal_nota_visable && (
-					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+			{this.state.modal_nota_visible && (
+				<div
+					className="modal d-block"
+					style={{
+					backgroundColor: 'rgba(0,0,0,0.3)',
+					zIndex: 1050,
+					position: 'fixed',
+					top: 0,
+					left: 0,
+					width: '100%',
+					height: '100%',
+					overflow: 'auto',
+					pointerEvents: 'auto',
+					}}>
 					<div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
-					<div className="mac-box p-4 rounded-3 shadow-lg" style={{ width: '100%' }}>
+					<div
+						className="mac-box p-4 rounded-3 shadow-lg bg-white"
+						style={{
+						width: '100%',
+						zIndex: 1060,
+						pointerEvents: 'auto',
+						}}>
 						<div className="d-flex justify-content-between align-items-center mb-3">
 						<h5 className="fw-bold">📝 Escribir Nota del Paciente</h5>
-						<button
-							type="button"
-							className="btn-close"
-							onClick={this.closeModalNota}
-						></button>
+						<button type="button" className="btn-close" onClick={() => this.setState({ modal_nota_visible: false })}></button>
 						</div>
 
 						<textarea
@@ -972,15 +971,20 @@ class PerfilPaciente extends React.Component{
 						placeholder="Escribe aquí la nota..."
 						rows={6}
 						value={this.state.nota_texto}
-						onChange={(e) => this.setNotaTexto(e.target.value)}
+						onChange={(e) => this.setState({ nota_texto: e.target.value })}
 						style={{ resize: 'vertical' }}
 						></textarea>
 
 						<div className="d-flex justify-content-end gap-2 mt-4">
-						<button className="mac-btn mac-btn-green" onClick={this.guardarNota}>
+						<button
+							className="mac-btn mac-btn-green"
+							onClick={() => {
+							this.guardarNota();
+							this.setState({ modal_nota_visible: false });
+							}}>
 							💾 Guardar
 						</button>
-						<button className="mac-btn mac-btn-gray" onClick={this.closeModalNota}>
+						<button className="mac-btn mac-btn-gray" onClick={() => this.setState({ modal_nota_visible: false })}>
 							❌ Cancelar
 						</button>
 						</div>
@@ -988,11 +992,11 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
+	
 			{this.state.modal_documento_visible && (
 				<div
 					className="modal d-block"
-					style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-				>
+					style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
 					<div
 					className="modal-dialog modal-xxl modal-dialog-centered"
 					style={{ maxWidth: "90%" }}
@@ -1131,8 +1135,7 @@ class PerfilPaciente extends React.Component{
 					</div>
 				</div>
 				)}
-	
-				{this.state.modal_ver_notas_visable && (
+				{this.state.modal_ver_notas_visible && (
 					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
 					<div className="modal-dialog modal-lg modal-dialog-centered">
 					<div className="modal-content" style={{ borderRadius: '12px' }}>
@@ -1172,7 +1175,7 @@ class PerfilPaciente extends React.Component{
 						</table>
 						</div>
 						<div className="modal-footer">
-						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visable: false })}>
+						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visible: false })}>
 							Cerrar
 						</button>
 						</div>

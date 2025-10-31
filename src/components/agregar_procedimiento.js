@@ -17,13 +17,18 @@ class ProcedimientoForm extends React.Component{
 			var nombre = document.getElementById("nombre_procedimiento").value;
 			var precio = document.getElementById("precio").value;
 
-			Axios.get(`${core.url_base}/api/guardar_procedimiento/${nombre}/${precio}`).then(data=>{
+
+			Axios.post(`${core.url_base}/api/guardar_procedimiento`,
+				{nombre:nombre,precio:precio}
+			).then(data=>{
 
 					alertify.message("Procedimiento guardado con exito");
 					this.setState({boton_estado:true});
 					setInterval(()=>{
 						this.setState({boton_estado:false});
-
+							document.getElementById("nombre_procedimiento").value="";
+							document.getElementById("precio").value="";
+						
 					},3000);
 					this.setState({estado:'saved_success'});
 

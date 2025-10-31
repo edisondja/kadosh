@@ -170,7 +170,7 @@ class MenuDashboard extends React.Component {
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
-              <Route path="/imprimir_recibo/:id_recibo/:id_factura" component={ImprimirRecibo} />
+              <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />
               <Route path="/odontograma/:id_paciente/" component={Odontograma} />
               <Route path="/agregar_cita/" component={AgregarCita} />

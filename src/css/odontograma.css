@@ -150,3 +150,43 @@
 .modal-buttons .cancel {
   background: #e0e0e0;
 }
+
+
+
+
+.mac-box {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 16px;
+  max-width: 650px;
+  margin: auto;
+}
+
+.mac-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #f1f1f1;
+  transition: 0.2s;
+}
+
+.mac-btn:hover {
+  background: #e0e0e0;
+}
+
+.mac-btn.active {
+  background: #007aff;
+  color: white;
+}
+
+.odontograma-canvas {
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 600px;
+  height: 400px;
+  margin: auto;
+  background: #fafafa;
+}

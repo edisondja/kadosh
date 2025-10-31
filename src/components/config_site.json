@@ -1,6 +1,6 @@
 {
   "api_url":"https://leonardobatista.odontoed.com/",
-  "api_url2": "https://service.clinickadosh.com/",
+  "api_url4": "https://service.clinickadosh.com/",
   "api_url3": "http://clinica1.miapp.local:8000",
   "name_company": "Clinica Dr.Leonardo Batista",
   "passowrd_admin":"batista2025",
@@ -8,16 +8,16 @@
   "app_description": "Sistema de gestión de pacientes",
   "app_author": "Edison De Jesus Abreu",
   "app_email": "serive@odontoed.com",
-  "app_phone": "809-620-8641",
-  "app_address": "Santo Domingo, República Dominicana",
-  "app_logo": "/assets/leonardo_batista.jpeg",
+  "app_phone": "849-340-2298", 
+  "app_address": "C. Gracias de Dios 63, Jaquimeyes 81000, República Dominicana",
+  "app_logo": "https://clinickadosh.com/logos.jpg",
   "app_favicon": "/assets/images/favicon.ico",
   "website": "www.odontoed.com",
   "default_language": "es",
   "developer":"Edison De Jesus Abreu",
   "info_app":"Copyright 2020 © 2025 Odontoed, All Rights Reserved by",
   "supported_languages": ["es", "en", "fr", "de"],
-  "rnc_company": "131-76629-3",
+  "rnc_company": "***-****-*",
   "app_lang": {
     "es": {
       "notifiaciones":"Notificaiones",
@@ -55,8 +55,24 @@
         "prt3":"¡Felicítalo y demuéstrale lo especial que es para la familia Kadoshor!"
       },
       "perfil_paciente":{
-          "factura":"factura",
+        
+          "factura":"Factura",
+          "nombre_tutor":"Nombre tutor",
           "ver_facturas":"Ver facturas",
+          "documentos_p":{
+            "nombre":"Documentos del paciente",
+            "subir_documento":"Subir Documentos",
+            "no_hay_doc":"No hay documentos registrados aún.",
+            "agregar_nuevo":"Agregar nuevo documento",
+            "cerrar":"Cerrar"
+          },
+          "notas_p":{
+            "nombre":"Notas del Paciente",
+            "contenido":"Contenido",
+            "fecha":"Fecha",
+            "eliminar":"Eliminar",
+            "cerrar":"Cerrar"
+          },
           "ficha_medica":{
               "nombre":"Ficha Medica",
               "fecha":"Fecha",
@@ -67,7 +83,8 @@
           "notas":"Notas",
           "agregar_nota":"Agregar nota",
           "documentos":"documentos",
-          "ver_presupuestos":"ver_presupuestos",
+          "ver_presupuestos":"ver presupuestos",
+          "presupuesto":"Presupuesto",
           "eliminar":"eliminar",
           "atras":"atras",
           "lista_de_citas":{
@@ -75,10 +92,11 @@
           "inicio":"Inicio",
           "fin":"Fin",
           "Motivo":"Motivo",
-          "Doctor":"Doctor"
+          "doctor":"doctor"
           }
       },
       "paciente_admin":{
+        "fecha_de_ingreso":"Fecha de ingreso",
         "nombre":"Nombre",
         "apellido":"Apellido",
         "cedula":"Cédula",
@@ -191,7 +209,6 @@
               "Descripcion":"Descripcion",
               "actualizar":"Actualizar",
               "eliminar":"Eliminar"
-
             },
             "tabla_gastos":{
               "factura":"Factura",
@@ -235,7 +252,7 @@
         "hoy_es": "Today is",
         "nombre": "Name",
         "Apellido": "Last name",
-        "Doctor": "Doctor",
+        "doctor": "Doctor",
         "Cedula": "ID",
         "Telefono": "Phone",
         "Deuda": "Debt",
@@ -252,6 +269,7 @@
       },
 
       "perfil_paciente": {
+        "nombre_tutor": "Guardian name",
         "factura": "Invoice",
         "ver_facturas": "View invoices",
         "ficha_medica": {
@@ -444,6 +462,7 @@
       "prt3": "Souhaitez-lui un joyeux anniversaire et montrez-lui qu'il est spécial pour la famille Kadosh !"
     },
     "perfil_paciente": {
+      "nombre_tutor": "Nom du tuteur",
       "factura": "Facture",
       "ver_facturas": "Voir les factures",
       "ficha_medica": {
@@ -464,7 +483,7 @@
         "inicio": "Début",
         "fin": "Fin",
         "Motivo": "Motif",
-        "Doctor": "Médecin"
+        "doctor": "Médecin"
       }
     },
     "paciente_admin": {
@@ -613,7 +632,7 @@
         "hoy_es": "今天是",
         "nombre": "名字",
         "Apellido": "姓氏",
-        "Doctor": "医生",
+        "doctor": "医生",
         "Cedula": "身份证",
         "Telefono": "电话",
         "Deuda": "欠款",
@@ -628,6 +647,7 @@
         "prt3": "祝他生日快乐，向他展示Kadosh家族的关爱！"
       },
       "perfil_paciente": {
+        "nombre_tutor": "监护人姓名",
         "factura": "发票",
         "ver_facturas": "查看发票",
         "ficha_medica": {

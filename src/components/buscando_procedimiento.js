@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
 import '../css/dashboard.css';
-import Actualizar from './actualizando_procedimiento';
+import Core from './funciones_extras';
 import cargar_doctores from './funciones_extras';
 import Loading from '../loading2.gif';
 
@@ -12,8 +12,25 @@ class BuscandoProcedimiento extends  React.Component{
 
     constructor(props){
         super(props);
-        this.state = {procedimientos:[],actualizar:false,id_procedimiento:0,change:false};
+        this.state = {procedimientos:[],
+                     actualizar:false,
+                     id_procedimiento:0,
+                     modal_update:false,
+                     id:0,
+                     nombre:'',
+                     precio:'',
+                     change:false};
     }
+
+
+    actualizar_valor=(event)=>{
+
+        this.setState({[event.target.name]:event.target.value});
+
+    }
+
+
+
 
     componentDidMount(){
 
@@ -21,12 +38,49 @@ class BuscandoProcedimiento extends  React.Component{
     }
 
 
+        cargar_procedimiento=(id)=>{
 
+        Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
+            
+                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id});
 
+        }).catch(error=>{
+            alertify.error("No se puedo cargar este paciente");
+        });
+        
+
+    }
     actualizar=(id)=>{
-        this.setState({actualizar:true,id_procedimiento:id});
+
+        this.setState({modal_update:true})
+ 
+           Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
+            
+                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id});
+
+        }).catch(error=>{
+            alertify.error("No se puedo cargar este paciente");
+        });
+
     }
 
+    actualizar_procedimiento=()=>{
+
+        Axios.post(`${Core.url_base}/api/actualizar_procedimiento`,
+                    {nombre:this.state.nombre,
+                     precio:this.state.precio,
+                     id:this.state.id }
+        ).then(data=>{
+                alertify.message("Procedimiento actualizado con exito");
+        
+        }).catch(error=>{ 
+            console.log(error);
+                alertify.error("no se pudo actualizar el procedimiento");
+        });
+
+    }
+
+  
     eliminar=(id)=>{
 
         alertify.confirm("Deseas eliminar este procedimiento",()=>{
@@ -64,15 +118,7 @@ class BuscandoProcedimiento extends  React.Component{
     }
 
     render(){
-       /* if(this.state.actualizar==true){
-
-                return <Actualizar id_procedimiento={this.state.id_procedimiento}/>;
-        
-        }else if(this.state.procedimientos==""){
-
-        return (<div><br/><input type="text" className="form-control" onKeyUp={this.buscar_p} id="buscando" placeholder="Escriba el nombre del procedimiento" /><br/>
-                <img src={Loading}/></div>);
-        }*/
+      
 
         return (
             <div className="col-md-10"><hr/>
@@ -84,7 +130,7 @@ class BuscandoProcedimiento extends  React.Component{
                 placeholder="🔍 Escriba el nombre del procedimiento" 
                 />
 
-    {this.state.procedimientos.map(data => (
+            {this.state.procedimientos.map(data => (
                     <div className="card mb-3 shadow-sm rounded border-0 procedimiento-card .procedimiento-nombre" key={data.id}>
                         <div className="card-body">
                         <h5 className="card-title text-primary">
@@ -112,6 +158,53 @@ class BuscandoProcedimiento extends  React.Component{
                         </div>
                     </div>
                     ))}
+                    {this.state.modal_update && (
+                        <div
+                            className="modal d-block"
+                            style={{
+                            backgroundColor: 'rgba(0,0,0,0.3)',
+                            zIndex: 1050,
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            overflow: 'auto',
+                            pointerEvents: 'auto',
+                            }}>
+                            <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
+                            <div
+                                className="mac-box p-4 rounded-3 shadow-lg bg-white"
+                                style={{
+                                width: '100%',
+                                zIndex: 1060,
+                                pointerEvents: 'auto',
+                                }}>
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h5 className="fw-bold">📝Actualizar procedimiento</h5>
+                                <button type="button" className="btn-close" onClick={() => this.setState({ modal_update: false })}></button>
+                                </div>
+                                <strong>Nombre</strong><hr/>
+                                <input className='form-control' name="nombre" value={this.state.nombre} onChange={this.actualizar_valor}/><hr/>                               
+                                <strong>Precio</strong>
+                                <input className='form-control' name="precio" value={this.state.precio} onChange={this.actualizar_valor}/>
+
+                                <div className="d-flex justify-content-end gap-2 mt-4">
+                                <button
+                                    className="mac-btn mac-btn-green"
+                                    onClick={() => {
+                                    this.actualizar_procedimiento();
+                                    this.setState({ modal_update: false });
+                                    }}>
+                                    Actualizar
+                                </button>
+                             
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+				    )}
+
                 </div>
             
 
