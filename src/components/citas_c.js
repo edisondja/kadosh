@@ -131,7 +131,7 @@ class  Cita extends React.Component{
 	}
 
 
-	 cargar_citas(token)
+	 cargar_citas()
 	{
 		
 
@@ -337,7 +337,7 @@ class  Cita extends React.Component{
 					<table className='table table-hover'>
 					<thead>
 						<tr className="fijar_columnas">
-						<th scope="col">{Url.lenguaje.citas_c.nombre}</th>
+						<th scope="col">{Url.lenguaje.citas_c.nombre }</th>
 						<th scope="col">{Url.lenguaje.citas_c.apellido} </th>
 						<th scope="col">{Url.lenguaje.citas_c.doctor} </th>
 						<th scope="col">{Url.lenguaje.citas_c.cedula} </th>
@@ -351,12 +351,12 @@ class  Cita extends React.Component{
 					<tbody>
 						{
 						this.state.clientes.map(data => (
-							<tr key={data.id}>
-							<td>{data.nombre}</td>
-							<td>{data.apellido}</td>
-							<td>{data.doctor.nombre} {data.doctor.apellido}</td>
-							<td>{data.cedula}</td>
-							<td>{data.telefono}</td> 
+							<tr key={data.id || ''}>
+							<td>{data.nombre || ''}</td>
+							<td>{data.apellido|| ''}</td>
+							<td>{data.doctor.nombre|| ''} {data.doctor.apellido|| ''}</td>
+							<td>{data.cedula|| ''}</td>
+							<td>{data.telefono || ''}</td> 
 							<td>
 								<p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>
 								${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}

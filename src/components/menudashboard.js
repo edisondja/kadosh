@@ -135,10 +135,10 @@ class MenuDashboard extends React.Component {
                   <tr>
                     <td>
                       <Link to="/cargar_pacientes" id="cargar_pacientes">
-                        <img src={FuncionesExtras.LogoApp} width="30" className="img-responsive" style={{ marginLeft: '10px', padding: '2px' }} />
+                        <img src={FuncionesExtras.Config.app_logo} width={FuncionesExtras.Config.logo_width_menu} className="img-responsive" style={{ marginLeft: '10px', padding: '2px' }} />
                       </Link>
                     </td>
-                    <td><strong>{FuncionesExtras.Config.name_company}</strong></td>
+                    <td style={{display:FuncionesExtras.Config.name_company_visible}}><strong>{FuncionesExtras.Config.name_company}</strong></td>
                   </tr>
                 </tbody>
               </table>

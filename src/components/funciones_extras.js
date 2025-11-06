@@ -3,7 +3,7 @@ import Alertify from 'alertifyjs';
 import alertify from 'alertifyjs';
 import Cargar_generos from './funciones_extras.js';
 import Config from './config_site.json';
-import LogoApp from '../leonardo_batista.jpeg';
+import LogoApp from '../noe_logo.png';
 
 //var password= "kadosh2019";
 var password = Config.passowrd_admin;

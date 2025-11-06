@@ -30,6 +30,38 @@ class ImprimirRecibo extends React.Component {
     
   };
 
+generarPDFyEnviarWhatsApp = async () => {
+    try {
+      const elemento = document.getElementById('recibo');
+      const canvas = await html2canvas(elemento, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      const pdfBlob = pdf.output('blob');
+      const formData = new FormData();
+      formData.append('pdf', pdfBlob, 'recibo.pdf');
+
+      const response = await Axios.post(`${Core.url_base}/api/subir_recibo_temp`, formData);
+      const pdfUrl = response.data.url;
+
+      const telefono = this.state.recibo.factura?.paciente?.telefono?.replace(/\D/g, '') || '';
+      const mensaje = `Hola 👋, aquí tienes tu recibo de pago de ${Core.Config.name_company}:\n${pdfUrl}`;
+      const wsLink = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+      window.open(wsLink, '_blank');
+      Alertify.success('PDF generado y listo para compartir por WhatsApp');
+    } catch (error) {
+      console.error(error);
+      Alertify.error('Error al generar el PDF');
+    }
+  };
+
+
   Imprimir = () => {
     const ficha = document.getElementById("recibo");
     const logoURL = Core.LogoApp;
@@ -83,6 +115,8 @@ class ImprimirRecibo extends React.Component {
     ventimp.document.close();
   };
 
+
+
   cargar_factura = async (id_factura) => {
     try {
       const { data } = await Axios.get(`${Core.url_base}/api/cargar_factura/${id_factura}`);
@@ -123,6 +157,10 @@ class ImprimirRecibo extends React.Component {
       formData.append('pdf', pdfBlob, 'recibo.pdf');
       formData.append('email', this.state.recibo.factura?.paciente?.correo_electronico || '');
       formData.append('asunto', `Recibo de Pago - ${Core.Config.name_company}`);
+      formData.append('nombre_compania', Core.Config.name_company);
+      formData.append('logo_compania', Core.Config.app_logo);
+      formData.append('direccion_compania', Core.Config.app_address);
+      formData.append('telefono_compania', Core.Config.app_phone);
 
       await Axios.post(`${Core.url_base}/api/enviar_recibo`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -180,6 +218,10 @@ class ImprimirRecibo extends React.Component {
      
           <button onClick={this.generarPDFyEnviar} className="btn btn-success">
             <i className="fas fa-file-pdf"></i> Enviar PDF
+          </button>&nbsp;
+
+          <button onClick={this.generarPDFyEnviarWhatsApp} className="btn btn-info">
+            <i className="fab fa-whatsapp"></i> Enviar por WhatsApp
           </button>
         </div>
 
