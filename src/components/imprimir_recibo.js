@@ -64,7 +64,7 @@ generarPDFyEnviarWhatsApp = async () => {
 
   Imprimir = () => {
     const ficha = document.getElementById("recibo");
-    const logoURL = Core.LogoApp;
+    const logoURL = Core.Config.app_logo;
 
     const ventimp = window.open('', 'popimpr');
     ventimp.document.write(`
@@ -195,7 +195,7 @@ generarPDFyEnviarWhatsApp = async () => {
         {/* Logo solo visible en pantalla */}
         <div className="text-center mb-3 d-print-none">
           <img
-            src={Core.LogoApp}
+            src={Core.Config.app_logo}
             alt="Logo"
             style={{
               width: '120px',
