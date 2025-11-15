@@ -42,46 +42,105 @@ class VisualizarPresupuesto extends React.Component {
 
 
         }
+      generarPDFyEnviarWhatsAppPresupuesto = () => {
+                try {
+                        const elemento = document.getElementById('presupuesto');
 
-        generarPDFyEnviarPresupuesto = () => {
+                        html2canvas(elemento, { scale: 2 })
+                        .then(canvas => {
+                                const imgData = canvas.toDataURL('image/png');
+
+                                const pdf = new jsPDF('p', 'mm', 'a4');
+                                const imgProps = pdf.getImageProperties(imgData);
+                                const pdfWidth = pdf.internal.pageSize.getWidth();
+                                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+                                const pdfBlob = pdf.output('blob');
+
+                                // Preparar FormData
+                                const formData = new FormData();
+                                formData.append('pdf', pdfBlob, 'presupuesto.pdf');
+
+                                // Subir el PDF al servidor
+                                return Axios.post(`${Core.url_base}/api/subir_recibo_temp`, formData);
+                        })
+                        .then(response => {
+                                const pdfUrl = response.data.url;
+
+                                const telefono = this.state.paciente.telefono
+                                ? this.state.paciente.telefono.replace(/\D/g, '')
+                                : '';
+
+                                const mensaje =
+                                `Hola 👋, aquí tienes tu presupuesto de tratamiento de ${Core.Config.name_company}:\n` +
+                                pdfUrl;
+
+                                const wsLink =
+                                `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+                                window.open(wsLink, '_blank');
+
+                                alertify.success('Presupuesto generado y listo para compartir por WhatsApp');
+                        })
+                        .catch(error => {
+                                console.error(error);
+                                alertify.error('Error al generar el PDF');
+                        });
+                } catch (error) {
+                        console.error(error);
+                        alertify.error('Error interno al generar el PDF');
+                }
+                };
 
 
+     
 
-
-                // Crear el PDF
+      generarPDFyEnviarPresupuesto = () => {
                 const pdf = new jsPDF("p", "mm", "a4");
 
-                // ENCABEZADO
+                // --- ENCABEZADO ---
                 pdf.setFontSize(16);
-                pdf.text(Core.Config.name_company || "CLÍNICA DENTAL", 105, 15, { align: "center" });
+                pdf.text(Core.Config.name_company || "CLÍNICA DENTAL", 105, 20, { align: "center" });
 
                 pdf.setFontSize(11);
-                pdf.text(`Dirección: ${Core.Config.app_address || ""}`, 10, 25);
-                pdf.text(`Teléfono: ${Core.Config.app_phone || ""}`, 10, 30);
-                /*pdf.text(`Fecha: ${this.state.presupuesto.fecha}`, 190, 25, { align: "right" });*/
+                pdf.text(`Dirección: ${Core.Config.app_address || ""}`, 10, 30);
+                pdf.text(`Teléfono: ${Core.Config.app_phone || ""}`, 10, 35);
+
                 pdf.setFontSize(15);
-                pdf.text("PLAN DE TRATAMIENTO / PRESUPUESTO", 105, 40, { align: "center" });
+                pdf.text("PLAN DE TRATAMIENTO / PRESUPUESTO", 105, 50, { align: "center" });
 
                 pdf.setFontSize(12);
-                pdf.text(`Doctor: ${this.state.doctore.nombre} ${this.state.doctore.apellido}`, 105, 50, { align: "center" });
-                pdf.text(`Paciente: ${this.state.paciente.nombre} ${this.state.paciente.apellido}`, 10, 60);
+                pdf.text(
+                        `Doctor: ${this.state.doctore.nombre} ${this.state.doctore.apellido}`,
+                        105,
+                        60,
+                        { align: "center" }
+                );
 
-                // TABLA
+                pdf.text(
+                        `Paciente: ${this.state.paciente.nombre} ${this.state.paciente.apellido}`,
+                        10,
+                        70
+                );
+
+                // --- TABLA ---
                 autoTable(pdf, {
-                        startY: 70,
+                        startY: 80,
                         head: [["PROCEDIMIENTO", "CANTIDAD", "PRECIO", "MONTO"]],
                         body: this.state.presupuesto.procedimientos.map(p => [
-                                p.nombre_procedimiento,
-                                p.cantidad,
-                                new Intl.NumberFormat().format(p.total / p.cantidad),
-                                new Intl.NumberFormat().format(p.total)
+                        p.nombre_procedimiento,
+                        p.cantidad,
+                        new Intl.NumberFormat().format(p.total / p.cantidad),
+                        new Intl.NumberFormat().format(p.total)
                         ]),
                         theme: "grid",
                         headStyles: { fillColor: [14, 43, 82] },
                         styles: { fontSize: 10 }
                 });
 
-                // TOTAL
+                // --- TOTAL ---
                 const y = pdf.lastAutoTable.finalY + 10;
                 pdf.setFontSize(14);
                 pdf.text(
@@ -91,142 +150,34 @@ class VisualizarPresupuesto extends React.Component {
                         { align: "right" }
                 );
 
-                // Convertir PDF a Blob
+                // --- Convertir a Blob ---
                 const pdfBlob = pdf.output("blob");
 
-                // FormData
+                // --- Enviar por correo ---
                 const formData = new FormData();
                 formData.append("pdf", pdfBlob, "presupuesto.pdf");
+
+                // 📌 Aquí sigues enviando el logo solo en el request
+                formData.append("logo_compania", Core.Config.app_logo);
 
                 formData.append("email", this.state.paciente.correo_electronico || "");
                 formData.append("asunto", `Presupuesto de Tratamiento - ${Core.Config.name_company}`);
                 formData.append("nombre_compania", Core.Config.name_company);
-                formData.append("logo_compania", Core.Config.app_logo);
                 formData.append("direccion_compania", Core.Config.app_address);
                 formData.append("telefono_compania", Core.Config.app_phone);
 
-                // Enviar al backend 
                 Axios.post(`${Core.url_base}/api/enviar_presupuesto`, formData, {
                         headers: { "Content-Type": "multipart/form-data" }
                 })
                         .then(response => {
-                                console.log("Respuesta del servidor:", response.data);
-                                if (response.data.status === "success") {
-                                        alertify.success("Presupuesto enviado por correo correctamente.");
-                                } else {
-                                        alertify.error("Error al enviar el presupuesto.");
-                                }
+                        alertify.success("Presupuesto enviado por correo.");
                         })
                         .catch(error => {
-                                console.error("Error en el envío:", error);
-                                alertify.error("Hubo un error al conectarse con el servidor.");
+                        console.error("Error en el envío:", error);
+                        alertify.error("Error al conectarse con el servidor.");
                         });
-        }
-
-
-        generarPDFyEnviarPresupuesto = () => {
-                const pdf = new jsPDF("p", "mm", "a4");
-
-                const logoUrl = Core.Config.app_logo;
-
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.src = logoUrl;
-
-                img.onload = () => {
-
-                        // Insertar logo arriba centrado
-                        const imgWidth = 50;
-                        const imgHeight = (img.height / img.width) * imgWidth;
-                        const pageWidth = pdf.internal.pageSize.getWidth();
-
-                        pdf.addImage(img, 'PNG',
-                                (pageWidth - imgWidth) / 2,
-                                10,
-                                imgWidth,
-                                imgHeight
-                        );
-
-                        // ENCABEZADO
-                        pdf.setFontSize(16);
-                        pdf.text(Core.Config.name_company || "CLÍNICA DENTAL", 105, 30 + imgHeight, { align: "center" });
-
-                        pdf.setFontSize(11);
-                        pdf.text(`Dirección: ${Core.Config.app_address || ""}`, 10, 40 + imgHeight);
-                        pdf.text(`Teléfono: ${Core.Config.app_phone || ""}`, 10, 45 + imgHeight);
-
-                        pdf.setFontSize(15);
-                        pdf.text("PLAN DE TRATAMIENTO / PRESUPUESTO",
-                                105,
-                                60 + imgHeight,
-                                { align: "center" }
-                        );
-
-                        pdf.setFontSize(12);
-                        pdf.text(
-                                `Doctor: ${this.state.doctore.nombre} ${this.state.doctore.apellido}`,
-                                105,
-                                70 + imgHeight,
-                                { align: "center" }
-                        );
-                        pdf.text(
-                                `Paciente: ${this.state.paciente.nombre} ${this.state.paciente.apellido}`,
-                                10,
-                                80 + imgHeight
-                        );
-
-                        // TABLA
-                        autoTable(pdf, {
-                                startY: 90 + imgHeight,
-                                head: [["PROCEDIMIENTO", "CANTIDAD", "PRECIO", "MONTO"]],
-                                body: this.state.presupuesto.procedimientos.map(p => [
-                                        p.nombre_procedimiento,
-                                        p.cantidad,
-                                        new Intl.NumberFormat().format(p.total / p.cantidad),
-                                        new Intl.NumberFormat().format(p.total)
-                                ]),
-                                theme: "grid",
-                                headStyles: { fillColor: [14, 43, 82] },
-                                styles: { fontSize: 10 }
-                        });
-
-                        // TOTAL
-                        const y = pdf.lastAutoTable.finalY + 10;
-                        pdf.setFontSize(14);
-                        pdf.text(
-                                `TOTAL RD$: ${new Intl.NumberFormat().format(this.state.presupuesto.total)}`,
-                                190,
-                                y,
-                                { align: "right" }
-                        );
-
-                        // Convertir a Blob
-                        const pdfBlob = pdf.output("blob");
-
-                        // FormData
-                        const formData = new FormData();
-                        formData.append("pdf", pdfBlob, "presupuesto.pdf");
-
-                        formData.append("email", this.state.paciente.correo_electronico || "");
-                        formData.append("asunto", `Presupuesto de Tratamiento - ${Core.Config.name_company}`);
-                        formData.append("nombre_compania", Core.Config.name_company);
-                        formData.append("logo_compania", Core.Config.app_logo);
-                        formData.append("direccion_compania", Core.Config.app_address);
-                        formData.append("telefono_compania", Core.Config.app_phone);
-
-                        Axios.post(`${Core.url_base}/api/enviar_presupuesto`, formData, {
-                                headers: { "Content-Type": "multipart/form-data" }
-                        })
-                                .then(response => {
-                                        alertify.success("Presupuesto enviado por correo.");
-                                })
-                                .catch(error => {
-                                        console.error("Error en el envío:", error);
-                                        alertify.error("Error al conectarse con el servidor.");
-                                });
-
                 };
-        };
+
 
 
 
