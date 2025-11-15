@@ -1,15 +1,9 @@
 import React from "react";
-// Se asume que estos imports ya funcionan correctamente para B4
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js"; 
-import ODONTOGRAMA_IMAGE_URL from "../odontograma.png"; 
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import ODONTOGRAMA_IMAGE_URL from "../odontograma.png";
 
-
-// Definimos el tamaño del canvas solo para la inicialización.
-const CANVAS_WIDTH = 800; // Valor inicial
-const CANVAS_HEIGHT = 400;
-
-// Dental notation for visual structure
+const CANVAS_HEIGHT  =500;
 const PIEZAS_DENTALES = [
   "18", "17", "16", "15", "14", "13", "12", "11",
   "21", "22", "23", "24", "25", "26", "27", "28",
@@ -37,7 +31,6 @@ class OdontogramaClinicoProcedimientos extends React.Component {
       procedimientos: [],
       selectedTooth: null,
     };
-
     this.canvasRef = React.createRef();
     this.ctx = null;
     this.imageRef = null;
@@ -49,33 +42,27 @@ class OdontogramaClinicoProcedimientos extends React.Component {
     const ctx = canvas.getContext("2d");
     this.ctx = ctx;
 
-    // Aseguramos que el canvas interno coincida con el ancho de su contenedor
     canvas.width = canvas.clientWidth;
     canvas.height = CANVAS_HEIGHT;
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.src = ODONTOGRAMA_IMAGE_URL;
     img.onload = () => {
       this.imageRef = img;
-      // Dibujar la imagen al 100% del canvas
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
 
-    // Inicialización del Modal (para evitar el congelamiento)
+    // Inicializar el modal de Bootstrap
     const modalElement = document.getElementById("modalProcedimiento");
-    const ModalConstructor = window.bootstrap?.Modal || (window.jQuery && window.jQuery.fn.modal && function(el) {
-        this.$element = window.jQuery(el);
-        this.show = () => this.$element.modal('show');
-        this.hide = () => this.$element.modal('hide');
-    });
-
-    if (ModalConstructor && modalElement) {
-        this.modalInstance = new ModalConstructor(modalElement);
+    if (window.bootstrap) {
+      this.modalInstance = new window.bootstrap.Modal(modalElement);
+    } else if (window.jQuery) {
+      this.modalInstance = {
+        show: () => window.jQuery(modalElement).modal("show"),
+        hide: () => window.jQuery(modalElement).modal("hide"),
+      };
     }
   }
-
-  // Las funciones de dibujo (iniciar, dibujar, terminar, getCoords) y guardar/limpiar no han cambiado.
 
   iniciar = (e) => {
     e.preventDefault();
@@ -127,12 +114,10 @@ class OdontogramaClinicoProcedimientos extends React.Component {
     link.click();
   };
 
-  // ==== Procedimientos ====
   handleToothClick = (num) => {
     this.setState({ selectedTooth: num });
-    
     if (this.modalInstance) {
-        this.modalInstance.show();
+      this.modalInstance.show();
     }
   };
 
@@ -143,39 +128,38 @@ class OdontogramaClinicoProcedimientos extends React.Component {
       color: p.color,
       timestamp: Date.now(),
     };
-
     this.setState((prev) => ({
       procedimientos: [...prev.procedimientos, nuevo],
       selectedTooth: null,
     }));
-
     if (this.modalInstance) {
-        this.modalInstance.hide();
+      this.modalInstance.hide();
     }
   };
-  
+
   eliminarProcedimiento = (timestamp) => {
-      this.setState(prevState => ({
-          procedimientos: prevState.procedimientos.filter(p => p.timestamp !== timestamp)
-      }));
+    this.setState((prevState) => ({
+      procedimientos: prevState.procedimientos.filter(
+        (p) => p.timestamp !== timestamp
+      ),
+    }));
   };
 
   renderToothButtons = (toothArray) => {
     return toothArray.map((num) => {
-      const tiene = this.state.procedimientos.some(
-        (p) => p.tooth === num
-      );
+      const tiene = this.state.procedimientos.some((p) => p.tooth === num);
       return (
         <button
           key={num}
           className={`btn btn-sm ${
             tiene ? "btn-success" : "btn-outline-secondary"
-          } rounded-circle`}
+          }`}
           style={{
-            width: "38px",
-            height: "38px",
+            width: "40px",
+            height: "40px",
             fontWeight: "bold",
             borderWidth: "2px",
+            borderRadius: "6px", // CUADRADOS suaves
           }}
           onClick={() => this.handleToothClick(num)}
         >
@@ -194,34 +178,35 @@ class OdontogramaClinicoProcedimientos extends React.Component {
           🦷 Odontograma Clínico con Procedimientos
         </h3>
 
-        {/* ====== Odontograma Layout - Arcadas de Botones ====== */}
+        {/* ====== Odontograma Layout ====== */}
         <div className="odontograma-container text-center p-3 rounded shadow-sm bg-light mb-4">
-          <p className="text-muted mb-1 font-weight-bold">Arcada Superior (Upper Arch)</p>
-          
-          {/* Botones Superiores - AJUSTE CLAVE */}
-          <div 
-            className="d-flex justify-content-between mb-3 px-2" 
-            style={{ width: '100%' }} // Aseguramos que el contenedor use todo el ancho
-          >
-            {/* Cuadrante 1 (18-11) */}
-            <div className="d-flex flex-row-reverse justify-content-between" style={{ width: '48%', gap: '1px' }}> 
-                {this.renderToothButtons(UPPER_ARCH.slice(0, 8).reverse())}
+          <p className="text-muted mb-1 font-weight-bold">
+            Arcada Superior (Upper Arch)
+          </p>
+
+          <div className="d-flex justify-content-between mb-3 px-2" style={{ width: "100%" }}>
+            <div
+              className="d-flex flex-row-reverse justify-content-between"
+              style={{ width: "48%", gap: "2px" }}
+            >
+              {this.renderToothButtons(UPPER_ARCH.slice(0, 8).reverse())}
             </div>
-            {/* Cuadrante 2 (21-28) */}
-            <div className="d-flex flex-row justify-content-between" style={{ width: '48%', gap: '1px' }}>
-                {this.renderToothButtons(UPPER_ARCH.slice(8))}
+            <div
+              className="d-flex flex-row justify-content-between"
+              style={{ width: "48%", gap: "2px" }}
+            >
+              {this.renderToothButtons(UPPER_ARCH.slice(8))}
             </div>
           </div>
 
-          {/* Canvas - AJUSTADO AL 100% DE ANCHO */}
           <canvas
             ref={this.canvasRef}
             className="border rounded shadow-sm"
             style={{
               cursor: "crosshair",
-              maxWidth: "100%", 
-              width: "100%",    // Ocupa el 100% del ancho del contenedor
-              height: `${CANVAS_HEIGHT}px`, 
+              maxWidth: "100%",
+              width: "100%",
+              height: `${CANVAS_HEIGHT}px`,
               backgroundColor: "#ffffff",
             }}
             onMouseDown={this.iniciar}
@@ -233,25 +218,27 @@ class OdontogramaClinicoProcedimientos extends React.Component {
             onTouchEnd={this.terminar}
           />
 
-          <p className="text-muted mt-3 mb-1 font-weight-bold">Arcada Inferior (Lower Arch)</p>
-          
-          {/* Botones Inferiores - AJUSTE CLAVE */}
-          <div 
-            className="d-flex justify-content-between mt-3 px-2"
-            style={{ width: '100%' }}
-          >
-            {/* Cuadrante 4 (48-41) */}
-            <div className="d-flex flex-row-reverse justify-content-between" style={{ width: '48%', gap: '1px' }}>
-                {this.renderToothButtons(LOWER_ARCH.slice(0, 8).reverse())}
+          <p className="text-muted mt-3 mb-1 font-weight-bold">
+            Arcada Inferior (Lower Arch)
+          </p>
+
+          <div className="d-flex justify-content-between mt-3 px-2" style={{ width: "100%" }}>
+            <div
+              className="d-flex flex-row-reverse justify-content-between"
+              style={{ width: "48%", gap: "2px" }}
+            >
+              {this.renderToothButtons(LOWER_ARCH.slice(0, 8).reverse())}
             </div>
-            {/* Cuadrante 3 (31-38) */}
-            <div className="d-flex flex-row justify-content-between" style={{ width: '48%', gap: '1px' }}>
-                {this.renderToothButtons(LOWER_ARCH.slice(8))}
+            <div
+              className="d-flex flex-row justify-content-between"
+              style={{ width: "48%", gap: "2px" }}
+            >
+              {this.renderToothButtons(LOWER_ARCH.slice(8))}
             </div>
           </div>
         </div>
 
-        {/* ====== Botones de control ====== */}
+        {/* ====== Controles ====== */}
         <div className="d-flex justify-content-center flex-wrap gap-2 mb-4">
           <button
             className={`btn ${
@@ -260,7 +247,7 @@ class OdontogramaClinicoProcedimientos extends React.Component {
             onClick={() => this.setState({ color: "blue" })}
           >
             🔵 Restauración
-          </button>
+          </button>&nbsp;
           <button
             className={`btn ${
               this.state.color === "red" ? "btn-danger" : "btn-outline-danger"
@@ -268,16 +255,16 @@ class OdontogramaClinicoProcedimientos extends React.Component {
             onClick={() => this.setState({ color: "red" })}
           >
             🔴 Diagnóstico
-          </button>
+          </button>&nbsp;
           <button className="btn btn-secondary btn-sm" onClick={this.limpiar}>
             🧹 Limpiar Dibujo
-          </button>
+          </button>&nbsp;
           <button className="btn btn-success btn-sm" onClick={this.guardar}>
             💾 Guardar Imagen
           </button>
         </div>
 
-        {/* ====== Historial - Con opción de eliminar ====== */}
+        {/* ====== Historial ====== */}
         <div className="card shadow-sm border-0">
           <div className="card-header bg-primary text-white font-weight-bold">
             📝 Historial de Procedimientos ({procedimientos.length})
@@ -296,21 +283,19 @@ class OdontogramaClinicoProcedimientos extends React.Component {
                   <div className="d-flex align-items-center">
                     <strong className="mr-3">Diente {p.tooth}</strong>
                     <span
-                      className={`badge badge-${ 
+                      className={`badge badge-${
                         p.color === "red" ? "danger" : "primary"
                       } p-2`}
                     >
                       {p.procedure}
                     </span>
                   </div>
-                  
-                  {/* Botón de Eliminar */}
-                  <button 
+                  <button
                     className="btn btn-sm btn-outline-danger"
                     onClick={() => this.eliminarProcedimiento(p.timestamp)}
                     title="Eliminar Procedimiento"
                   >
-                    <span aria-hidden="true">&times;</span> 
+                    ×
                   </button>
                 </li>
               ))
@@ -331,8 +316,10 @@ class OdontogramaClinicoProcedimientos extends React.Component {
             <div className="modal-content border-0 shadow-lg">
               <div className="modal-header bg-info text-white">
                 <h5 className="modal-title" id="modalProcedimientoTitle">
-                  Seleccionar Procedimiento para Diente:{" "}
-                  <span className="font-weight-bold">{this.state.selectedTooth}</span>
+                  Seleccionar Procedimiento para Diente{" "}
+                  <span className="font-weight-bold">
+                    {this.state.selectedTooth}
+                  </span>
                 </h5>
                 <button
                   type="button"
@@ -340,7 +327,7 @@ class OdontogramaClinicoProcedimientos extends React.Component {
                   data-dismiss="modal"
                   aria-label="Close"
                 >
-                    <span aria-hidden="true">&times;</span>
+                  <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div className="modal-body">
