@@ -14,7 +14,17 @@ class  crear_presupuesto extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:'',boton_estado:true};
+        this.state= {
+            procedimientos:[],
+            total:0,
+            lista_procedimiento:[],
+            doctores:[],
+            factura:'',
+            boton_estado:true,
+            esEdicion: false,
+            presupuestoId: null,
+            nombrePresupuesto: ''
+        };
         this.removeTodo = this.removeTodo.bind(this);
 
     }
@@ -30,9 +40,61 @@ class  crear_presupuesto extends React.Component{
 
 
     componentDidMount(){
-
         cargar_doctores.cargar_procedimientos(this);
         cargar_doctores.cargar_doctores(this);
+        
+        // Verificar si es edición (si viene id_presupuesto en la URL)
+        const idPresupuesto = this.props.match.params.id_presupuesto;
+        if (idPresupuesto) {
+            this.setState({ 
+                esEdicion: true, 
+                presupuestoId: idPresupuesto 
+            });
+            this.cargarPresupuestoParaEditar(idPresupuesto);
+        }
+    }
+
+    cargarPresupuestoParaEditar = (idPresupuesto) => {
+        Axios.get(`${cargar_doctores.url_base}/api/cargar_presupuesto/${idPresupuesto}`)
+            .then(response => {
+                try {
+                    const datosPresupuesto = JSON.parse(response.data);
+                    const listaProcedimientos = datosPresupuesto.procedimientos || [];
+                    const total = listaProcedimientos.reduce((sum, proc) => sum + (proc.total || 0), 0);
+                    
+                    this.setState({
+                        lista_procedimiento: listaProcedimientos,
+                        total: total,
+                        nombrePresupuesto: datosPresupuesto.nombre || ''
+                    });
+                    
+                    // Establecer el doctor seleccionado
+                    if (datosPresupuesto.id_doctor) {
+                        setTimeout(() => {
+                            const selectDoctor = document.getElementById('doctor_i');
+                            if (selectDoctor) {
+                                selectDoctor.value = datosPresupuesto.id_doctor;
+                                this.select_checked();
+                            }
+                        }, 500);
+                    }
+                    
+                    // Establecer el nombre del presupuesto
+                    const inputNombre = document.getElementById('presupuesto');
+                    if (inputNombre) {
+                        inputNombre.value = datosPresupuesto.nombre || '';
+                    }
+                    
+                    Alertify.success("Presupuesto cargado para edición");
+                } catch (error) {
+                    console.error("Error al parsear datos del presupuesto:", error);
+                    Alertify.error("Error al cargar los datos del presupuesto");
+                }
+            })
+            .catch(error => {
+                console.error("Error al cargar presupuesto:", error);
+                Alertify.error("Error al cargar el presupuesto para editar");
+            });
     }
 
     agregarProcedimiento=(id,nombre,precio)=>{
@@ -52,33 +114,65 @@ class  crear_presupuesto extends React.Component{
     }
 
     generar_factura=()=>{
-            //accion a ajecutar cuando se haga click en generar factura
+            //accion a ejecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
             var prespuesto = document.querySelector('#presupuesto').value;
 
+            if (!prespuesto || prespuesto.trim() === '') {
+                Alertify.error("Debe ingresar un nombre para el presupuesto");
+                return;
+            }
 
-            //console.log({id_paciente:this.props.IDpaciente,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]});; 
+            if (id_doctor === "seleccione_doctor") {
+                Alertify.error("Debe seleccionar un doctor");
+                return;
+            }
+
+            if (this.state.lista_procedimiento.length === 0) {
+                Alertify.error("Debe agregar al menos un procedimiento");
+                return;
+            }
                                                 
             if(this.state.boton_estado==false){
-            Axios.post(`${cargar_doctores.url_base}/api/crear_presupuesto`,{data:{nombre:prespuesto,id_paciente:this.props.match.params.id,id_doctor:id_doctor,total:this.state.total,procedimientos:this.state.lista_procedimiento}}).then((data)=>{
+                const datosPresupuesto = {
+                    nombre: prespuesto,
+                    id_paciente: this.props.match.params.id,
+                    id_doctor: id_doctor,
+                    total: this.state.total,
+                    procedimientos: this.state.lista_procedimiento
+                };
 
-                    console.log(data.data);
-                    Alertify.message("Prespuesto generado con exito!");
-               //     this.setState({total:0,lista_procedimiento:[],factura:'ready'});
-                   /// Alertify.success("Factura generada correctamente, puede ir al perfil del paciente y verla");
-                   // document.getElementById("agregar_paciente").click();
-                 //  console.log(data.data);
+                if (this.state.esEdicion && this.state.presupuestoId) {
+                    // Actualizar presupuesto existente
+                    Axios.post(`${cargar_doctores.url_base}/api/actualizar_presupuesto`, {
+                        presupuesto_id: this.state.presupuestoId,
+                        data: datosPresupuesto
+                    }).then((data) => {
+                        console.log(data.data);
+                        Alertify.success("Presupuesto actualizado con éxito!");
+                        this.setState({factura:'perfil_paciente'});
+                    }).catch(error => {
+                        console.error("Error al actualizar presupuesto:", error);
+                        Alertify.error("Error al actualizar el presupuesto");
+                    });
+                } else {
+                    // Crear nuevo presupuesto
+                    Axios.post(`${cargar_doctores.url_base}/api/crear_presupuesto`, {
+                        data: datosPresupuesto
+                    }).then((data) => {
+                        console.log(data.data);
+                        Alertify.success("Presupuesto generado con éxito!");
+                        this.setState({factura:'perfil_paciente'});
+                    }).catch(error => {
+                        console.error("Error al crear presupuesto:", error);
+                        Alertify.error("Error al crear el presupuesto");
+                    });
+                }
 
-                }).catch(error=>{
-                    Alertify.error("Error al crear factura");
-            });
-
-            this.state.boton_estado=true;
-        }else{
-        
-            alertify.message("ya generaste una factura!!!!");
-        }
-
+                this.setState({boton_estado:true});
+            } else {
+                alertify.message("Debe seleccionar un doctor primero");
+            }
     }
     
     eliminar_procedimiento=(indice)=>{
@@ -145,7 +239,7 @@ class  crear_presupuesto extends React.Component{
         return (<div className="col-md-8">
                 <div><br/>
                     <button className="btn btn-primary" onClick={this.retroceder} style={{float:'right'}}>Retroceder</button>
-                    <h2>CREAR PRESUPUESTO</h2><hr/>
+                    <h2>{this.state.esEdicion ? 'EDITAR PRESUPUESTO' : 'CREAR PRESUPUESTO'}</h2><hr/>
                     <strong>Lista de procedimientos</strong><br/>
                     <table className="table">
                         <tr>
@@ -174,7 +268,9 @@ class  crear_presupuesto extends React.Component{
                              <option value={data.id}>{data.nombre} {data.apellido}</option>
                         ))}
                     </select>
-                    <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura} disabled={this.state.boton_estado}>Generar Presupuesto</button><br/><br/>
+                    <button className="btn btn-primary" style={{marginLeft:250}} onClick={this.generar_factura} disabled={this.state.boton_estado}>
+                        {this.state.esEdicion ? 'Actualizar Presupuesto' : 'Generar Presupuesto'}
+                    </button><br/><br/>
                     <hr/>
                     <table>
                         <tr>

@@ -162,7 +162,8 @@ class VerPresupuesto extends React.Component{
                 <tr>
                     <td>Nombre de presupuesto</td>    
                     <td>Paciente</td>   
-                    <td>Obervar</td>
+                    <td>Observar</td>
+                    <td>Editar</td>
                     <td>Suprimir</td>
                     <td>Fecha creado</td>
                 </tr>           
@@ -175,13 +176,17 @@ class VerPresupuesto extends React.Component{
                         <td>{data.paciente.nombre}</td>
                         <td>
                             <Link to={`/presupuesto/${this.props.match.params.id}/${data.id}/${data.doctor_id}`}>
-
-                                <img width="35" src={Lupa} style={{cursor:'pointer'}}/>
-
+                                <img width="35" src={Lupa} style={{cursor:'pointer'}} title="Ver presupuesto"/>
                              </Link>
-                           
                         </td>
-                        <td><img width="35" src={Eliminar} onClick={()=>this.eliminar_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}}/></td>
+                        <td>
+                            <Link to={`/editar_presupuesto/${this.props.match.params.id}/${data.id}/${data.doctor_id}`}>
+                                <button className="btn btn-warning btn-sm" title="Editar presupuesto">
+                                    <i className="fas fa-edit"></i> Editar
+                                </button>
+                            </Link>
+                        </td>
+                        <td><img width="35" src={Eliminar} onClick={()=>this.eliminar_presupuesto(data.id,data.nombre)} style={{cursor:'pointer'}} title="Eliminar presupuesto"/></td>
                         <td>{data.created_at}</td>
                     </tr>
 

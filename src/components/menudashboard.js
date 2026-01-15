@@ -38,11 +38,24 @@ import Modulo_p from './modulo_p';
 import ActulizarPaciente from './actualizar_paciente';
 import Odontograma from './odontograma';  
 import FichaMedica from './ficha_medica';
+import ver_odontogramas from './ver_odontogramas';
+import VerOdontogramaIndividual from './ver_odontograma_individual';
+import Auditoria from './auditoria';
+import HistorialPagos from './historial_pagos';
+import Nomina from './nomina';
+import PuntoVenta from './punto_venta';
+import SalariosDoctores from './salarios_doctores';
+
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { notificaciones: [], notificado: false};
+    this.state = { 
+      notificaciones: [], 
+      notificado: false,
+      alertasPagos: [],
+      alertaPagoMostrada: false
+    };
     this.estilos = { listStyleType: "none" };
    
   }
@@ -50,7 +63,72 @@ class MenuDashboard extends React.Component {
   componentDidMount() {
     FuncionesExtras.notificar_cumple(this);
     this.contador_de_sesion();
+    this.verificar_alertas_pagos();
+    // Verificar alertas cada hora
+    setInterval(() => {
+      this.verificar_alertas_pagos();
+    }, 3600000); // 1 hora
+  }
 
+  verificar_alertas_pagos() {
+    // Obtener el usuario actual del localStorage
+    const usuarioActual = localStorage.getItem("login");
+    const usuarioId = localStorage.getItem("id_usuario");
+    
+    if (!usuarioId) {
+      // Si no hay usuario_id, intentar obtener alertas generales
+      FuncionesExtras.obtener_alertas_pagos()
+        .then(alertas => {
+          if (alertas && alertas.length > 0) {
+            this.setState({ alertasPagos: alertas });
+            this.mostrar_alerta_pago(alertas[0]);
+          }
+        })
+        .catch(error => {
+          console.error("Error al verificar alertas de pago:", error);
+        });
+    } else {
+      // Obtener el próximo pago del usuario actual
+      FuncionesExtras.obtener_proximo_pago_usuario(usuarioId)
+        .then(data => {
+          if (data && data.en_alerta && !this.state.alertaPagoMostrada) {
+            this.mostrar_alerta_pago_usuario(data);
+          }
+        })
+        .catch(error => {
+          console.error("Error al verificar pago del usuario:", error);
+        });
+    }
+  }
+
+  mostrar_alerta_pago_usuario(data) {
+    const { pago, dias_restantes, fecha_vencimiento } = data;
+    const usuarioActual = localStorage.getItem("login") || "Usuario";
+    const mensaje = `⚠️ ALERTA DE PAGO ⚠️\n\n` +
+      `Usuario: ${usuarioActual}\n` +
+      `Le quedan ${dias_restantes} días antes de que el sistema se corte.\n` +
+      `Fecha de vencimiento: ${fecha_vencimiento}\n` +
+      `Monto: $${pago.monto}\n\n` +
+      `El pago era hasta el día ${new Date(fecha_vencimiento).getDate()} del mes.`;
+    
+    Alertify.alert('Alerta de Pago Mensual', mensaje, () => {
+      this.setState({ alertaPagoMostrada: true });
+    });
+  }
+
+  mostrar_alerta_pago(alerta) {
+    if (this.state.alertaPagoMostrada) return;
+    
+    const mensaje = `⚠️ ALERTA DE PAGO ⚠️\n\n` +
+      `Usuario: ${alerta.usuario}\n` +
+      `Le quedan ${alerta.dias_restantes} días antes de que el sistema se corte.\n` +
+      `Fecha de vencimiento: ${alerta.fecha_vencimiento}\n` +
+      `Monto: $${alerta.monto}\n\n` +
+      `El pago era hasta el día ${new Date(alerta.fecha_vencimiento).getDate()} del mes.`;
+    
+    Alertify.alert('Alerta de Pago Mensual', mensaje, () => {
+      this.setState({ alertaPagoMostrada: true });
+    });
   }
 
   contador_de_sesion() {
@@ -80,6 +158,11 @@ class MenuDashboard extends React.Component {
       this.setState({ notificado: true });
     }
 
+    // Mostrar alerta de pago si hay alertas y no se ha mostrado
+    if (this.state.alertasPagos.length > 0 && !this.state.alertaPagoMostrada) {
+      this.mostrar_alerta_pago(this.state.alertasPagos[0]);
+    }
+
     let Menu;
 
     if (localStorage.getItem("roll") === "Administrador") {
@@ -89,14 +172,17 @@ class MenuDashboard extends React.Component {
           <li><Link to="/paciente"><i className="fas fa-user-plus img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_paciente}</Link></li>
           <li><Link to="/agregar_usuario"><i className="fas fa-user-cog img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_usuario}</Link></li>
           <li><Link to="/agregar_cita"><i className="fas fa-calendar-check img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.administracion_citas}</Link></li>
+          <li><Link to="/auditoria"><i className="fas fa-history img_estilo"></i>&nbsp;Auditoría</Link></li>
           <li><Link to="/doctor"><i className="fas fa-user-md img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_doctor}</Link></li>
           <li><Link to="/procedimiento"><i className="fas fa-stethoscope img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_procedimiento}</Link></li>
           <li><Link to="/reportes"><i className="fas fa-file-alt img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.generar_reportes}</Link></li>
           <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.contabilidad}</Link></li>
+          <li><Link to="/nomina"><i className="fas fa-money-check-alt img_estilo"></i>&nbsp;Nómina</Link></li>
+          <li><Link to="/punto_venta"><i className="fas fa-cash-register img_estilo"></i>&nbsp;Punto de Venta</Link></li>
+          <li><Link to="/salarios_doctores"><i className="fas fa-user-md img_estilo"></i>&nbsp;Salarios Doctores</Link></li>
+          <li><Link to="/configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;Configuración</Link></li>
+          <li><Link to="/historial_pagos"><i className="fas fa-credit-card img_estilo"></i>&nbsp;Historial de Pagos</Link></li>
           <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.cerrar_sesion}</Link></li>
-          <li><Link to="/dispositivos" id="dispositivos"><i className="fa fa-plug img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.dispositivos_conectados}</Link></li>
-          <li><Link to="/auditoria" id="auditoria"><i className="fa fa-eye img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.auditoria} </Link></li>
-          <li><Link to="/configuracion" id="configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.auditoria}</Link></li>
         </ul>
       );
     } else if (localStorage.getItem("roll") === "Contable") {
@@ -160,8 +246,12 @@ class MenuDashboard extends React.Component {
               <Route path="/citas_pendiente" component={CitasPendiente} />
 			        <Route path="/perfil_paciente/:id/:id_doc" component={PerfilPaciente} />
               <Route path="/crear_prepuestos/:id/:id_doc" component={CrearPresupuesto} />
+              <Route path="/editar_presupuesto/:id/:id_presupuesto/:id_doc" component={CrearPresupuesto} />
               <Route path="/presupuestos/:id/:id_doc" component={VerPresupuesto} />
               <Route path="/contabilidad" component={Contabilidad_template} />
+              <Route path="/nomina" component={Nomina} />
+              <Route path="/punto_venta" component={PuntoVenta} />
+              <Route path="/salarios_doctores" component={SalariosDoctores} />
               <Route path="/agregar_factura/:id/:id_doc" component={AgregarFactura} />
               <Route path="/ver_facturas/:id" component={VerFacturas} />
               <Route path="/ver_factura/:id/:id_factura" component={VerFactura} />
@@ -169,11 +259,15 @@ class MenuDashboard extends React.Component {
               <Route path="/agregar_usuario" component={Usuario} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
+              <Route path="/historial_pagos" component={HistorialPagos} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />
-              <Route path="/odontograma/:id_paciente/" component={Odontograma} />
+              <Route path="/odontograma/:id_paciente/:id_doctor" component={Odontograma} />
+              <Route path="/ver_odontogramas/:id_paciente" component={ver_odontogramas} />
+              <Route path="/ver_odontograma/:id" component={VerOdontogramaIndividual} />
               <Route path="/agregar_cita/" component={AgregarCita} />
+              <Route path="/auditoria" component={Auditoria} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";

@@ -1,361 +1,507 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import ODONTOGRAMA_IMAGE_URL from "../odontograma.png";
+import React, { useState, useRef, useEffect, useCallback} from "react";
+import { Link ,useParams} from 'react-router-dom';
+import Odontograma from '../odontograma.png';
+import Core  from './funciones_extras';
+import Axios from "axios";
+import Alertify from "alertifyjs";
+import alertify from "alertifyjs";
 
-const CANVAS_HEIGHT  =500;
-const PIEZAS_DENTALES = [
-  "18", "17", "16", "15", "14", "13", "12", "11",
-  "21", "22", "23", "24", "25", "26", "27", "28",
-  "48", "47", "46", "45", "44", "43", "42", "41",
-  "31", "32", "33", "34", "35", "36", "37", "38"
+
+const OPCIONES_TRATAMIENTO = [
+  { id: 1, nombre: "Resina", precio: 45.00, color: "blue" },
+  { id: 2, nombre: "Caries", precio: 30.00, color: "red" },
+  { id: 3, nombre: "Sellante", precio: 25.00, color: "green" },
+  { id: 4, nombre: "Extracción", precio: 60.00, color: "black" },
+  { id: 5, nombre: "Implante", precio: 250.00, color: "purple" },
 ];
 
-const UPPER_ARCH = PIEZAS_DENTALES.slice(0, 16);
-const LOWER_ARCH = PIEZAS_DENTALES.slice(16);
-
-const PROCEDIMIENTOS_LISTA = [
-  { id: 1, nombre: "Caries", color: "red" },
-  { id: 2, nombre: "Resina", color: "blue" },
-  { id: 3, nombre: "Extracción", color: "red" },
-  { id: 4, nombre: "Limpieza", color: "blue" },
-  { id: 5, nombre: "Endodoncia", color: "red" },
+// Dientes de adultos (permanentes)
+const PIEZAS_ADULTO = [
+  [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+  [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
 ];
 
-class OdontogramaClinicoProcedimientos extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      color: "red",
-      isDrawing: false,
-      procedimientos: [],
-      selectedTooth: null,
-    };
-    this.canvasRef = React.createRef();
-    this.ctx = null;
-    this.imageRef = null;
-    this.modalInstance = null;
-  }
+// Dientes de leche (deciduos) - numeración pediátrica
+// Superior: 55, 54, 53, 52, 51 | 61, 62, 63, 64, 65
+// Inferior: 85, 84, 83, 82, 81 | 71, 72, 73, 74, 75
+const PIEZAS_NINO = [
+  [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+  [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
+];
 
-  componentDidMount() {
-    const canvas = this.canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    this.ctx = ctx;
+// --- COMPONENTE PRINCIPAL ---
+const OdontogramaCompletoHibrido = () => {
 
-    canvas.width = canvas.clientWidth;
-    canvas.height = CANVAS_HEIGHT;
 
-    const img = new Image();
-    img.src = ODONTOGRAMA_IMAGE_URL;
-    img.onload = () => {
-      this.imageRef = img;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
+  const { id_paciente, id_doctor } = useParams();
+  // === ESTADOS GENERALES ===
+  const [presupuesto, setPresupuesto] = useState([]);
+  const [seleccionCara, setSeleccionCara] = useState(null); // Para el odontograma cara a cara
+  const [colorDibujo, setColorDibujo] = useState("red"); // Para el canvas principal
+  const [dibujoGuardado, setDibujoGuardado] = useState(Odontograma); // Almacena el Data URL del canvas principal
+  const [opciones_tratamiento, setOpcionesTratamiento] = useState([]);
+  const [tipoOdontograma, setTipoOdontograma] = useState("adulto"); // "adulto" o "nino"
+  const [paciente, setPaciente] = useState({ nombre: '', apellido: '' });
+  const [doctor, setDoctor] = useState({ nombre: '', apellido: '' });
+  const [doctorIdValido, setDoctorIdValido] = useState(null);
 
-    // Inicializar el modal de Bootstrap
-    const modalElement = document.getElementById("modalProcedimiento");
-    if (window.bootstrap) {
-      this.modalInstance = new window.bootstrap.Modal(modalElement);
-    } else if (window.jQuery) {
-      this.modalInstance = {
-        show: () => window.jQuery(modalElement).modal("show"),
-        hide: () => window.jQuery(modalElement).modal("hide"),
-      };
+  // === Lógica del CANVAS PRINCIPAL ===
+  const canvasRef = useRef(null);
+  const isDrawing = useRef(false);
+
+  useEffect(() => {
+
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Si hay un dibujo guardado, cárgalo
+    if (dibujoGuardado) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      img.src = dibujoGuardado;
+    } else {
+      // Si no hay, limpia y dibuja las líneas de la boca
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Dibuja aquí la forma base de la arcada o una cuadrícula ligera si lo deseas
+      // Ejemplo:
+      ctx.strokeStyle = '#ddd';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width * 0.1, canvas.height * 0.5);
+      ctx.bezierCurveTo(canvas.width * 0.3, canvas.height * 0.1, 
+                         canvas.width * 0.7, canvas.height * 0.1, 
+                         canvas.width * 0.9, canvas.height * 0.5);
+      ctx.moveTo(canvas.width * 0.1, canvas.height * 0.5);
+      ctx.bezierCurveTo(canvas.width * 0.3, canvas.height * 0.9, 
+                         canvas.width * 0.7, canvas.height * 0.9, 
+                         canvas.width * 0.9, canvas.height * 0.5);
+      ctx.stroke();
     }
-  }
+  }, [dibujoGuardado]); // Se ejecuta al inicio o cuando carga un dibujo guardado
 
-  iniciar = (e) => {
-    e.preventDefault();
-    const pos = this.getCoords(e);
-    this.setState({ isDrawing: true });
-    this.ctx.beginPath();
-    this.ctx.moveTo(pos.x, pos.y);
-  };
+  const startDrawing = useCallback(({ nativeEvent }) => {
+    const { offsetX, offsetY } = nativeEvent;
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(offsetX, offsetY);
+    isDrawing.current = true;
+  }, []);
 
-  dibujar = (e) => {
-    if (!this.state.isDrawing) return;
-    const pos = this.getCoords(e);
-    this.ctx.strokeStyle = this.state.color;
-    this.ctx.lineWidth = 4;
-    this.ctx.lineCap = "round";
-    this.ctx.lineTo(pos.x, pos.y);
-    this.ctx.stroke();
-  };
+  const draw = useCallback(({ nativeEvent }) => {
+    if (!isDrawing.current) return;
+    const { offsetX, offsetY } = nativeEvent;
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.strokeStyle = colorDibujo;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineTo(offsetX, offsetY);
+    ctx.stroke();
+  }, [colorDibujo]);
 
-  terminar = () => {
-    this.setState({ isDrawing: false });
-    this.ctx.closePath();
-  };
-
-  getCoords = (e) => {
-    const rect = this.canvasRef.current.getBoundingClientRect();
-    if (e.touches?.length > 0) {
-      return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top,
-      };
+  
+  const GuargarOdontograma = useCallback(() => {
+    // Convertir el canvas actual a Data URL
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      Alertify.error("Error: No se puede acceder al canvas.");
+      return;
     }
-    return { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
-  };
 
-  limpiar = () => {
-    const canvas = this.canvasRef.current;
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (this.imageRef) {
-      this.ctx.drawImage(this.imageRef, 0, 0, canvas.width, canvas.height);
+    // Redimensionar el canvas si es muy grande para reducir el tamaño
+    const maxWidth = 1200;
+    const maxHeight = 800;
+    let width = canvas.width;
+    let height = canvas.height;
+    
+    if (width > maxWidth || height > maxHeight) {
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = width * ratio;
+      height = height * ratio;
     }
-  };
 
-  guardar = () => {
-    const url = this.canvasRef.current.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.download = `odontograma_${new Date().toISOString()}.png`;
-    link.href = url;
-    link.click();
-  };
+    // Crear un canvas temporal con el tamaño reducido
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0, width, height);
 
-  handleToothClick = (num) => {
-    this.setState({ selectedTooth: num });
-    if (this.modalInstance) {
-      this.modalInstance.show();
-    }
-  };
-
-  seleccionarProcedimiento = (p) => {
-    const nuevo = {
-      tooth: this.state.selectedTooth,
-      procedure: p.nombre,
-      color: p.color,
-      timestamp: Date.now(),
-    };
-    this.setState((prev) => ({
-      procedimientos: [...prev.procedimientos, nuevo],
-      selectedTooth: null,
+    // Convertir el canvas a JPEG con calidad reducida para reducir el tamaño
+    const dibujoActual = tempCanvas.toDataURL('image/jpeg', 0.6);
+    
+    // Preparar los detalles (procedimientos) en el formato que espera el backend
+    const detalles = presupuesto.map(proc => ({
+      diente: proc.diente,
+      cara: proc.cara,
+      tipo: proc.tipo || 'procedimiento',
+      descripcion: proc.nombre || proc.descripcion || '',
+      precio: proc.precio || 0,
+      color: proc.color || null
     }));
-    if (this.modalInstance) {
-      this.modalInstance.hide();
+
+    // Validar que los datos requeridos estén presentes y sean válidos
+    const pacienteId = parseInt(id_paciente);
+    // Usar el doctorId válido si está disponible, sino intentar con el de la URL
+    const doctorId = doctorIdValido || parseInt(id_doctor);
+    
+    if (!id_paciente || pacienteId <= 0) {
+      Alertify.error("Error: Debe seleccionar un paciente válido.");
+      return;
     }
-  };
+    
+    if (!doctorId || doctorId <= 0) {
+      Alertify.error("Error: No hay un doctor válido disponible. Por favor, agregue un doctor primero.");
+      return;
+    }
 
-  eliminarProcedimiento = (timestamp) => {
-    this.setState((prevState) => ({
-      procedimientos: prevState.procedimientos.filter(
-        (p) => p.timestamp !== timestamp
-      ),
-    }));
-  };
-
-  renderToothButtons = (toothArray) => {
-    return toothArray.map((num) => {
-      const tiene = this.state.procedimientos.some((p) => p.tooth === num);
-      return (
-        <button
-          key={num}
-          className={`btn btn-sm ${
-            tiene ? "btn-success" : "btn-outline-secondary"
-          }`}
-          style={{
-            width: "40px",
-            height: "40px",
-            fontWeight: "bold",
-            borderWidth: "2px",
-            borderRadius: "6px", // CUADRADOS suaves
-          }}
-          onClick={() => this.handleToothClick(num)}
-        >
-          {num}
-        </button>
-      );
+    const usuarioId = localStorage.getItem("id_usuario");
+    
+    Axios.post(`${Core.url_base}/api/crear_odontograma`, {
+      id_paciente: pacienteId,
+      id_doctor: doctorId,
+      dibujo_odontograma: dibujoActual, // El dibujo del canvas como Data URL
+      detalles: detalles.length > 0 ? detalles : [], // Los procedimientos seleccionados
+      usuario_id: usuarioId // Para auditoría
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    }).then(response => {
+      Alertify.success("Odontograma guardado correctamente.");
+      // Redirigir a la lista de odontogramas del paciente
+      window.location.href = `/ver_odontogramas/${id_paciente}`;
+    }).catch(error => {
+      console.error("Error al guardar:", error.response?.data || error.message);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Error desconocido";
+      Alertify.error("Error al guardar el odontograma: " + errorMessage);
     });
+  }, [id_paciente, id_doctor, presupuesto]);
+
+
+  const cargarOpcionesTratamiento = useCallback(() => {
+    Axios.get(`${Core.url_base}/api/cargar_procedimientos`).then(data=>{
+
+        setOpcionesTratamiento(data.data);
+
+    }).catch(error=>{
+        Alertify.message("No se pudieron cargar las opciones de tratamiento");
+        Alertify.message("Reconectando...");
+        cargarOpcionesTratamiento();
+    }
+
+    );
+  }, []);
+
+  const cargarPaciente = useCallback(() => {
+    if (id_paciente) {
+      Axios.get(`${Core.url_base}/api/paciente/${id_paciente}`)
+        .then(response => {
+          setPaciente(response.data || { nombre: '', apellido: '' });
+        })
+        .catch(error => {
+          console.error("Error al cargar paciente:", error);
+        });
+    }
+  }, [id_paciente]);
+
+  const cargarDoctor = useCallback(() => {
+    const doctorId = parseInt(id_doctor);
+    
+    // Si el id_doctor es 0 o inválido, buscar un doctor válido
+    if (!doctorId || doctorId <= 0) {
+      // Intentar obtener el doctor del último odontograma del paciente
+      Axios.get(`${Core.url_base}/api/listar_odontogramas_paciente/${id_paciente}`)
+        .then(response => {
+          if (response.data && response.data.length > 0 && response.data[0].doctor_id) {
+            const ultimoDoctorId = response.data[0].doctor_id;
+            setDoctorIdValido(ultimoDoctorId);
+            cargarDatosDoctor(ultimoDoctorId);
+          } else {
+            // Si no hay odontogramas previos, obtener el primer doctor disponible
+            cargarPrimerDoctor();
+          }
+        })
+        .catch(() => {
+          // Si falla, obtener el primer doctor disponible
+          cargarPrimerDoctor();
+        });
+    } else {
+      // Si el id_doctor es válido, usarlo
+      setDoctorIdValido(doctorId);
+      cargarDatosDoctor(doctorId);
+    }
+  }, [id_doctor, id_paciente]);
+
+  const cargarDatosDoctor = useCallback((doctorId) => {
+    Axios.get(`${Core.url_base}/api/cargar_doctor/${doctorId}`)
+      .then(response => {
+        setDoctor(response.data || { nombre: '', apellido: '' });
+      })
+      .catch(error => {
+        console.error("Error al cargar doctor:", error);
+        // Si falla, intentar obtener otro doctor
+        cargarPrimerDoctor();
+      });
+  }, []);
+
+  const cargarPrimerDoctor = useCallback(() => {
+    Axios.get(`${Core.url_base}/api/doctores`)
+      .then(response => {
+        if (response.data && response.data.length > 0) {
+          const primerDoctorId = response.data[0].id;
+          setDoctorIdValido(primerDoctorId);
+          cargarDatosDoctor(primerDoctorId);
+        } else {
+          Alertify.error("No hay doctores disponibles. Por favor, agregue un doctor primero.");
+        }
+      })
+      .catch(error => {
+        console.error("Error al cargar lista de doctores:", error);
+        Alertify.error("Error al cargar los doctores disponibles.");
+      });
+  }, [cargarDatosDoctor]);
+
+  useEffect(() => {
+    cargarOpcionesTratamiento();
+    cargarPaciente();
+    cargarDoctor();
+  }, [cargarOpcionesTratamiento, cargarPaciente, cargarDoctor]);
+
+  const endDrawing = useCallback(() => {
+    isDrawing.current = false;
+    // Guardar el estado del canvas para poder cargarlo si se limpia
+    setDibujoGuardado(canvasRef.current.toDataURL());
+  }, []);
+
+  const clearCanvas = useCallback(() => {
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    setDibujoGuardado(""); // Limpiar dibujo guardado
+  }, []);
+
+  // === Lógica del ODONTOGRAMA CARA A CARA ===
+  const handleCaraClick = (diente, cara) => {
+    setSeleccionCara({ diente, cara });
   };
 
-  render() {
-    const { procedimientos } = this.state;
+  const agregarProcedimiento = (proc) => {
+
+    
+    const nuevo = { 
+      ...proc, 
+      diente: seleccionCara.diente, 
+      id_doctor:1,
+      id_paciente:2,
+      cara: seleccionCara.cara, 
+      tipo: "procedimiento", 
+      tempId: Date.now() 
+    };
+    setPresupuesto([...presupuesto, nuevo]);
+    setSeleccionCara(null); 
+  };
+    
+
+  const total = presupuesto.reduce((acc, item) => acc + item.precio, 0);
+
+  const DienteCaraACara = ({ num }) => {
+    const getColor = (c) => {
+      const found = presupuesto.find(p => p.diente === num && p.cara === c);
+      return found ? found.color : "white";
+    };
 
     return (
-      <div className="container my-4">
-        <h3 className="text-center mb-4 font-weight-bold text-primary">
-          🦷 Odontograma Clínico con Procedimientos
-        </h3>
+      <div className="text-center" style={{ width: "42px", display: "inline-block" }}>
+        <div className="small font-weight-bold text-muted mb-1">{num}</div>
+        <svg viewBox="0 0 100 100" width="36" height="36" style={{ cursor: "pointer" }}>
+          <polygon points="0,0 100,0 75,25 25,25" fill={getColor("V")} stroke="#666" onClick={() => handleCaraClick(num, "V")} />
+          <polygon points="25,75 75,75 100,100 0,100" fill={getColor("L")} stroke="#666" onClick={() => handleCaraClick(num, "L")} />
+          <polygon points="0,0 25,25 25,75 0,100" fill={getColor("M")} stroke="#666" onClick={() => handleCaraClick(num, "M")} />
+          <polygon points="100,0 100,100 75,75 75,25" fill={getColor("D")} stroke="#666" onClick={() => handleCaraClick(num, "D")} />
+          <rect x="25" y="25" width="50" height="50" fill={getColor("O")} stroke="#666" onClick={() => handleCaraClick(num, "O")} />
+        </svg>
+      </div>
+    );
+  };
 
-        {/* ====== Odontograma Layout ====== */}
-        <div className="odontograma-container text-center p-3 rounded shadow-sm bg-light mb-4">
-          <p className="text-muted mb-1 font-weight-bold">
-            Arcada Superior (Upper Arch)
-          </p>
-
-          <div className="d-flex justify-content-between mb-3 px-2" style={{ width: "100%" }}>
-            <div
-              className="d-flex flex-row-reverse justify-content-between"
-              style={{ width: "48%", gap: "2px" }}
-            >
-              {this.renderToothButtons(UPPER_ARCH.slice(0, 8).reverse())}
-            </div>
-            <div
-              className="d-flex flex-row justify-content-between"
-              style={{ width: "48%", gap: "2px" }}
-            >
-              {this.renderToothButtons(UPPER_ARCH.slice(8))}
-            </div>
-          </div>
-
-          <canvas
-            ref={this.canvasRef}
-            className="border rounded shadow-sm"
-            style={{
-              cursor: "crosshair",
-              maxWidth: "100%",
-              width: "100%",
-              height: `${CANVAS_HEIGHT}px`,
-              backgroundColor: "#ffffff",
-            }}
-            onMouseDown={this.iniciar}
-            onMouseMove={this.dibujar}
-            onMouseUp={this.terminar}
-            onMouseLeave={this.terminar}
-            onTouchStart={this.iniciar}
-            onTouchMove={this.dibujar}
-            onTouchEnd={this.terminar}
-          />
-
-          <p className="text-muted mt-3 mb-1 font-weight-bold">
-            Arcada Inferior (Lower Arch)
-          </p>
-
-          <div className="d-flex justify-content-between mt-3 px-2" style={{ width: "100%" }}>
-            <div
-              className="d-flex flex-row-reverse justify-content-between"
-              style={{ width: "48%", gap: "2px" }}
-            >
-              {this.renderToothButtons(LOWER_ARCH.slice(0, 8).reverse())}
-            </div>
-            <div
-              className="d-flex flex-row justify-content-between"
-              style={{ width: "48%", gap: "2px" }}
-            >
-              {this.renderToothButtons(LOWER_ARCH.slice(8))}
-            </div>
-          </div>
-        </div>
-
-        {/* ====== Controles ====== */}
-        <div className="d-flex justify-content-center flex-wrap gap-2 mb-4">
-          <button
-            className={`btn ${
-              this.state.color === "blue" ? "btn-primary" : "btn-outline-primary"
-            } btn-sm`}
-            onClick={() => this.setState({ color: "blue" })}
-          >
-            🔵 Restauración
-          </button>&nbsp;
-          <button
-            className={`btn ${
-              this.state.color === "red" ? "btn-danger" : "btn-outline-danger"
-            } btn-sm`}
-            onClick={() => this.setState({ color: "red" })}
-          >
-            🔴 Diagnóstico
-          </button>&nbsp;
-          <button className="btn btn-secondary btn-sm" onClick={this.limpiar}>
-            🧹 Limpiar Dibujo
-          </button>&nbsp;
-          <button className="btn btn-success btn-sm" onClick={this.guardar}>
-            💾 Guardar Imagen
-          </button>
-        </div>
-
-        {/* ====== Historial ====== */}
-        <div className="card shadow-sm border-0">
-          <div className="card-header bg-primary text-white font-weight-bold">
-            📝 Historial de Procedimientos ({procedimientos.length})
-          </div>
-          <ul className="list-group list-group-flush">
-            {procedimientos.length === 0 ? (
-              <li className="list-group-item text-center text-muted py-3">
-                No hay registros de procedimientos.
-              </li>
-            ) : (
-              procedimientos.map((p) => (
-                <li
-                  key={p.timestamp}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  <div className="d-flex align-items-center">
-                    <strong className="mr-3">Diente {p.tooth}</strong>
-                    <span
-                      className={`badge badge-${
-                        p.color === "red" ? "danger" : "primary"
-                      } p-2`}
-                    >
-                      {p.procedure}
-                    </span>
-                  </div>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => this.eliminarProcedimiento(p.timestamp)}
-                    title="Eliminar Procedimiento"
-                  >
-                    ×
-                  </button>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-
-        {/* ====== MODAL ====== */}
-        <div
-          className="modal fade"
-          id="modalProcedimiento"
-          tabIndex="-1"
-          role="dialog"
-          aria-labelledby="modalProcedimientoTitle"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content border-0 shadow-lg">
-              <div className="modal-header bg-info text-white">
-                <h5 className="modal-title" id="modalProcedimientoTitle">
-                  Seleccionar Procedimiento para Diente{" "}
-                  <span className="font-weight-bold">
-                    {this.state.selectedTooth}
-                  </span>
-                </h5>
-                <button
-                  type="button"
-                  className="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
+  return (
+    <div className="container-fluid pt-2">
+      {/* HEADER INFO */}
+      <div className="card shadow-sm mb-3 border-left border-primary" style={{ borderLeftWidth: '5px' }}>
+        <div className="card-body py-2">
+          <div className="row">
+            <div className="col-md-6 border-right">
+              <label className="small font-weight-bold text-uppercase text-muted mb-0">Paciente</label>
+              <div className="h5 font-weight-bold mb-0 text-dark">
+                {paciente.nombre || 'Cargando...'} {paciente.apellido || ''}
               </div>
-              <div className="modal-body">
-                <div className="list-group">
-                  {PROCEDIMIENTOS_LISTA.map((p) => (
-                    <button
-                      key={p.id}
-                      className="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2"
-                      onClick={() => this.seleccionarProcedimiento(p)}
-                    >
-                      <span>{p.nombre}</span>
-                      <span
-                        className={`badge badge-${
-                          p.color === "red" ? "danger" : "primary"
-                        } p-2`}
-                      >
-                        {p.color === "red" ? "DIAGNÓSTICO" : "RESTAURACIÓN"}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+            </div>
+            <div className="col-md-6">
+              <label className="small font-weight-bold text-uppercase text-muted mb-0">Médico</label>
+              <div className="h5 text-primary mb-0">
+                {doctor.nombre ? `Dr. ${doctor.nombre} ${doctor.apellido || ''}` : 'Cargando...'}
               </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
 
-export default OdontogramaClinicoProcedimientos;
+      <br /><br />
+
+      <h4 className="font-weight-bold text-dark mb-4 border-bottom pb-2">Creación de Odontograma</h4>
+
+      <div className="row">
+        {/* COLUMNA PRINCIPAL (ODONTOGRAMAS) */}
+        <div className="col-lg-8">
+          {/* SELECTOR DE TIPO DE ODONTOGRAMA */}
+          <div className="card shadow-sm p-3 bg-light mb-4">
+            <div className="d-flex justify-content-between align-items-center">
+              <h6 className="font-weight-bold text-secondary mb-0">Tipo de Odontograma:</h6>
+              <div className="btn-group" role="group">
+                <button 
+                  type="button" 
+                  className={`btn ${tipoOdontograma === "adulto" ? "btn-primary" : "btn-outline-primary"}`}
+                  onClick={() => setTipoOdontograma("adulto")}
+                >
+                  <i className="fas fa-user"></i> Adulto
+                </button>
+                <button 
+                  type="button" 
+                  className={`btn ${tipoOdontograma === "nino" ? "btn-warning" : "btn-outline-warning"}`}
+                  onClick={() => setTipoOdontograma("nino")}
+                >
+                  <i className="fas fa-child"></i> Niño (Dientes de Leche)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ODONTOGRAMA CARA A CARA */}
+          <div className="card shadow-sm p-4 bg-white text-center mb-4">
+            <h6 className="font-weight-bold text-secondary mb-3">
+              {tipoOdontograma === "nino" ? "Marcado de Caras Dentales - Dientes de Leche" : "Marcado de Caras Dentales"}
+            </h6>
+            <div className="mb-5">
+              {(tipoOdontograma === "nino" ? PIEZAS_NINO[0] : PIEZAS_ADULTO[0]).map(n => (
+                <DienteCaraACara key={n} num={n} />
+              ))}
+            </div>
+            <div className="mt-4">
+              {(tipoOdontograma === "nino" ? PIEZAS_NINO[1] : PIEZAS_ADULTO[1]).map(n => (
+                <DienteCaraACara key={n} num={n} />
+              ))}
+            </div>
+          </div>
+
+          {/* PANEL DE SELECCIÓN PARA CARA A CARA */}
+          {seleccionCara && (
+            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-4">
+              <div className="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
+                <span className="font-weight-bold">
+                   Tratamiento para: Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
+                </span>
+                <button className="btn btn-sm btn-light font-weight-bold" onClick={() => setSeleccionCara(null)}>X</button>
+              </div>
+              <div className="card-body p-2">
+                <div className="row no-gutters">
+                  {opciones_tratamiento.map(o => (
+                    <div key={o.id} className="col-md-4 p-1">
+                      <button 
+                        className="btn btn-outline-dark btn-block text-left d-flex justify-content-between align-items-center"
+                        style={{ fontSize: '12px' }}
+                        onClick={() => agregarProcedimiento(o)}>
+                        <span>{o.nombre}</span>
+                        <span className="badge badge-primary font-weight-bold">${o.precio}</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ODONTOGRAMA DIBUJABLE (CANVAS GRANDE) */}
+          <div className="card shadow-sm p-4 bg-white mb-3">
+            <h6 className="font-weight-bold text-secondary mb-3">Notas y Marcadores Visuales</h6>
+            <div className="d-flex justify-content-around align-items-center mb-3">
+                <span className="font-weight-bold small mr-2">Color del Lápiz:</span>
+                <button className={`btn btn-sm ${colorDibujo === 'red' ? 'btn-danger' : 'btn-outline-danger'}`} 
+                        onClick={() => setColorDibujo("red")}>🔴</button>
+                <button className={`btn btn-sm ${colorDibujo === 'blue' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                        onClick={() => setColorDibujo("blue")}>🔵</button>
+                <button className={`btn btn-sm ${colorDibujo === 'green' ? 'btn-success' : 'btn-outline-success'}`} 
+                        onClick={() => setColorDibujo("green")}>🟢</button>
+                <button className={`btn btn-sm ${colorDibujo === 'black' ? 'btn-dark' : 'btn-outline-dark'}`} 
+                        onClick={() => setColorDibujo("black")}>⚫</button>
+                <button className="btn btn-sm btn-outline-secondary ml-3" onClick={clearCanvas}>
+                    <i className="fa fa-eraser"></i> Borrar Todo
+                </button>
+            </div>
+            <canvas
+              ref={canvasRef}
+              width={650} // Ancho del canvas
+              height={350} // Alto del canvas
+              style={{ border: '1px solid #ccc', cursor: 'crosshair', touchAction: 'none' }}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={endDrawing}
+              onMouseLeave={endDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={endDrawing}
+            />
+          </div>
+        </div>
+
+        {/* LISTA DE EVOLUCIÓN (DERECHA) */}
+        <div className="col-lg-4">
+          <div className="card shadow-sm border-0">
+            <div className="card-header bg-dark text-black font-weight-bold py-2">
+              Resumen del Plan
+            </div>
+            <div className="card-body p-0" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+              <table className="table table-sm table-hover mb-0">
+                <thead className="thead-light small">
+                  <tr>
+                    <th className="pl-3">PIEZA</th>
+                    <th>TRATAMIENTO</th>
+                    <th className="text-right pr-3">PRECIO</th>
+                  </tr>
+                </thead>
+                <tbody className="small">
+                  {presupuesto.map(item => (
+                    <tr key={item.tempId}>
+                      <td className="font-weight-bold pl-3">{item.diente}-{item.cara}</td>
+                      <td>{item.nombre}</td>
+                      <td className="text-right pr-3 font-weight-bold text-primary">${item.precio.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                  {presupuesto.length === 0 && (
+                    <tr><td colSpan="3" className="text-center py-5 text-muted italic">Toque un diente para iniciar el registro</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="card-footer bg-white border-top">
+              <div className="d-flex justify-content-between align-items-center mb-3 px-1">
+                <span className="font-weight-bold text-muted">TOTAL:</span>
+                <span className="h4 font-weight-bold text-success mb-0">${total.toFixed(2)}</span>
+              </div>
+              <button 
+                className="btn btn-primary btn-block font-weight-bold py-3 shadow"
+                onClick={GuargarOdontograma}
+              >
+                💾 GUARDAR REGISTRO CLÍNICO
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OdontogramaCompletoHibrido;

@@ -13,14 +13,13 @@ class ImprimirRecibo extends React.Component {
     this.state = {
       monto_total: 0,
       redirectPerfil: false,
-      factura: {},
       recibo: {},
     };
   }
 
   componentDidMount() {
     Alertify.message("Cargando recibo...");
-    const { id_factura, id_recibo,id,id_doc } = this.props.match.params;
+    const { id_factura, id_recibo } = this.props.match.params;
     this.cargar_factura(id_factura);
     this.cargar_recibo(id_recibo);
   }
@@ -121,7 +120,8 @@ generarPDFyEnviarWhatsApp = async () => {
     try {
       const { data } = await Axios.get(`${Core.url_base}/api/cargar_factura/${id_factura}`);
       console.log(data[0]);
-      this.setState({ factura: data[0] || {} });
+      // La factura se carga pero no se usa directamente, se accede a través de recibo.factura
+      // this.setState({ factura: data[0] || {} });
 
     } catch (error) {
       Alertify.error("Error cargando factura. Reintentando...");
@@ -174,12 +174,13 @@ generarPDFyEnviarWhatsApp = async () => {
   };
 
   render() {
-    const { factura, recibo, redirectPerfil } = this.state;
+    const { recibo, redirectPerfil } = this.state;
     const procedimientos = JSON.parse(recibo.procedimientos || "[]");
     const monto_total = procedimientos.reduce((acc, item) => acc + (item.total || 0), 0);
 
     if (redirectPerfil) {
-      return <Redirect to={`/perfil_paciente/${this.props.match.params.id}`} />;
+      const idPaciente = this.state.recibo?.factura?.paciente_id || this.props.match.params.id_factura;
+      return <Redirect to={`/perfil_paciente/${idPaciente}`} />;
     }
 
     return (
@@ -210,7 +211,7 @@ generarPDFyEnviarWhatsApp = async () => {
           <button className="btn btn-primary me-2" onClick={this.Imprimir}>
             <i className="fas fa-print"></i> Imprimir
           </button>&nbsp;
-          <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doctor}`} >
+          <Link to={`/perfil_paciente/${this.props.match.params.id_factura}/${this.props.match.params.id_doctor || ''}`} >
             <button className="btn btn-secondary me-2">
             <i className="fas fa-arrow-left"></i> Volver
           </button>
@@ -252,7 +253,11 @@ generarPDFyEnviarWhatsApp = async () => {
           <hr />
 
           <p><strong>Fecha de pago:</strong> {recibo.fecha_pago}</p>
-          <p><strong>#</strong> {recibo.codigo_recibo}</p>
+          <p>
+            <strong>
+              {Core.Config?.tipo_numero_factura === 'factura' ? 'NO' : 'Número de Comprobante'}:
+            </strong> {recibo.codigo_recibo}
+          </p>
 
           <hr />
           <p><strong>FACTURA PARA CONSUMIDOR</strong></p>

@@ -58,23 +58,27 @@ class ActualizarDoctor extends React.Component{
             let doctor  = this.state.doctor;
             doctor.dni =e.target.value;
             this.setState({doctor:doctor});
+        }else if(e.target.id=="especialidad"){
+            let doctor  = this.state.doctor;
+            doctor.especialidad =e.target.value;
+            this.setState({doctor:doctor});
         }
 
     }
 
     actualizar_doctor=()=>{
 
-  
-
-        Axios.get(`${Core.url_base}/api/actualizar_doctor/${this.state.doctor.nombre}/${this.state.doctor.apellido}
-        /${this.state.doctor.telefono}/${this.state.doctor.dni}/${this.props.id_doctor}`).then(data=>{
-
-            Alertify.message("Se actualizo correctamente")
-
+        Axios.put(`${Core.url_base}/api/actualizar_doctor_completo/${this.props.id_doctor}`, {
+            nombre: this.state.doctor.nombre,
+            apellido: this.state.doctor.apellido,
+            cedula: this.state.doctor.dni,
+            telefono: this.state.doctor.numero_telefono,
+            especialidad: this.state.doctor.especialidad || null
+        }).then(data=>{
+            Alertify.success("Doctor actualizado correctamente");
         }).catch(error=>{
-
-            console.log(error);
-
+            Alertify.error("Error al actualizar doctor");
+            console.error(error);
         });
 
     }
@@ -93,6 +97,20 @@ class ActualizarDoctor extends React.Component{
                     <input type="text"  id="telefono"  onChange={this.editando_campo}  value={this.state.doctor.numero_telefono}  defaultValue={this.state.doctor.numero_telefono} className="form-control" /><br/> 
                     <strong>DNI</strong><br/>
                     <input type="text" id="dni"  onChange={this.editando_campo} className="form-control" value={this.state.doctor.dni}/><br/> 
+                    <strong>Especialidad</strong><br/>
+                    <select 
+                        id="especialidad" 
+                        onChange={this.editando_campo} 
+                        className="form-control"
+                        value={this.state.doctor.especialidad || ''}
+                    >
+                        <option value="">Seleccionar especialidad...</option>
+                        {Core.lenguaje && Core.lenguaje.especialidades && 
+                            Core.lenguaje.especialidades.map((esp, index) => (
+                                <option key={index} value={esp}>{esp}</option>
+                            ))
+                        }
+                    </select><br/>
                     <button className="btn btn-success" onClick={this.actualizar_doctor}>Actualizar</button>
                 </div>
             </div>  

@@ -19,6 +19,7 @@ class BuscandoProcedimiento extends  React.Component{
                      id:0,
                      nombre:'',
                      precio:'',
+                     color:'',
                      change:false};
     }
 
@@ -42,7 +43,7 @@ class BuscandoProcedimiento extends  React.Component{
 
         Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
             
-                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id});
+                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id,color:data.data.color});
 
         }).catch(error=>{
             alertify.error("No se puedo cargar este paciente");
@@ -69,6 +70,7 @@ class BuscandoProcedimiento extends  React.Component{
         Axios.post(`${Core.url_base}/api/actualizar_procedimiento`,
                     {nombre:this.state.nombre,
                      precio:this.state.precio,
+                     color:this.state.color,
                      id:this.state.id }
         ).then(data=>{
                 alertify.message("Procedimiento actualizado con exito");
@@ -115,6 +117,12 @@ class BuscandoProcedimiento extends  React.Component{
 
                 console.log("error");
             })
+    }
+
+    actualizar_color=(event)=>{
+
+        this.setState({color:event.target.value});
+
     }
 
     render(){
@@ -188,7 +196,13 @@ class BuscandoProcedimiento extends  React.Component{
                                 <input className='form-control' name="nombre" value={this.state.nombre} onChange={this.actualizar_valor}/><hr/>                               
                                 <strong>Precio</strong>
                                 <input className='form-control' name="precio" value={this.state.precio} onChange={this.actualizar_valor}/>
-
+                                <select id="color" onChange={this.actualizar_color}  className="form-control mt-3">
+                                    <option value={this.state.color} >{this.state.color}</option>
+                                    <option value="red">Rojo</option>
+                                    <option value="blue">Azul</option>
+                                    <option value="green">Verde</option>
+                                    <option value="yellow">Amarillo</option>
+                                </select>
                                 <div className="d-flex justify-content-end gap-2 mt-4">
                                 <button
                                     className="mac-btn mac-btn-green"

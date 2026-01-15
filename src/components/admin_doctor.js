@@ -31,15 +31,31 @@ class DoctorFormulario extends React.Component{
 			var apellido =document.getElementById("apellido").value;
 			var cedula = document.getElementById("cedula").value;
 			var telefono = document.getElementById("telefono").value;
+			var especialidad = document.getElementById("especialidad").value;
 
-			Axios.get(`${Core.url_base}/api/crear_doctor/${nombre}/${apellido}/${cedula}/${telefono}`).then(data=>{
-					Alertify.message("Doctor guardado con exito");
+			if (!nombre || !apellido || !cedula || !telefono) {
+				Alertify.error("Complete todos los campos requeridos");
+				return;
+			}
+
+			Axios.post(`${Core.url_base}/api/crear_doctor_completo`, {
+				nombre: nombre,
+				apellido: apellido,
+				cedula: cedula,
+				telefono: telefono,
+				especialidad: especialidad || null
+			}).then(data=>{
+					Alertify.success("Doctor guardado con éxito");
+					// Limpiar campos
+					document.getElementById("nombre").value = "";
+					document.getElementById("apellido").value = "";
+					document.getElementById("cedula").value = "";
+					document.getElementById("telefono").value = "";
+					document.getElementById("especialidad").value = "";
 					this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
-
-				alert(error);
-
-
+				Alertify.error("Error al guardar el doctor");
+				console.error(error);
 			});
 
 
@@ -96,9 +112,13 @@ class DoctorFormulario extends React.Component{
 
 						<div className="mac-form-group">
 							<label>Especialidad</label>
-							<select className="mac-input">
-							<option>Odontocista</option>
-							<option>Odontólogo</option>
+							<select className="mac-input" id="especialidad">
+							<option value="">Seleccionar especialidad...</option>
+							{Core.lenguaje && Core.lenguaje.especialidades && 
+								Core.lenguaje.especialidades.map((esp, index) => (
+									<option key={index} value={esp}>{esp}</option>
+								))
+							}
 							</select>
 						</div>
 

@@ -16,30 +16,51 @@ class ProcedimientoForm extends React.Component{
 		guardar_datos=()=>{
 			var nombre = document.getElementById("nombre_procedimiento").value;
 			var precio = document.getElementById("precio").value;
+			var color = document.getElementById("color").value;
+			var comision = document.getElementById("comision").value || 0;
 
+			// Validar campos
+			if (!nombre || !precio) {
+				alertify.error("Por favor complete todos los campos requeridos");
+				return;
+			}
+
+			// Validar que la comisión esté entre 0 y 100
+			if (comision < 0 || comision > 100) {
+				alertify.error("La comisión debe estar entre 0 y 100");
+				return;
+			}
+
+			// Deshabilitar botón mientras se guarda
+			this.setState({boton_estado:true});
 
 			Axios.post(`${core.url_base}/api/guardar_procedimiento`,
-				{nombre:nombre,precio:precio}
+				{nombre:nombre,precio:precio,color:color,comision:comision}
 			).then(data=>{
-
-					alertify.message("Procedimiento guardado con exito");
-					this.setState({boton_estado:true});
-					setInterval(()=>{
-						this.setState({boton_estado:false});
-							document.getElementById("nombre_procedimiento").value="";
-							document.getElementById("precio").value="";
-						
-					},3000);
-					this.setState({estado:'saved_success'});
+				alertify.success("Procedimiento guardado con éxito");
+				
+				// Limpiar campos inmediatamente
+				document.getElementById("nombre_procedimiento").value="";
+				document.getElementById("precio").value="";
+				document.getElementById("color").value="#FF0000"; // Resetear al valor por defecto
+				document.getElementById("comision").value="0"; // Resetear comisión
+				
+				// Rehabilitar botón y enfocar en el primer campo para agregar otro procedimiento
+				this.setState({boton_estado:false});
+				setTimeout(() => {
+					document.getElementById("nombre_procedimiento").focus();
+				}, 100);
 
 			}).catch(error=>{
-
 				alertify.error("No se pudo guardar el procedimiento");
-
+				this.setState({boton_estado:false});
 			});
 
 
 		}
+
+
+		
 
 
 		render(){
@@ -73,8 +94,43 @@ class ProcedimientoForm extends React.Component{
 								placeholder="Ej. 1200"
 							/>
 							</div>
-							<div style={{ textAlign: 'center' }}>
+
+							<div className="mb-4">
+							<label htmlFor="color" className="form-label fw-semibold">
+								<i className="fas fa-palette me-2"></i>Color
+							</label>
+							 <select className="form-control rounded-pill px-4" id="color" defaultValue="#FF0000">
+								<option value="#FF0000">Rojo</option>
+								<option value="#00FF00">Verde</option>
+								<option value="#0000FF">Azul</option>
+								<option value="#FFFF00">Amarillo</option>
+								<option value="#FF00FF">Magenta</option>
+								<option value="#00FFFF">Cian</option>
+								<option value="#FFA500">Naranja</option>
+								<option value="#800080">Morado</option>
+							</select>
+							</div>
+
+							<div className="mb-4">
+							<label htmlFor="comision" className="form-label fw-semibold">
+								<i className="fas fa-percent me-2"></i>Comisión (%)
+							</label>
+							<input 
+								type="number" 
+								className="form-control rounded-pill px-4" 
+								id="comision" 
+								placeholder="Ej. 30 (porcentaje de comisión)"
+								min="0"
+								max="100"
+								step="0.01"
+								defaultValue="0"
+							/>
+							<small className="form-text text-muted">Porcentaje de comisión que recibirá el doctor por este procedimiento (0-100)</small>
+							</div>
+							<div className="mb-4" style={{textAlign:'center'}}
+>
 							<button 
+								
 								className="btn btn-primary w-50 rounded-pill fw-semibold" 
 								disabled={this.state.boton_estado} 
 								onClick={this.guardar_datos}

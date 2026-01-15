@@ -8,6 +8,7 @@ import Pacientes from './citas_c';
 import alertify from 'alertifyjs';
 import ImagenPerfil from '../usuario_listo.png'
 import { Link } from 'react-router-dom';
+import Recetas from './recetas';
 
 
 
@@ -56,6 +57,12 @@ class PerfilPaciente extends React.Component{
 				documentos: [],
 				notasPaciente: [],
 				tiene_ficha_medica:false,
+				nuevoArchivo: null,
+				nuevoComentario: '',
+				previewArchivo: null,
+				dragActive: false,
+				subiendoArchivo: false,
+				vistaDocumentos: 'tabla', // 'tabla' o 'tarjetas'
 
 				// Ficha médica
 					created_at:'',
@@ -176,12 +183,12 @@ class PerfilPaciente extends React.Component{
 			Axios.post(`${Verficar.url_base}/api/crear_nota`, nota)
 				.then((data) => {
 				console.log(data);
-				alertify.message('<i class="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
+				alertify.message('<i className="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
 				
 					this.setState({ modal_nota_visible: false, nota_texto: '' });
 				})
 				.catch((error) => {
-				alertify.message('<i class="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
+				alertify.message('<i className="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
 				});
 		}
 
@@ -362,23 +369,119 @@ class PerfilPaciente extends React.Component{
 			}
 
 			subirDocumento = () => {
+				if (!this.state.nuevoArchivo) {
+					Alertify.warning("Por favor seleccione un archivo");
+					return;
+				}
+
+				// Validar tamaño (10MB máximo)
+				if (this.state.nuevoArchivo.size > 10 * 1024 * 1024) {
+					Alertify.error("El archivo es demasiado grande. Máximo 10MB");
+					return;
+				}
+
+				this.setState({ subiendoArchivo: true });
 
 				const formData = new FormData();
 				formData.append("image", this.state.nuevoArchivo);
 				formData.append("usuario_id", this.props.match.params.id);
-				formData.append("comentarios", this.state.nuevoComentario);
+				formData.append("comentarios", this.state.nuevoComentario || "Sin comentarios");
 
 				Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
 					headers: { 'Content-Type': 'multipart/form-data' }
 				})
 					.then(() => {
 					Alertify.success("Archivo subido con éxito");
-					this.setState({ nuevoArchivo: null, nuevoComentario: "" });
+					this.setState({ 
+						nuevoArchivo: null, 
+						nuevoComentario: "",
+						previewArchivo: null,
+						subiendoArchivo: false
+					});
+					// Limpiar input file
+					const fileInput = document.getElementById('fileInput');
+					if (fileInput) fileInput.value = '';
 					this.cargar_documentos(); // refrescar lista
 					})
 					.catch((error) => {
+					Alertify.error("Error al subir el archivo");
+					this.setState({ subiendoArchivo: false });
 					console.error(error);
 					});
+			};
+
+			handleFileSelect = (e) => {
+				const file = e.target.files[0];
+				if (file) {
+					// Validar tamaño
+					if (file.size > 10 * 1024 * 1024) {
+						Alertify.error("El archivo es demasiado grande. Máximo 10MB");
+						return;
+					}
+					
+					this.setState({ nuevoArchivo: file });
+					
+					// Crear preview
+					if (file.type.startsWith('image/')) {
+						const reader = new FileReader();
+						reader.onloadend = () => {
+							this.setState({ previewArchivo: reader.result });
+						};
+						reader.readAsDataURL(file);
+					} else {
+						this.setState({ previewArchivo: null });
+					}
+				}
+			};
+
+			handleDragOver = (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.setState({ dragActive: true });
+			};
+
+			handleDragLeave = (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.setState({ dragActive: false });
+			};
+
+			handleDrop = (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.setState({ dragActive: false });
+
+				const file = e.dataTransfer.files[0];
+				if (file) {
+					// Validar tamaño
+					if (file.size > 10 * 1024 * 1024) {
+						Alertify.error("El archivo es demasiado grande. Máximo 10MB");
+						return;
+					}
+					
+					this.setState({ nuevoArchivo: file });
+					
+					// Crear preview
+					if (file.type.startsWith('image/')) {
+						const reader = new FileReader();
+						reader.onloadend = () => {
+							this.setState({ previewArchivo: reader.result });
+						};
+						reader.readAsDataURL(file);
+					} else {
+						this.setState({ previewArchivo: null });
+					}
+				}
+			};
+
+			descargarDocumento = (url, nombre) => {
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = nombre || 'documento';
+				link.target = '_blank';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
 			};
 
 			eliminarDocumento = (id) => {
@@ -573,6 +676,36 @@ class PerfilPaciente extends React.Component{
 						<span>{Verficar.lenguaje.perfil_paciente.ver_presupuestos}</span>
 					</button>
 					</Link>
+					<Link to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+					<button
+						className="icon-btn"
+						title="Crear Odontograma"
+						aria-label="Crear Odontograma"
+						>
+						<i className="fas fa-tooth"></i>
+						<span>Crear Odontograma</span>
+						</button>
+					</Link>
+					<Link to={`/ver_odontogramas/${this.props.match.params.id}`}>
+					<button
+						className="icon-btn"
+						title="Ver Odontogramas"
+						aria-label="Ver Odontogramas"
+						>
+						<i className="fas fa-list"></i>
+						<span>Ver Odontogramas</span>
+						</button>
+					</Link>
+					<button
+						className="icon-btn"
+						title="Recetas Médicas"
+						aria-label="Recetas Médicas"
+						onClick={() => this.setState({ modal_recetas_visible: true })}
+						>
+						<i className="fas fa-prescription"></i>
+						<span>Recetas</span>
+					</button>
+
 						<button
 							className="icon-btn danger"
 							onClick={() => this.eliminar_paciente(this.state.paciente.id)}
@@ -595,7 +728,7 @@ class PerfilPaciente extends React.Component{
 						<table className='table'>
 							<thead className="">
 							<tr>
-								<th><i class="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
+								<th><i className="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
 									&nbsp;{Verficar.lenguaje.perfil_paciente.nombre_tutor}:&nbsp;&nbsp;
 									<strong style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.nombre_tutor}</strong>
 									</strong></th>
@@ -1004,7 +1137,7 @@ class PerfilPaciente extends React.Component{
 					<div className="modal-content mac-box">
 						<div className="modal-header border-0">
 						<h4 className="modal-title flex items-center gap-2">
-							<i class="fa-solid fa-folder"></i>
+							<i className="fa-solid fa-folder"></i>
 							<span>&nbsp;Documentos del paciente</span>
 						</h4>
 						<button
@@ -1014,112 +1147,381 @@ class PerfilPaciente extends React.Component{
 						</div>
 
 						<div className="modal-body bg-gray-50 rounded-xl p-4">
+						{/* Selector de vista */}
+						{this.state.documentos.length > 0 && (
+							<div className="d-flex justify-content-end mb-3">
+								<div className="btn-group" role="group">
+									<button
+										type="button"
+										className={`btn btn-sm ${this.state.vistaDocumentos === 'tabla' ? 'btn-primary' : 'btn-outline-primary'}`}
+										onClick={() => this.setState({ vistaDocumentos: 'tabla' })}
+									>
+										<i className="fas fa-list"></i> Tabla
+									</button>
+									<button
+										type="button"
+										className={`btn btn-sm ${this.state.vistaDocumentos === 'tarjetas' ? 'btn-primary' : 'btn-outline-primary'}`}
+										onClick={() => this.setState({ vistaDocumentos: 'tarjetas' })}
+									>
+										<i className="fas fa-th"></i> Tarjetas
+									</button>
+								</div>
+							</div>
+						)}
+
 						{/* Vista en modo lista */}
 						{this.state.documentos.length === 0 ? (
 							<div className="text-center text-gray-500 py-5">
-							<p>📁 No hay documentos registrados aún.</p>
+							<i className="fas fa-folder-open fa-3x mb-3 text-gray-400"></i>
+							<p className="mb-0">No hay documentos registrados aún.</p>
+							<small className="text-muted">Arrastra archivos o haz clic en el área de abajo para agregar documentos</small>
+							</div>
+						) : this.state.vistaDocumentos === 'tabla' ? (
+							<div className="table-responsive">
+								<table className="table table-hover align-middle bg-white rounded">
+								<thead className="bg-primary text-white">
+									<tr>
+									<th style={{ width: "80px" }}>Vista</th>
+									<th>Comentarios</th>
+									<th>Tipo</th>
+									<th>Fecha</th>
+									<th style={{ width: "150px" }}>Acciones</th>
+									</tr>
+								</thead>
+								<tbody>
+									{this.state.documentos.map((doc) => {
+									const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+									const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(
+										doc.ruta_radiografia
+									);
+									const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
+									const tipo = esImagen ? "Imagen" : esPdf ? "PDF" : "Archivo";
+									const nombreArchivo = doc.ruta_radiografia.split('/').pop() || doc.ruta_radiografia;
+
+									return (
+										<tr key={doc.id} className="hover:bg-gray-50 transition">
+										<td>
+											{esImagen ? (
+											<a
+												href={url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="d-inline-block"
+											>
+												<img
+												src={url}
+												alt="Documento"
+												width={60}
+												height={60}
+												className="rounded border shadow-sm object-cover"
+												style={{ objectFit: 'cover' }}
+												/>
+											</a>
+											) : esPdf ? (
+											<div className="text-center">
+												<i className="fas fa-file-pdf fa-3x text-danger"></i>
+											</div>
+											) : (
+											<div className="text-center">
+												<i className="fas fa-file fa-3x text-primary"></i>
+											</div>
+											)}
+										</td>
+
+										<td>
+											<div className="fw-bold">{doc.comentarios || "Sin comentarios"}</div>
+											<small className="text-muted">{nombreArchivo}</small>
+										</td>
+										<td>
+											<span className={`badge ${esImagen ? 'bg-success' : esPdf ? 'bg-danger' : 'bg-info'}`}>
+												{tipo}
+											</span>
+										</td>
+										<td>{new Date(doc.updated_at).toLocaleDateString('es-ES', { 
+											year: 'numeric', 
+											month: 'short', 
+											day: 'numeric',
+											hour: '2-digit',
+											minute: '2-digit'
+										})}</td>
+										<td>
+											<div className="btn-group btn-group-sm" role="group">
+												<a
+													href={url}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="btn btn-outline-primary"
+													title="Ver documento"
+												>
+													<i className="fas fa-eye"></i>
+												</a>
+												<button
+													className="btn btn-outline-success"
+													onClick={() => this.descargarDocumento(url, nombreArchivo)}
+													title="Descargar"
+												>
+													<i className="fas fa-download"></i>
+												</button>
+												<button
+													className="btn btn-outline-danger"
+													onClick={() => {
+														alertify.confirm(
+														"Confirmar eliminación",
+														`¿Deseas eliminar el documento "${doc.comentarios || "sin nombre"}"?`,
+														() => {
+															this.eliminarDocumento(doc.id);
+															alertify.success("Documento eliminado");
+														},
+														() => {
+															alertify.message("Cancelado");
+														}
+														);
+													}}
+													title="Eliminar"
+												>
+													<i className="fas fa-trash"></i>
+												</button>
+											</div>
+										</td>
+										</tr>
+									);
+									})}
+								</tbody>
+								</table>
 							</div>
 						) : (
-							<table className="table table-hover align-middle">
-							<thead className="bg-gray-200">
-								<tr>
-								<th style={{ width: "60px" }}>Vista</th>
-								<th>Comentarios</th>
-								<th>Tipo</th>
-								<th>Fecha</th>
-								<th style={{ width: "100px" }}>Acción</th>
-								</tr>
-							</thead>
-							<tbody>
+							<div className="row g-3">
 								{this.state.documentos.map((doc) => {
 								const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
-								const esImagen = /\.(jpg|jpeg|png|gif|bmp)$/i.test(
+								const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(
 									doc.ruta_radiografia
 								);
 								const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
 								const tipo = esImagen ? "Imagen" : esPdf ? "PDF" : "Archivo";
+								const nombreArchivo = doc.ruta_radiografia.split('/').pop() || doc.ruta_radiografia;
 
 								return (
-									<tr key={doc.id} className="hover:bg-gray-100 transition">
-									<td>
-										{esImagen ? (
-										<a
-											href={url}
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											<img
-											src={url}
-											alt="Documento"
-											width={50}
-											height={50}
-											className="rounded-lg border shadow-sm"
-											/>
-										</a>
-										) : esPdf ? (
-										<a
-											href={url}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-red-600 text-lg"
-										>
-											📄
-										</a>
-										) : (
-										<span className="text-blue-600 text-lg">📁</span>
-										)}
-									</td>
-
-									<td>{doc.comentarios || "Sin comentarios"}</td>
-									<td>{tipo}</td>
-									<td>{new Date(doc.updated_at).toLocaleDateString()}</td>
-									<td>
-										<button
-										className="btn btn-danger btn-sm"
-										onClick={() => {
-											alertify.confirm(
-											"Confirmar eliminación",
-											`¿Deseas eliminar el documento "${doc.comentarios || "sin nombre"}"?`,
-											() => {
-												this.eliminarDocumento(doc.id);
-												alertify.success("Documento eliminado");
-											},
-											() => {
-												alertify.message("Cancelado");
-											}
-											);
-										}}
-										>
-										Eliminar
-										</button>
-									</td>
-									</tr>
+									<div key={doc.id} className="col-md-4 col-sm-6">
+									<div className="card h-100 shadow-sm border-0">
+										<div className="card-body p-2">
+											{esImagen ? (
+											<a
+												href={url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="d-block"
+											>
+												<img
+												src={url}
+												alt="Documento"
+												className="card-img-top rounded"
+												style={{ height: '150px', objectFit: 'cover', width: '100%' }}
+												/>
+											</a>
+											) : (
+											<div className="text-center py-4 bg-light rounded">
+												{esPdf ? (
+													<i className="fas fa-file-pdf fa-4x text-danger"></i>
+												) : (
+													<i className="fas fa-file fa-4x text-primary"></i>
+												)}
+											</div>
+											)}
+											<div className="card-body p-2">
+												<h6 className="card-title text-truncate mb-1" title={doc.comentarios || "Sin comentarios"}>
+													{doc.comentarios || "Sin comentarios"}
+												</h6>
+												<small className="text-muted d-block text-truncate mb-2">{nombreArchivo}</small>
+												<div className="d-flex justify-content-between align-items-center">
+													<span className={`badge ${esImagen ? 'bg-success' : esPdf ? 'bg-danger' : 'bg-info'}`}>
+														{tipo}
+													</span>
+													<small className="text-muted">
+														{new Date(doc.updated_at).toLocaleDateString('es-ES', { 
+															month: 'short', 
+															day: 'numeric'
+														})}
+													</small>
+												</div>
+											</div>
+										</div>
+										<div className="card-footer bg-white border-top p-2">
+											<div className="btn-group w-100" role="group">
+												<a
+													href={url}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="btn btn-sm btn-outline-primary"
+													title="Ver"
+												>
+													<i className="fas fa-eye"></i>
+												</a>
+												<button
+													className="btn btn-sm btn-outline-success"
+													onClick={() => this.descargarDocumento(url, nombreArchivo)}
+													title="Descargar"
+												>
+													<i className="fas fa-download"></i>
+												</button>
+												<button
+													className="btn btn-sm btn-outline-danger"
+													onClick={() => {
+														alertify.confirm(
+														"Confirmar eliminación",
+														`¿Deseas eliminar el documento "${doc.comentarios || "sin nombre"}"?`,
+														() => {
+															this.eliminarDocumento(doc.id);
+															alertify.success("Documento eliminado");
+														},
+														() => {
+															alertify.message("Cancelado");
+														}
+														);
+													}}
+													title="Eliminar"
+												>
+													<i className="fas fa-trash"></i>
+												</button>
+											</div>
+										</div>
+									</div>
+									</div>
 								);
 								})}
-							</tbody>
-							</table>
+							</div>
 						)}
 
 						{/* Subir nuevo documento */}
 						<hr className="my-4" />
-						<h6 className="text-lg font-semibold mb-3">📤 Agregar nuevo documento</h6>
+						<h6 className="text-lg font-semibold mb-3">
+							<i className="fas fa-cloud-upload-alt me-2"></i>
+							Agregar nuevo documento
+						</h6>
 
-						<div className="bg-white p-4 rounded-2xl shadow-sm mac-card">
-							<input
-							type="file"
-							className="form-control mb-3"
-							onChange={(e) => this.setState({ nuevoArchivo: e.target.files[0] })}
-							/>
+						<div className="bg-white p-4 rounded-2xl shadow-sm">
+							{/* Área de drag & drop */}
+							<div
+								className={`border-2 border-dashed rounded-lg p-5 text-center mb-3 transition-all ${
+									this.state.dragActive 
+										? 'border-primary bg-primary bg-opacity-10' 
+										: 'border-gray-300 hover:border-primary hover:bg-gray-50'
+								}`}
+								onDragOver={this.handleDragOver}
+								onDragLeave={this.handleDragLeave}
+								onDrop={this.handleDrop}
+								style={{ cursor: 'pointer', minHeight: '150px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+								onClick={() => document.getElementById('fileInput')?.click()}
+							>
+								{this.state.previewArchivo ? (
+									<div className="w-100">
+										<img 
+											src={this.state.previewArchivo} 
+											alt="Preview" 
+											className="img-thumbnail mb-3"
+											style={{ maxHeight: '200px', maxWidth: '100%' }}
+										/>
+										<p className="text-muted mb-0">
+											<i className="fas fa-check-circle text-success me-2"></i>
+											{this.state.nuevoArchivo?.name}
+										</p>
+										<small className="text-muted">
+											{(this.state.nuevoArchivo?.size / 1024 / 1024).toFixed(2)} MB
+										</small>
+									</div>
+								) : this.state.nuevoArchivo ? (
+									<div>
+										<i className={`fas fa-file fa-4x mb-3 ${
+											this.state.nuevoArchivo.type.startsWith('image/') ? 'text-success' :
+											this.state.nuevoArchivo.type === 'application/pdf' ? 'text-danger' :
+											'text-primary'
+										}`}></i>
+										<p className="mb-1 fw-bold">{this.state.nuevoArchivo.name}</p>
+										<small className="text-muted">
+											{(this.state.nuevoArchivo.size / 1024 / 1024).toFixed(2)} MB
+										</small>
+									</div>
+								) : (
+									<div>
+										<i className="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+										<p className="mb-2 fw-bold">Arrastra y suelta archivos aquí</p>
+										<p className="text-muted mb-0">o haz clic para seleccionar</p>
+										<small className="text-muted d-block mt-2">
+											Formatos: JPG, PNG, PDF, DOC, DOCX (Máx. 10MB)
+										</small>
+									</div>
+								)}
+								<input
+									type="file"
+									id="fileInput"
+									className="d-none"
+									accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.stl,.obj,.fbx,.glb,.gltf"
+									onChange={this.handleFileSelect}
+								/>
+							</div>
+
+							{/* Botón para seleccionar archivo si no hay preview */}
+							{!this.state.nuevoArchivo && (
+								<button
+									type="button"
+									className="btn btn-outline-primary w-100 mb-3"
+									onClick={() => document.getElementById('fileInput')?.click()}
+								>
+									<i className="fas fa-folder-open me-2"></i>
+									Seleccionar archivo
+								</button>
+							)}
+
+							{/* Botón para cambiar archivo si ya hay uno seleccionado */}
+							{this.state.nuevoArchivo && (
+								<button
+									type="button"
+									className="btn btn-outline-secondary w-100 mb-3"
+									onClick={() => {
+										this.setState({ nuevoArchivo: null, previewArchivo: null });
+										const fileInput = document.getElementById('fileInput');
+										if (fileInput) fileInput.value = '';
+									}}
+								>
+									<i className="fas fa-times me-2"></i>
+									Cambiar archivo
+								</button>
+							)}
+
+							{/* Comentarios */}
 							<textarea
-							className="form-control mb-3"
-							placeholder="Comentarios del documento"
-							rows="3"
-							value={this.state.nuevoComentario}
-							onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
+								className="form-control mb-3"
+								placeholder="Agregar comentarios o descripción del documento (opcional)"
+								rows="3"
+								value={this.state.nuevoComentario}
+								onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
 							/>
-							<button className="mac-btn" onClick={this.subirDocumento}>
-							Subir Documento
+
+							{/* Botón de subir */}
+							<button 
+								className="btn btn-primary w-100" 
+								onClick={this.subirDocumento}
+								disabled={!this.state.nuevoArchivo || this.state.subiendoArchivo}
+							>
+								{this.state.subiendoArchivo ? (
+									<>
+										<span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+										Subiendo...
+									</>
+								) : (
+									<>
+										<i className="fas fa-upload me-2"></i>
+										Subir Documento
+									</>
+								)}
 							</button>
+
+							{/* Información adicional */}
+							<div className="mt-3 text-center">
+								<small className="text-muted">
+									<i className="fas fa-info-circle me-1"></i>
+									Los archivos se guardan de forma segura y pueden ser descargados en cualquier momento
+								</small>
+							</div>
 						</div>
 						</div>
 
@@ -1182,6 +1584,39 @@ class PerfilPaciente extends React.Component{
 					</div>
 					</div>
 				</div>
+				)}
+
+				{/* Modal de Recetas */}
+				{this.state.modal_recetas_visible && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+						<div className="modal-dialog modal-xl modal-dialog-centered" style={{ maxWidth: '95%' }}>
+							<div className="modal-content">
+								<div className="modal-header">
+									<h5 className="modal-title">
+										<i className="fas fa-prescription"></i> Recetas Médicas
+									</h5>
+									<button 
+										className="btn-close" 
+										onClick={() => this.setState({ modal_recetas_visible: false })}
+									></button>
+								</div>
+								<div className="modal-body" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+									<Recetas 
+										idPaciente={this.props.match.params.id}
+										idDoctor={this.props.match.params.id_doc}
+									/>
+								</div>
+								<div className="modal-footer">
+									<button 
+										className="btn btn-secondary" 
+										onClick={() => this.setState({ modal_recetas_visible: false })}
+									>
+										Cerrar
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
 				)}
 
 			</div>
