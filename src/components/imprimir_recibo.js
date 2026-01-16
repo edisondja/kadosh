@@ -249,18 +249,28 @@ generarPDFyEnviarWhatsApp = async () => {
           </div>
 
           <hr />
-          <p style={{ textAlign: 'center' }}><strong>COMPROBANTE AUTORIZADO POR LA DGII</strong></p>
+          <p style={{ textAlign: 'center' }}>
+            <strong>
+              {Core.Config?.tipo_numero_factura === 'factura' 
+                ? 'FACTURA AUTORIZADA POR LA DGII' 
+                : 'COMPROBANTE AUTORIZADO POR LA DGII'}
+            </strong>
+          </p>
           <hr />
 
           <p><strong>Fecha de pago:</strong> {recibo.fecha_pago}</p>
           <p>
-            <strong>
-              {Core.Config?.tipo_numero_factura === 'factura' ? 'NO' : 'Número de Comprobante'}:
-            </strong> {recibo.codigo_recibo}
+            {Core.Config?.tipo_numero_factura === 'factura' ? (
+              <strong>{recibo.codigo_recibo}</strong>
+            ) : (
+              <>
+                <strong>Número de Comprobante:</strong> {recibo.codigo_recibo}
+              </>
+            )}
           </p>
 
           <hr />
-          <p><strong>FACTURA PARA CONSUMIDOR</strong></p>
+          <p style={{ textAlign: 'center' }}><strong>FACTURA PARA CONSUMIDOR</strong></p>
           <hr />
 
           <p><strong>Lista de procedimientos:</strong></p>

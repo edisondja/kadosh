@@ -537,11 +537,177 @@ function enviar_receta_email(id, email) {
         });
 }
 
+// Funciones para Especialidades
+function listar_especialidades() {
+    return Axios.get(`${url_base}/api/listar_especialidades`)
+        .then(response => response.data)
+        .catch(error => {
+            Alertify.error("Error al cargar especialidades");
+            throw error;
+        });
+}
+
+function listar_todas_especialidades() {
+    return Axios.get(`${url_base}/api/listar_todas_especialidades`)
+        .then(response => response.data)
+        .catch(error => {
+            Alertify.error("Error al cargar especialidades");
+            throw error;
+        });
+}
+
+function obtener_especialidad(id) {
+    return Axios.get(`${url_base}/api/obtener_especialidad/${id}`)
+        .then(response => response.data)
+        .catch(error => {
+            Alertify.error("Error al obtener especialidad");
+            throw error;
+        });
+}
+
+function crear_especialidad(datos) {
+    return Axios.post(`${url_base}/api/crear_especialidad`, datos)
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al crear especialidad');
+            }
+        })
+        .catch(error => {
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error || 
+                                error.message || 
+                                'Error al crear especialidad';
+            
+            if (error.response?.data?.errors) {
+                const validationErrors = Object.values(error.response.data.errors).flat();
+                Alertify.error(validationErrors.join(', '));
+            } else {
+                Alertify.error(errorMessage);
+            }
+            throw error;
+        });
+}
+
+function actualizar_especialidad(id, datos) {
+    return Axios.put(`${url_base}/api/actualizar_especialidad/${id}`, datos)
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al actualizar especialidad');
+            }
+        })
+        .catch(error => {
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error || 
+                                error.message || 
+                                'Error al actualizar especialidad';
+            
+            if (error.response?.data?.errors) {
+                const validationErrors = Object.values(error.response.data.errors).flat();
+                Alertify.error(validationErrors.join(', '));
+            } else {
+                Alertify.error(errorMessage);
+            }
+            throw error;
+        });
+}
+
+function eliminar_especialidad(id) {
+    return Axios.delete(`${url_base}/api/eliminar_especialidad/${id}`)
+        .then(response => response.data)
+        .catch(error => {
+            Alertify.error("Error al eliminar especialidad");
+            throw error;
+        });
+}
+
+function activar_especialidad(id) {
+    return Axios.post(`${url_base}/api/activar_especialidad/${id}`)
+        .then(response => response.data)
+        .catch(error => {
+            Alertify.error("Error al activar especialidad");
+            throw error;
+        });
+}
+
 function eliminar_odontograma(id) {
     return Axios.get(`${url_base}/api/eliminar_odontograma/${id}`)
         .then(response => response.data)
         .catch(error => {
             Alertify.error("No se pudo eliminar el odontograma");
+            throw error;
+        });
+}
+
+// Funciones para Exportar/Importar Pacientes
+function exportar_pacientes() {
+    return Axios.get(`${url_base}/api/exportar_pacientes`)
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al exportar pacientes');
+            }
+        })
+        .catch(error => {
+            Alertify.error("Error al exportar pacientes");
+            throw error;
+        });
+}
+
+function importar_pacientes(datos) {
+    return Axios.post(`${url_base}/api/importar_pacientes`, { datos })
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al importar pacientes');
+            }
+        })
+        .catch(error => {
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error || 
+                                error.message || 
+                                'Error al importar pacientes';
+            Alertify.error(errorMessage);
+            throw error;
+        });
+}
+
+// Funciones para Exportar/Importar Usuarios
+function exportar_usuarios() {
+    return Axios.get(`${url_base}/api/exportar_usuarios`)
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al exportar usuarios');
+            }
+        })
+        .catch(error => {
+            Alertify.error("Error al exportar usuarios");
+            throw error;
+        });
+}
+
+function importar_usuarios(datos) {
+    return Axios.post(`${url_base}/api/importar_usuarios`, { datos })
+        .then(response => {
+            if (response.data.success) {
+                return response.data;
+            } else {
+                throw new Error(response.data.message || 'Error al importar usuarios');
+            }
+        })
+        .catch(error => {
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error || 
+                                error.message || 
+                                'Error al importar usuarios';
+            Alertify.error(errorMessage);
             throw error;
         });
 }
@@ -594,6 +760,17 @@ export default {eliminar_nota,
                 eliminar_receta,
                 imprimir_receta,
                 ver_receta_pdf,
-                enviar_receta_email
-        };
+                enviar_receta_email,
+                listar_especialidades,
+                listar_todas_especialidades,
+                obtener_especialidad,
+                crear_especialidad,
+                actualizar_especialidad,
+                eliminar_especialidad,
+                    activar_especialidad,
+                    exportar_pacientes,
+                    importar_pacientes,
+                    exportar_usuarios,
+                    importar_usuarios
+            };
 

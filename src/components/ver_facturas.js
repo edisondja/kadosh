@@ -35,23 +35,43 @@ class VerFacturas extends React.Component{
                     correspondientes`);
 
             }else{
-                Alertify.prompt("Eliminar Factura","Digite la contraseña admin para eliminar esta factura","",
-                    function(event,value){
-                            if(FuncionesExtras.password==value){
-                                
-                                Axios.get(`${FuncionesExtras.url_base}/api/eliminar_factura/${id_factura}`).then(data=>{
-                                        Alertify.success("Factura eliminada con exito");
-                                        document.getElementById(id_factura).remove();
-                                }).catch(error=>{
-                                        Alertify.error("No se pudo eliminar la factura");
-                                });
-                                Alertify.success("contraseña correcta");
-                            }
-                    },function(error){
+                // Obtener la clave secreta de la configuración
+                Axios.get(`${FuncionesExtras.url_base}/api/configs`).then(configResponse => {
+                    const config = configResponse.data && configResponse.data.length > 0 ? configResponse.data[0] : null;
+                    const claveSecreta = config ? config.clave_secreta : null;
+
+                    if (!claveSecreta) {
+                        Alertify.error("No se ha configurado una clave secreta. Por favor configúrela primero en Configuración.");
+                        return;
+                    }
+
+                    Alertify.prompt("Eliminar Factura","Digite la clave secreta para eliminar esta factura","",
+                        function(event,value){
+                                if(value === claveSecreta){
+                                    const usuarioId = localStorage.getItem("id_usuario");
+                                    Axios.delete(`${FuncionesExtras.url_base}/api/eliminar_factura/${id_factura}`, {
+                                        data: {
+                                            clave_secreta: value,
+                                            usuario_id: usuarioId
+                                        }
+                                    }).then(data=>{
+                                            Alertify.success("Factura eliminada con exito");
+                                            document.getElementById(id_factura).remove();
+                                    }).catch(error=>{
+                                            const errorMsg = error.response?.data?.message || "No se pudo eliminar la factura";
+                                            Alertify.error(errorMsg);
+                                    });
+                                    Alertify.success("Clave correcta");
+                                } else {
+                                    Alertify.error("Clave secreta incorrecta");
+                                }
+                        },function(error){
 
                     }).set('type','password');
-                }
-   
+                }).catch(error => {
+                    Alertify.error("Error al cargar la configuración");
+                });
+            }
         }).catch(error=>{
 
             Alertify.message(error);

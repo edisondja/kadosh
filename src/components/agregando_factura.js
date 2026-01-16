@@ -56,8 +56,15 @@ class  AgregarFactura extends React.Component{
     generar_factura=()=>{
             //accion a ajecutar cuando se haga click en generar factura
             var id_doctor = document.querySelector("#doctor_i").value;
+            const usuarioId = localStorage.getItem("id_usuario");
             if(this.state.boton_estado==false){  
-            Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{id_paciente:this.props.match.params.id,id_doctor:id_doctor,total:this.state.total,procedimientos:[this.state.lista_procedimiento]}).then((data)=>{
+            Axios.post(`${cargar_doctores.url_base}/api/crear_factura`,{
+                id_paciente:this.props.match.params.id,
+                id_doctor:id_doctor,
+                total:this.state.total,
+                procedimientos:[this.state.lista_procedimiento],
+                usuario_id: usuarioId
+            }).then((data)=>{
 
                     console.log(data.data);
                     this.setState({total:0,lista_procedimiento:[],factura:'ready'});

@@ -45,6 +45,8 @@ import HistorialPagos from './historial_pagos';
 import Nomina from './nomina';
 import PuntoVenta from './punto_venta';
 import SalariosDoctores from './salarios_doctores';
+import Especialidades from './especialidades';
+import ExportarImportar from './exportar_importar';
 
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
@@ -179,9 +181,11 @@ class MenuDashboard extends React.Component {
           <li><Link to="/contabilidad"><i className="fas fa-calculator img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.contabilidad}</Link></li>
           <li><Link to="/nomina"><i className="fas fa-money-check-alt img_estilo"></i>&nbsp;Nómina</Link></li>
           <li><Link to="/punto_venta"><i className="fas fa-cash-register img_estilo"></i>&nbsp;Punto de Venta</Link></li>
-          <li><Link to="/salarios_doctores"><i className="fas fa-user-md img_estilo"></i>&nbsp;Salarios Doctores</Link></li>
+          <li><Link to="/salarios_doctores"><i className="fas fa-hand-holding-usd img_estilo"></i>&nbsp;Salarios Doctores</Link></li>
+          <li><Link to="/especialidades"><i className="fas fa-user-md img_estilo"></i>&nbsp;Especialidades</Link></li>
           <li><Link to="/configuracion"><i className="fas fa-cog img_estilo"></i>&nbsp;Configuración</Link></li>
           <li><Link to="/historial_pagos"><i className="fas fa-credit-card img_estilo"></i>&nbsp;Historial de Pagos</Link></li>
+          <li><Link to="/exportar_importar"><i className="fas fa-exchange-alt img_estilo"></i>&nbsp;Exportar/Importar</Link></li>
           <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt img_estilo"></i>&nbsp;{FuncionesExtras.lenguaje.cerrar_sesion}</Link></li>
         </ul>
       );
@@ -252,6 +256,7 @@ class MenuDashboard extends React.Component {
               <Route path="/nomina" component={Nomina} />
               <Route path="/punto_venta" component={PuntoVenta} />
               <Route path="/salarios_doctores" component={SalariosDoctores} />
+              <Route path="/especialidades" component={Especialidades} />
               <Route path="/agregar_factura/:id/:id_doc" component={AgregarFactura} />
               <Route path="/ver_facturas/:id" component={VerFacturas} />
               <Route path="/ver_factura/:id/:id_factura" component={VerFactura} />
@@ -260,6 +265,7 @@ class MenuDashboard extends React.Component {
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/historial_pagos" component={HistorialPagos} />
+              <Route path="/exportar_importar" component={ExportarImportar} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />

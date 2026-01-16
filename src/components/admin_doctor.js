@@ -10,8 +10,24 @@ class DoctorFormulario extends React.Component{
 
 		constructor(props){
 				super(props);
-				this.state={estado:null,select_op:null}
+				this.state={
+					estado:null,
+					select_op:null,
+					especialidades: []
+				}
 
+		}
+
+		componentDidMount() {
+			this.cargarEspecialidades();
+		}
+
+		cargarEspecialidades = () => {
+			Core.listar_especialidades().then(data => {
+				this.setState({ especialidades: data });
+			}).catch(error => {
+				console.error("Error al cargar especialidades:", error);
+			});
 		}
 
 		opciones=()=>{
@@ -114,11 +130,16 @@ class DoctorFormulario extends React.Component{
 							<label>Especialidad</label>
 							<select className="mac-input" id="especialidad">
 							<option value="">Seleccionar especialidad...</option>
-							{Core.lenguaje && Core.lenguaje.especialidades && 
+							{this.state.especialidades && this.state.especialidades.length > 0 ? (
+								this.state.especialidades.map((esp) => (
+									<option key={esp.id} value={esp.nombre}>{esp.nombre}</option>
+								))
+							) : (
+								Core.lenguaje && Core.lenguaje.especialidades && 
 								Core.lenguaje.especialidades.map((esp, index) => (
 									<option key={index} value={esp}>{esp}</option>
 								))
-							}
+							)}
 							</select>
 						</div>
 

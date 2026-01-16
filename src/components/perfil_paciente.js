@@ -305,25 +305,45 @@ class PerfilPaciente extends React.Component{
 						this.consultar_deuda_paciente(id_paciente);
 					})
 	    }
-		eliminar_paciente(id_paciente){
+	eliminar_paciente(id_paciente){
+		// Obtener la clave secreta de la configuración
+		Axios.get(`${Verficar.url_base}/api/configs`).then(configResponse => {
+			const config = configResponse.data && configResponse.data.length > 0 ? configResponse.data[0] : null;
+			const claveSecreta = config ? config.clave_secreta : null;
 
-			Alertify.prompt("Eliminar paciente","Digite su clave admin para eliminar este paciente","",function(event,value){
-				if(Verficar.password==value){
-					Alertify.success("contraseña correcta!");
-					Axios.get(`${Verficar.url_base}/api/borrar_paciente/${id_paciente}`).then(data=>{
-							Alertify.success("Paciente eliminado con exito");
-							document.getElementById("agregar_paciente").click();
+			if (!claveSecreta) {
+				Alertify.error("No se ha configurado una clave secreta. Por favor configúrela primero en Configuración.");
+				return;
+			}
+
+			Alertify.prompt("Eliminar paciente","Digite la clave secreta para eliminar este paciente","",function(event,value){
+				if(value === claveSecreta){
+					Alertify.success("Clave correcta!");
+					const usuarioId = localStorage.getItem("id_usuario");
+					Axios.delete(`${Verficar.url_base}/api/borrar_paciente/${id_paciente}`, {
+						data: {
+							clave_secreta: value,
+							usuario_id: usuarioId
+						}
+					}).then(data=>{
+						Alertify.success("Paciente eliminado con exito");
+						document.getElementById("agregar_paciente").click();
 					}).catch(error=>{
-							Alertify.error("No se pudo eliminar el paciente");
+						const errorMsg = error.response?.data?.message || "No se pudo eliminar el paciente";
+						Alertify.error(errorMsg);
 					});
+				} else {
+					Alertify.error("Clave secreta incorrecta");
 				}
 			},function(error){
 
 			}).set("type","password");
+		}).catch(error => {
+			Alertify.error("Error al cargar la configuración");
+		});
+	}
 
-		}
-
-		detras=()=>{
+	detras=()=>{
 
 			this.setState({select:'ver_pacientes'});
 			
@@ -513,10 +533,7 @@ class PerfilPaciente extends React.Component{
 					});
 			};
 
-
-		
-
-		eliminar_cita(id){
+		eliminar_cita = (id) => {
 			
 			Alertify.confirm("Eliminar esta cita","Segur@ que deseas eliminar esta cita?",function(){
 
@@ -532,7 +549,7 @@ class PerfilPaciente extends React.Component{
 					Alertify.message("BYE");
 			});
 		
-		}
+		};
 
 		ver_facturas=()=>{
 

@@ -25,6 +25,42 @@ class FacturaInterfaz extends React.Component {
         
     }
 
+    // Función para reproducir sonido de caja registradora
+    reproducirSonidoCajaRegistradora = () => {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Crear una secuencia de sonidos que simula una caja registradora
+            const beeps = [
+                { frequency: 800, duration: 0.1, delay: 0 },
+                { frequency: 1000, duration: 0.1, delay: 0.15 },
+                { frequency: 1200, duration: 0.15, delay: 0.3 }
+            ];
+
+            beeps.forEach(beep => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = beep.frequency;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + beep.duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + beep.duration);
+                }, beep.delay * 1000);
+            });
+        } catch (error) {
+            // Si falla el audio, no hacer nada (silencioso)
+            console.log('Audio no disponible');
+        }
+    };
+
     componentDidMount(){
 
 
@@ -222,17 +258,33 @@ class FacturaInterfaz extends React.Component {
     }
 
 eliminar_recibo(id_recibo, id_factura, monto) {
-    Alertify.prompt(
-        "Eliminar Factura",
-        "Digite la contraseña admin para eliminar esta factura",
-        "",
-        (event, value) => {
-            if (Url_base.password == value) {
-                Alertify.confirm(
-                    "Eliminar Recibo",
-                    "¿Estás seguro que quieres eliminar este recibo?",
-                    () => {
-                        Axios.get(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`)
+    // Obtener la clave secreta de la configuración
+    Axios.get(`${Url_base.url_base}/api/configs`).then(configResponse => {
+        const config = configResponse.data && configResponse.data.length > 0 ? configResponse.data[0] : null;
+        const claveSecreta = config ? config.clave_secreta : null;
+
+        if (!claveSecreta) {
+            Alertify.error("No se ha configurado una clave secreta. Por favor configúrela primero en Configuración.");
+            return;
+        }
+
+        Alertify.prompt(
+            "Eliminar Recibo",
+            "Digite la clave secreta para eliminar este recibo",
+            "",
+            (event, value) => {
+                if (value === claveSecreta) {
+                    Alertify.confirm(
+                        "Eliminar Recibo",
+                        "¿Estás seguro que quieres eliminar este recibo?",
+                        () => {
+                            const usuarioId = localStorage.getItem("id_usuario");
+                            Axios.delete(`${Url_base.url_base}/api/eliminar_recibo/${id_recibo}/${id_factura}`, {
+                                data: {
+                                    clave_secreta: value,
+                                    usuario_id: usuarioId
+                                }
+                            })
                             .then(data => {
                                 Alertify.success("Recibo eliminado correctamente.");
 
@@ -259,12 +311,17 @@ eliminar_recibo(id_recibo, id_factura, monto) {
                         Alertify.message("Operación cancelada.");
                     }
                 );
-            }
+                } else {
+                    Alertify.error("Clave secreta incorrecta");
+                }
         },
         function (error) {
-            Alertify.error("Cancelado o error al ingresar la contraseña.");
+            Alertify.error("Cancelado o error al ingresar la clave secreta.");
         }
     ).set('type', 'password');
+    }).catch(error => {
+        Alertify.error("Error al cargar la configuración");
+    });
 }
 
 
@@ -290,6 +347,7 @@ procesar_pago = (id_factura, precio_estatus) => {
     const procedimientos = this.state.procedimientos;
 
 
+    const usuarioId = localStorage.getItem("id_usuario");
     Axios.post(`${Url_base.url_base}/api/pagar_recibo`, {
                 id_factura,
                 monto,
@@ -297,9 +355,12 @@ procesar_pago = (id_factura, precio_estatus) => {
                 estado_actual: precio_estatus,
                 concepto_pago:concepto_pago,
                 total: this.state.monto_total,
-                procedimientos
+                procedimientos,
+                usuario_id: usuarioId
             })
             .then(data => {
+                // Reproducir sonido de caja registradora
+                this.reproducirSonidoCajaRegistradora();
                 Alertify.success("Pago realizado con éxito");
                 this.setState({
                     mensaje: "Payment success",

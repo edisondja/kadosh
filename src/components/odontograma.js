@@ -48,6 +48,7 @@ const OdontogramaCompletoHibrido = () => {
   // === Lógica del CANVAS PRINCIPAL ===
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
+  const presupuestoScrollRef = useRef(null);
 
   useEffect(() => {
 
@@ -208,6 +209,34 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, [id_paciente]);
 
+  const cargarDatosDoctor = useCallback((doctorId) => {
+    Axios.get(`${Core.url_base}/api/cargar_doctor/${doctorId}`)
+      .then(response => {
+        setDoctor(response.data || { nombre: '', apellido: '' });
+        setDoctorIdValido(doctorId);
+      })
+      .catch(error => {
+        console.error("Error al cargar doctor:", error);
+      });
+  }, []);
+
+  const cargarPrimerDoctor = useCallback(() => {
+    Axios.get(`${Core.url_base}/api/doctores`)
+      .then(response => {
+        if (response.data && response.data.length > 0) {
+          const primerDoctorId = response.data[0].id;
+          setDoctorIdValido(primerDoctorId);
+          cargarDatosDoctor(primerDoctorId);
+        } else {
+          Alertify.error("No hay doctores disponibles. Por favor, agregue un doctor primero.");
+        }
+      })
+      .catch(error => {
+        console.error("Error al cargar lista de doctores:", error);
+        Alertify.error("Error al cargar los doctores disponibles.");
+      });
+  }, [cargarDatosDoctor]);
+
   const cargarDoctor = useCallback(() => {
     const doctorId = parseInt(id_doctor);
     
@@ -234,42 +263,35 @@ const OdontogramaCompletoHibrido = () => {
       setDoctorIdValido(doctorId);
       cargarDatosDoctor(doctorId);
     }
-  }, [id_doctor, id_paciente]);
-
-  const cargarDatosDoctor = useCallback((doctorId) => {
-    Axios.get(`${Core.url_base}/api/cargar_doctor/${doctorId}`)
-      .then(response => {
-        setDoctor(response.data || { nombre: '', apellido: '' });
-      })
-      .catch(error => {
-        console.error("Error al cargar doctor:", error);
-        // Si falla, intentar obtener otro doctor
-        cargarPrimerDoctor();
-      });
-  }, []);
-
-  const cargarPrimerDoctor = useCallback(() => {
-    Axios.get(`${Core.url_base}/api/doctores`)
-      .then(response => {
-        if (response.data && response.data.length > 0) {
-          const primerDoctorId = response.data[0].id;
-          setDoctorIdValido(primerDoctorId);
-          cargarDatosDoctor(primerDoctorId);
-        } else {
-          Alertify.error("No hay doctores disponibles. Por favor, agregue un doctor primero.");
-        }
-      })
-      .catch(error => {
-        console.error("Error al cargar lista de doctores:", error);
-        Alertify.error("Error al cargar los doctores disponibles.");
-      });
-  }, [cargarDatosDoctor]);
+  }, [id_doctor, id_paciente, cargarDatosDoctor, cargarPrimerDoctor]);
 
   useEffect(() => {
     cargarOpcionesTratamiento();
     cargarPaciente();
     cargarDoctor();
   }, [cargarOpcionesTratamiento, cargarPaciente, cargarDoctor]);
+
+  // Preservar la posición del scroll cuando cambia el tipo de odontograma
+  const scrollPositionRef = useRef(0);
+  
+  useEffect(() => {
+    // Guardar la posición actual del scroll antes del cambio
+    if (presupuestoScrollRef.current) {
+      scrollPositionRef.current = presupuestoScrollRef.current.scrollTop;
+    }
+  }, [tipoOdontograma]);
+
+  // Restaurar la posición del scroll después del render
+  useEffect(() => {
+    if (presupuestoScrollRef.current && scrollPositionRef.current > 0) {
+      // Usar requestAnimationFrame para asegurar que el DOM esté actualizado
+      requestAnimationFrame(() => {
+        if (presupuestoScrollRef.current) {
+          presupuestoScrollRef.current.scrollTop = scrollPositionRef.current;
+        }
+      });
+    }
+  }, [tipoOdontograma, presupuesto]);
 
   const endDrawing = useCallback(() => {
     isDrawing.current = false;
@@ -284,7 +306,38 @@ const OdontogramaCompletoHibrido = () => {
   }, []);
 
   // === Lógica del ODONTOGRAMA CARA A CARA ===
-  const handleCaraClick = (diente, cara) => {
+  // Función para reproducir sonido de click
+  const reproducirSonidoClick = () => {
+    try {
+      // Crear un contexto de audio para generar un beep
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800; // Frecuencia del beep
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      // Si falla el audio, no hacer nada (silencioso)
+      console.log('Audio no disponible');
+    }
+  };
+
+  const handleCaraClick = (diente, cara, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    // Reproducir sonido de click
+    reproducirSonidoClick();
     setSeleccionCara({ diente, cara });
   };
 
@@ -313,15 +366,68 @@ const OdontogramaCompletoHibrido = () => {
       return found ? found.color : "white";
     };
 
+    const isSelected = (c) => {
+      return seleccionCara && seleccionCara.diente === num && seleccionCara.cara === c;
+    };
+
+    const getStrokeColor = (c) => {
+      if (isSelected(c)) {
+        return "#FF0000"; // Rojo para la selección
+      }
+      return "#666";
+    };
+
+    const getStrokeWidth = (c) => {
+      return isSelected(c) ? 3 : 1;
+    };
+
     return (
       <div className="text-center" style={{ width: "42px", display: "inline-block" }}>
         <div className="small font-weight-bold text-muted mb-1">{num}</div>
         <svg viewBox="0 0 100 100" width="36" height="36" style={{ cursor: "pointer" }}>
-          <polygon points="0,0 100,0 75,25 25,25" fill={getColor("V")} stroke="#666" onClick={() => handleCaraClick(num, "V")} />
-          <polygon points="25,75 75,75 100,100 0,100" fill={getColor("L")} stroke="#666" onClick={() => handleCaraClick(num, "L")} />
-          <polygon points="0,0 25,25 25,75 0,100" fill={getColor("M")} stroke="#666" onClick={() => handleCaraClick(num, "M")} />
-          <polygon points="100,0 100,100 75,75 75,25" fill={getColor("D")} stroke="#666" onClick={() => handleCaraClick(num, "D")} />
-          <rect x="25" y="25" width="50" height="50" fill={getColor("O")} stroke="#666" onClick={() => handleCaraClick(num, "O")} />
+          <polygon 
+            points="0,0 100,0 75,25 25,25" 
+            fill={getColor("V")} 
+            stroke={getStrokeColor("V")} 
+            strokeWidth={getStrokeWidth("V")}
+            onClick={(e) => handleCaraClick(num, "V", e)}
+            style={{ transition: 'all 0.2s ease' }}
+          />
+          <polygon 
+            points="25,75 75,75 100,100 0,100" 
+            fill={getColor("L")} 
+            stroke={getStrokeColor("L")} 
+            strokeWidth={getStrokeWidth("L")}
+            onClick={(e) => handleCaraClick(num, "L", e)}
+            style={{ transition: 'all 0.2s ease' }}
+          />
+          <polygon 
+            points="0,0 25,25 25,75 0,100" 
+            fill={getColor("M")} 
+            stroke={getStrokeColor("M")} 
+            strokeWidth={getStrokeWidth("M")}
+            onClick={(e) => handleCaraClick(num, "M", e)}
+            style={{ transition: 'all 0.2s ease' }}
+          />
+          <polygon 
+            points="100,0 100,100 75,75 75,25" 
+            fill={getColor("D")} 
+            stroke={getStrokeColor("D")} 
+            strokeWidth={getStrokeWidth("D")}
+            onClick={(e) => handleCaraClick(num, "D", e)}
+            style={{ transition: 'all 0.2s ease' }}
+          />
+          <rect 
+            x="25" 
+            y="25" 
+            width="50" 
+            height="50" 
+            fill={getColor("O")} 
+            stroke={getStrokeColor("O")} 
+            strokeWidth={getStrokeWidth("O")}
+            onClick={(e) => handleCaraClick(num, "O", e)}
+            style={{ transition: 'all 0.2s ease' }}
+          />
         </svg>
       </div>
     );
@@ -351,30 +457,129 @@ const OdontogramaCompletoHibrido = () => {
 
       <br /><br />
 
-      <h4 className="font-weight-bold text-dark mb-4 border-bottom pb-2">Creación de Odontograma</h4>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="font-weight-bold text-dark mb-0 border-bottom pb-2" style={{ flex: 1 }}>Creación de Odontograma</h4>
+        <Link 
+          to={`/ver_odontogramas/${id_paciente}`}
+          className="btn btn-secondary ml-3"
+          style={{
+            borderRadius: '8px',
+            padding: '10px 20px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <i className="fas fa-arrow-left me-2"></i>Volver
+        </Link>
+      </div>
 
       <div className="row">
         {/* COLUMNA PRINCIPAL (ODONTOGRAMAS) */}
-        <div className="col-lg-8">
+        <div className="col-lg-8" style={{ paddingLeft: '15px', paddingRight: '15px' }}>
           {/* SELECTOR DE TIPO DE ODONTOGRAMA */}
-          <div className="card shadow-sm p-3 bg-light mb-4">
-            <div className="d-flex justify-content-between align-items-center">
-              <h6 className="font-weight-bold text-secondary mb-0">Tipo de Odontograma:</h6>
-              <div className="btn-group" role="group">
-                <button 
-                  type="button" 
-                  className={`btn ${tipoOdontograma === "adulto" ? "btn-primary" : "btn-outline-primary"}`}
-                  onClick={() => setTipoOdontograma("adulto")}
-                >
-                  <i className="fas fa-user"></i> Adulto
-                </button>
-                <button 
-                  type="button" 
-                  className={`btn ${tipoOdontograma === "nino" ? "btn-warning" : "btn-outline-warning"}`}
-                  onClick={() => setTipoOdontograma("nino")}
-                >
-                  <i className="fas fa-child"></i> Niño (Dientes de Leche)
-                </button>
+            <div className="card shadow-lg border-0 mb-4" style={{ 
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                overflow: 'hidden'
+              }}>
+            <div className="card-body p-4">
+              <div className="d-flex justify-content-between align-items-center flex-wrap">
+                <div className="mb-3 mb-md-0">
+                  <h6 className="font-weight-bold mb-1" style={{ 
+                    color: '#2c3e50',
+                    fontSize: '16px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    <i className="fas fa-teeth me-2" style={{ color: '#667eea' }}></i>
+                    Tipo de Odontograma
+                  </h6>
+                  <p className="text-muted mb-0" style={{ fontSize: '13px' }}>
+                    Seleccione el tipo de dentición
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setTipoOdontograma("adulto")}
+                    style={{
+                      background: tipoOdontograma === "adulto" 
+                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                        : 'white',
+                      color: tipoOdontograma === "adulto" ? 'white' : '#667eea',
+                      border: tipoOdontograma === "adulto" ? 'none' : '2px solid #667eea',
+                      borderRadius: '12px',
+                      padding: '14px 28px',
+                      fontWeight: '600',
+                      fontSize: '15px',
+                      boxShadow: tipoOdontograma === "adulto" 
+                        ? '0 4px 15px rgba(102, 126, 234, 0.4)' 
+                        : '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      minWidth: '160px',
+                      justifyContent: 'center'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (tipoOdontograma !== "adulto") {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (tipoOdontograma !== "adulto") {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                      }
+                    }}
+                  >
+                    <i className="fas fa-user" style={{ fontSize: '18px' }}></i>
+                    <span>Adulto</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setTipoOdontograma("nino")}
+                    style={{
+                      background: tipoOdontograma === "nino" 
+                        ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' 
+                        : 'white',
+                      color: tipoOdontograma === "nino" ? 'white' : '#f5576c',
+                      border: tipoOdontograma === "nino" ? 'none' : '2px solid #f5576c',
+                      borderRadius: '12px',
+                      padding: '14px 28px',
+                      fontWeight: '600',
+                      fontSize: '15px',
+                      boxShadow: tipoOdontograma === "nino" 
+                        ? '0 4px 15px rgba(245, 87, 108, 0.4)' 
+                        : '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      minWidth: '200px',
+                      justifyContent: 'center'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (tipoOdontograma !== "nino") {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(245, 87, 108, 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (tipoOdontograma !== "nino") {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                      }
+                    }}
+                  >
+                    <i className="fas fa-child" style={{ fontSize: '18px' }}></i>
+                    <span>Niño (Dientes de Leche)</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -398,23 +603,23 @@ const OdontogramaCompletoHibrido = () => {
 
           {/* PANEL DE SELECCIÓN PARA CARA A CARA */}
           {seleccionCara && (
-            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-4">
-              <div className="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
-                <span className="font-weight-bold">
-                   Tratamiento para: Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
+            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-3" style={{ maxHeight: '200px', overflowY: 'auto', maxWidth: '400px', margin: '0 auto' }}>
+              <div className="card-header bg-primary text-white py-1 px-2 d-flex justify-content-between align-items-center" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                <span className="font-weight-bold" style={{ fontSize: '13px' }}>
+                   Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
                 </span>
-                <button className="btn btn-sm btn-light font-weight-bold" onClick={() => setSeleccionCara(null)}>X</button>
+                <button className="btn btn-sm btn-light font-weight-bold p-1" style={{ minWidth: '25px', height: '25px', lineHeight: '1' }} onClick={() => setSeleccionCara(null)}>×</button>
               </div>
-              <div className="card-body p-2">
+              <div className="card-body p-2" style={{ padding: '8px' }}>
                 <div className="row no-gutters">
                   {opciones_tratamiento.map(o => (
-                    <div key={o.id} className="col-md-4 p-1">
+                    <div key={o.id} className="col-md-6 p-1">
                       <button 
                         className="btn btn-outline-dark btn-block text-left d-flex justify-content-between align-items-center"
-                        style={{ fontSize: '12px' }}
+                        style={{ fontSize: '12px', padding: '4px 8px' }}
                         onClick={() => agregarProcedimiento(o)}>
-                        <span>{o.nombre}</span>
-                        <span className="badge badge-primary font-weight-bold">${o.precio}</span>
+                        <span style={{ fontSize: '11px' }}>{o.nombre}</span>
+                        <span className="badge badge-primary font-weight-bold" style={{ fontSize: '10px' }}>${o.precio}</span>
                       </button>
                     </div>
                   ))}
@@ -462,7 +667,11 @@ const OdontogramaCompletoHibrido = () => {
             <div className="card-header bg-dark text-black font-weight-bold py-2">
               Resumen del Plan
             </div>
-            <div className="card-body p-0" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+            <div 
+              ref={presupuestoScrollRef}
+              className="card-body p-0" 
+              style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}
+            >
               <table className="table table-sm table-hover mb-0">
                 <thead className="thead-light small">
                   <tr>

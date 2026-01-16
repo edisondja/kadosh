@@ -84,6 +84,7 @@ const Auditoria = () => {
             'Odontogramas': 'primary',
             'Pacientes': 'success',
             'Facturas': 'info',
+            'Recibos': 'info',
             'Citas': 'warning',
             'Usuarios': 'danger',
             'Configuración': 'secondary'
@@ -119,22 +120,22 @@ const Auditoria = () => {
                     <div className="card-header bg-info text-white">
                         <h5 className="mb-0"><i className="fas fa-chart-bar"></i> Estadísticas por Módulo</h5>
                     </div>
-                    <div className="card-body">
+                    <div className="card-body" style={{padding: '20px'}}>
                         <div className="row">
                             {estadisticas.map((stat, index) => (
                                 <div className="col-md-3 mb-3" key={index}>
-                                    <div className="card border-left-primary shadow h-100 py-2">
-                                        <div className="card-body">
+                                    <div className="card border-left-primary shadow h-100 py-2" style={{padding: '15px'}}>
+                                        <div className="card-body" style={{padding: '15px'}}>
                                             <div className="row no-gutters align-items-center">
                                                 <div className="col mr-2">
-                                                    <div className="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    <div className="text-xs font-weight-bold text-primary text-uppercase mb-1" style={{paddingBottom: '5px'}}>
                                                         {stat.modulo}
                                                     </div>
-                                                    <div className="h5 mb-0 font-weight-bold text-gray-800">
+                                                    <div className="h5 mb-0 font-weight-bold text-gray-800" style={{paddingTop: '5px'}}>
                                                         {stat.total} acciones
                                                     </div>
                                                 </div>
-                                                <div className="col-auto" style={{padding: '10px'}}>
+                                                <div className="col-auto" style={{padding: '15px'}}>
                                                     <i className="fas fa-clipboard-list fa-2x text-gray-300"></i>
                                                 </div>
                                             </div>
@@ -165,6 +166,7 @@ const Auditoria = () => {
                                 <option value="Odontogramas">Odontogramas</option>
                                 <option value="Pacientes">Pacientes</option>
                                 <option value="Facturas">Facturas</option>
+                                <option value="Recibos">Recibos</option>
                                 <option value="Citas">Citas</option>
                                 <option value="Usuarios">Usuarios</option>
                                 <option value="Configuración">Configuración</option>
@@ -235,6 +237,7 @@ const Auditoria = () => {
                                 <thead className="thead-dark">
                                     <tr>
                                         <th style={{padding: '12px'}}>Fecha y Hora</th>
+                                        <th style={{padding: '12px'}}>Usuario</th>
                                         <th style={{padding: '12px'}}>Módulo</th>
                                         <th style={{padding: '12px'}}>Acción</th>
                                         <th style={{padding: '12px'}}>Descripción</th>
@@ -246,6 +249,25 @@ const Auditoria = () => {
                                         <tr key={log.id}>
                                             <td style={{padding: '12px'}}>
                                                 {new Date(log.created_at).toLocaleString()}
+                                            </td>
+                                            <td style={{padding: '12px'}}>
+                                                {log.usuario ? (
+                                                    <div>
+                                                        <strong style={{color: '#2c3e50'}}>
+                                                            <i className="fas fa-user me-2"></i>
+                                                            {log.usuario.nombre} {log.usuario.apellido || ''}
+                                                        </strong>
+                                                        <br />
+                                                        <small className="text-muted">
+                                                            ({log.usuario.usuario || log.usuario_id})
+                                                        </small>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted">
+                                                        <i className="fas fa-user-slash me-2"></i>
+                                                        Usuario ID: {log.usuario_id || 'N/A'}
+                                                    </span>
+                                                )}
                                             </td>
                                             <td style={{padding: '12px'}}>
                                                 <span className={`badge badge-${getBadgeColor(log.modulo)}`}>

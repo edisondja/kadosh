@@ -30,6 +30,7 @@ const ConfigComponent = () => {
     usar_google_calendar: false,
     google_calendar_id: '',
     recordatorio_minutos: 30,
+    clave_secreta: '',
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -394,6 +395,31 @@ const ConfigComponent = () => {
               </div>
             </div>
 
+            {/* Clave Secreta para Eliminaciones */}
+            <div className="card mb-4">
+              <div className="card-header bg-light">
+                <h5 className="mb-0"><i className="fas fa-key"></i> Clave Secreta para Eliminaciones</h5>
+              </div>
+              <div className="card-body" style={{ padding: '20px' }}>
+                <div className="row">
+                  <div className="col-md-12 mb-3">
+                    <label className="form-label">Clave Secreta</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="clave_secreta"
+                      value={formData.clave_secreta}
+                      onChange={handleChange}
+                      placeholder="Ingrese la clave secreta para eliminar perfiles, facturas o recibos"
+                    />
+                    <small className="form-text text-muted">
+                      Esta clave será requerida para eliminar perfiles de pacientes, facturas o recibos
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Google Calendar Integration */}
             <div className="card mb-4">
               <div className="card-header bg-light">
@@ -550,12 +576,14 @@ const ConfigComponent = () => {
                         </span>
                       </td>
                       <td>
-                        <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(cfg)}>
-                          <i className="fas fa-edit"></i> Editar
-                        </button>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(cfg.id)}>
-                          <i className="fas fa-trash"></i> Eliminar
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button className="btn btn-sm btn-warning" onClick={() => handleEdit(cfg)}>
+                            <i className="fas fa-edit"></i> Editar
+                          </button>
+                          <button className="btn btn-sm btn-danger" onClick={() => handleDelete(cfg.id)}>
+                            <i className="fas fa-trash"></i> Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
