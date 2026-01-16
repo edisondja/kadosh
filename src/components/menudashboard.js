@@ -98,7 +98,10 @@ class MenuDashboard extends React.Component {
           }
         })
         .catch(error => {
-          console.error("Error al verificar pago del usuario:", error);
+          // Solo mostrar error si no es un 404 (no hay pagos pendientes es normal)
+          if (error.response && error.response.status !== 404) {
+            console.error("Error al verificar pago del usuario:", error);
+          }
         });
     }
   }

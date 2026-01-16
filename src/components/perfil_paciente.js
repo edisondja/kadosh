@@ -108,7 +108,7 @@ class PerfilPaciente extends React.Component{
 
 						this.setState({ desactivar_campos_ficha: true });
 
-					console.log('Ficha medica '+res.data);
+					console.log('Ficha medica', res.data);
 					this.setState({ tiene_ficha_medica: !!res.data });
 				})
 				.catch((err) => {

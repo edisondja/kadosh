@@ -74,7 +74,9 @@ class  AgregarFactura extends React.Component{
 
 
                 }).catch(error=>{
-                    Alertify.error("Error al crear factura");
+                    const errorMessage = error.response?.data?.message || error.response?.data?.error || "Error al crear factura";
+                    Alertify.error(errorMessage);
+                    console.error("Error al crear factura:", error.response?.data || error.message);
             });
 
             this.state.boton_estado=true;

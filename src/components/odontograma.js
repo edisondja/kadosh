@@ -269,11 +269,73 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, [id_doctor, id_paciente, cargarDatosDoctor, cargarPrimerDoctor]);
 
+  // Configurar Alertify para notificaciones blancas (solo una vez)
+  useEffect(() => {
+    if (typeof Alertify !== 'undefined' && !document.getElementById('alertify-white-theme')) {
+      Alertify.set('notifier', 'position', 'top-right');
+      // Configurar estilos personalizados para notificaciones blancas
+      const style = document.createElement('style');
+      style.id = 'alertify-white-theme';
+      style.textContent = `
+        .alertify-notifier .ajs-message.ajs-success {
+          background: white !important;
+          color: #28a745 !important;
+          border: 2px solid #28a745 !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+          font-weight: 500 !important;
+        }
+        .alertify-notifier .ajs-message.ajs-error {
+          background: white !important;
+          color: #dc3545 !important;
+          border: 2px solid #dc3545 !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+          font-weight: 500 !important;
+        }
+        .alertify-notifier .ajs-message.ajs-warning {
+          background: white !important;
+          color: #ffc107 !important;
+          border: 2px solid #ffc107 !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+          font-weight: 500 !important;
+        }
+        .alertify-notifier .ajs-message {
+          background: white !important;
+          color: #333 !important;
+          border: 2px solid #ddd !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+          font-weight: 500 !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   useEffect(() => {
     cargarOpcionesTratamiento();
     cargarPaciente();
     cargarDoctor();
   }, [cargarOpcionesTratamiento, cargarPaciente, cargarDoctor]);
+
+  // Cerrar modal con tecla ESC
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && seleccionCara) {
+        setSeleccionCara(null);
+        setFiltroProcedimientos("");
+      }
+    };
+    
+    if (seleccionCara) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevenir scroll del body cuando el modal está abierto
+      document.body.style.overflow = 'hidden';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [seleccionCara]);
 
   // Preservar la posición del scroll cuando cambia el tipo de odontograma
   const scrollPositionRef = useRef(0);
@@ -652,183 +714,292 @@ const OdontogramaCompletoHibrido = () => {
             </div>
           </div>
 
-          {/* PANEL DE SELECCIÓN PARA CARA A CARA */}
+          {/* MODAL DE SELECCIÓN DE PROCEDIMIENTOS */}
           {seleccionCara && (
-            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-3" style={{ maxWidth: '500px', margin: '0 auto' }}>
-              <div className="card-header bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                <span className="font-weight-bold" style={{ fontSize: '14px' }}>
-                   Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
-                </span>
-                <button className="btn btn-sm btn-light font-weight-bold p-1" style={{ minWidth: '25px', height: '25px', lineHeight: '1' }} onClick={() => {
+            <div 
+              className="modal fade show" 
+              style={{ 
+                display: 'block', 
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 1050,
+                overflow: 'auto'
+              }}
+              tabIndex="-1"
+              role="dialog"
+              onClick={(e) => {
+                // Cerrar modal si se hace clic fuera del contenido
+                if (e.target === e.currentTarget) {
                   setSeleccionCara(null);
                   setFiltroProcedimientos("");
-                }}>×</button>
-              </div>
-              <div className="card-body p-3">
-                {/* Paleta de opciones rápidas para restaurado */}
-                <div className="mb-3 pb-3 border-bottom">
-                  <label className="form-label mb-2" style={{ fontSize: '12px', fontWeight: 'bold', color: '#495057' }}>
-                    <i className="fas fa-palette me-1"></i>Marcado Rápido:
-                  </label>
-                  <small className="text-muted d-block mb-2" style={{ fontSize: '10px' }}>
-                    Elige si agregar solo el color (sin facturar) o con procedimiento
-                  </small>
-                  <div className="d-flex gap-2 flex-wrap">
-                    <button
-                      className="btn btn-sm"
-                      style={{
-                        background: 'linear-gradient(135deg, #0066ff 0%, #0066ff 50%, #ff0000 50%, #ff0000 100%)',
-                        color: 'white',
-                        border: '2px solid #333',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        padding: '8px 14px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'scale(1.05)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'scale(1)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                      }}
+                }
+              }}
+            >
+              <div 
+                className="modal-dialog modal-dialog-centered modal-lg" 
+                role="document"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-content shadow-lg" style={{ borderRadius: '16px', border: 'none' }}>
+                  {/* Header del Modal */}
+                  <div 
+                    className="modal-header text-white" 
+                    style={{ 
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '16px 16px 0 0',
+                      border: 'none',
+                      padding: '20px 30px'
+                    }}
+                  >
+                    <h5 className="modal-title font-weight-bold" style={{ fontSize: '20px' }}>
+                      <i className="fas fa-tooth me-2"></i>
+                      Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
+                    </h5>
+                    <button 
+                      type="button" 
+                      className="close text-white" 
                       onClick={() => {
-                        // Restaurado por repetir es solo un color (azul/rojo), no busca procedimiento
-                        agregarSoloColor('blue-red', 'Restaurado por repetir');
+                        setSeleccionCara(null);
+                        setFiltroProcedimientos("");
                       }}
-                      title="Marcar como Restaurado por repetir (Azul y Rojo)"
+                      style={{ 
+                        fontSize: '28px',
+                        fontWeight: '300',
+                        opacity: 0.9,
+                        textShadow: 'none'
+                      }}
                     >
-                      <i className="fas fa-paint-brush me-1"></i>Restaurado (Azul/Rojo)
-                    </button>
-                    <button
-                      className="btn btn-sm"
-                      style={{
-                        background: '#0066ff',
-                        color: 'white',
-                        border: '2px solid #0044cc',
-                        fontWeight: 'bold',
-                        fontSize: '11px',
-                        padding: '8px 14px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'scale(1.05)';
-                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-                        e.target.style.background = '#0052cc';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'scale(1)';
-                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                        e.target.style.background = '#0066ff';
-                      }}
-                      onClick={() => {
-                        Alertify.confirm(
-                          "Restauración",
-                          "¿Cómo deseas marcar?",
-                          () => {
-                            // Solo color (sin procedimiento)
-                            agregarSoloColor('blue', 'Restauración');
-                          },
-                          () => {
-                            // Con procedimiento
-                            const restauracion = opciones_tratamiento.find(o => o.nombre === "Restauración");
-                            if (restauracion) {
-                              agregarProcedimiento(restauracion, facturarMarcadoRapido);
-                            } else {
-                              Alertify.warning("Procedimiento 'Restauración' no encontrado");
-                            }
-                          }
-                        ).set('labels', {ok:'Solo Color', cancel:'Con Procedimiento'});
-                      }}
-                      title="Marcar como Restauración (Azul)"
-                    >
-                      <i className="fas fa-tooth me-1"></i>Restauración (Azul)
+                      <span aria-hidden="true">&times;</span>
                     </button>
                   </div>
-                  <div className="form-check mt-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="facturarMarcadoRapido"
-                      checked={facturarMarcadoRapido}
-                      onChange={(e) => setFacturarMarcadoRapido(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <label className="form-check-label" htmlFor="facturarMarcadoRapido" style={{ fontSize: '11px', cursor: 'pointer', color: '#495057' }}>
-                      <i className="fas fa-dollar-sign me-1"></i>Facturar procedimientos (solo aplica si eliges "Con Procedimiento")
-                    </label>
-                  </div>
-                </div>
 
-                {/* Campo de búsqueda */}
-                <div className="mb-3">
-                  <div className="input-group input-group-sm">
-                    <div className="input-group-prepend">
-                      <span className="input-group-text" style={{ backgroundColor: '#f8f9fa' }}>
-                        <i className="fas fa-search"></i>
-                      </span>
-                    </div>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Buscar procedimiento..."
-                      value={filtroProcedimientos}
-                      onChange={(e) => setFiltroProcedimientos(e.target.value)}
-                      style={{ fontSize: '13px' }}
-                    />
-                    {filtroProcedimientos && (
-                      <div className="input-group-append">
+                  {/* Body del Modal */}
+                  <div className="modal-body p-4" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    {/* Paleta de opciones rápidas */}
+                    <div className="mb-4 pb-3 border-bottom">
+                      <label className="form-label mb-2 d-block" style={{ fontSize: '14px', fontWeight: 'bold', color: '#495057' }}>
+                        <i className="fas fa-palette me-2 text-primary"></i>Marcado Rápido:
+                      </label>
+                      <small className="text-muted d-block mb-3" style={{ fontSize: '12px' }}>
+                        <strong>Azul:</strong> Solo para marcar trabajo realizado por otros (sin facturar). 
+                        <strong className="ml-2">Azul/Rojo:</strong> Restaurado por repetir.
+                      </small>
+                      <div className="d-flex gap-2 flex-wrap">
                         <button
-                          className="btn btn-outline-secondary"
-                          type="button"
-                          onClick={() => setFiltroProcedimientos("")}
-                          style={{ fontSize: '12px', padding: '4px 8px' }}
+                          className="btn"
+                          style={{
+                            background: 'linear-gradient(135deg, #0066ff 0%, #0066ff 50%, #ff0000 50%, #ff0000 100%)',
+                            color: 'white',
+                            border: '2px solid #333',
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            padding: '10px 18px',
+                            borderRadius: '10px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                          }}
+                          onClick={() => {
+                            agregarSoloColor('blue-red', 'Restaurado por repetir');
+                          }}
+                          title="Marcar como Restaurado por repetir (Azul y Rojo)"
                         >
-                          <i className="fas fa-times"></i>
+                          <i className="fas fa-paint-brush me-2"></i>Restaurado (Azul/Rojo)
+                        </button>
+                        <button
+                          className="btn"
+                          style={{
+                            background: '#0066ff',
+                            color: 'white',
+                            border: '2px solid #0044cc',
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            padding: '10px 18px',
+                            borderRadius: '10px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                            e.target.style.background = '#0052cc';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                            e.target.style.background = '#0066ff';
+                          }}
+                          onClick={() => {
+                            // Restauración azul es solo para marcar trabajo por otros (sin facturar)
+                            agregarSoloColor('blue', 'Restauración');
+                          }}
+                          title="Marcar como Restauración (Azul) - Trabajo por otros (sin facturar)"
+                        >
+                          <i className="fas fa-tooth me-2"></i>Restauración (Azul)
                         </button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                      <div className="form-check mt-3">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id="facturarMarcadoRapido"
+                          checked={facturarMarcadoRapido}
+                          onChange={(e) => setFacturarMarcadoRapido(e.target.checked)}
+                          style={{ cursor: 'pointer', width: '18px', height: '18px' }}
+                        />
+                        <label className="form-check-label" htmlFor="facturarMarcadoRapido" style={{ fontSize: '13px', cursor: 'pointer', color: '#495057', marginLeft: '8px' }}>
+                          <i className="fas fa-dollar-sign me-1"></i>Facturar procedimientos (solo aplica si eliges "Con Procedimiento")
+                        </label>
+                      </div>
+                    </div>
 
-                {/* Lista de procedimientos filtrados */}
-                <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                  {opciones_tratamiento
-                    .filter(o => 
-                      o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
-                    )
-                    .length === 0 ? (
-                    <div className="text-center text-muted py-3" style={{ fontSize: '12px' }}>
-                      <i className="fas fa-search me-2"></i>
-                      No se encontraron procedimientos
-                    </div>
-                  ) : (
-                    <div className="row no-gutters">
-                      {opciones_tratamiento
-                        .filter(o => 
-                          o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
-                        )
-                        .map(o => (
-                        <div key={o.id} className="col-md-6 p-1">
-                          <button 
-                            className="btn btn-outline-dark btn-block text-left d-flex justify-content-between align-items-center"
+                    {/* Lista de procedimientos filtrados mejorada */}
+                    <div>
+                      <label className="form-label mb-2 d-block" style={{ fontSize: '14px', fontWeight: 'bold', color: '#495057' }}>
+                        <i className="fas fa-list me-2 text-primary"></i>Procedimientos Disponibles:
+                        <span className="badge badge-primary ml-2" style={{ fontSize: '12px' }}>
+                          {opciones_tratamiento.filter(o => 
+                            o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
+                          ).length} encontrados
+                        </span>
+                      </label>
+                      {/* Campo de búsqueda */}
+                      <div className="mb-3">
+                        <div className="input-group input-group-lg">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text bg-light border-right-0" style={{ borderRadius: '10px 0 0 10px' }}>
+                              <i className="fas fa-search text-muted"></i>
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            className="form-control border-left-0"
+                            placeholder="Escribe para filtrar procedimientos..."
+                            value={filtroProcedimientos}
+                            onChange={(e) => setFiltroProcedimientos(e.target.value)}
                             style={{ 
-                              fontSize: '12px', 
-                              padding: '6px 10px',
-                              borderColor: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : o.color === 'blue-red' ? '#666' : '#333',
-                              borderWidth: o.color === 'blue-red' ? '2px' : '1px'
+                              fontSize: '15px',
+                              borderRadius: '0 10px 10px 0',
+                              borderLeft: 'none'
                             }}
-                            onClick={() => agregarProcedimiento(o)}>
-                            <span style={{ fontSize: '11px', fontWeight: '500' }}>{o.nombre}</span>
-                            <span className="badge badge-primary font-weight-bold" style={{ fontSize: '10px' }}>${o.precio.toFixed(2)}</span>
-                          </button>
+                            autoFocus
+                          />
+                          {filtroProcedimientos && (
+                            <div className="input-group-append">
+                              <button
+                                className="btn btn-outline-secondary border-left-0"
+                                type="button"
+                                onClick={() => setFiltroProcedimientos("")}
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '8px 15px',
+                                  borderRadius: '0 10px 10px 0'
+                                }}
+                              >
+                                <i className="fas fa-times"></i>
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      ))}
+                      </div>
+                      <div style={{ maxHeight: '400px', overflowY: 'auto', borderRadius: '10px', border: '1px solid #e0e0e0' }}>
+                        {opciones_tratamiento
+                          .filter(o => 
+                            o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
+                          )
+                          .length === 0 ? (
+                          <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
+                            <i className="fas fa-search fa-2x mb-3" style={{ opacity: 0.3 }}></i>
+                            <p className="mb-0">No se encontraron procedimientos</p>
+                            <small>Intenta con otro término de búsqueda</small>
+                          </div>
+                        ) : (
+                          <div className="p-2">
+                            {opciones_tratamiento
+                              .filter(o => 
+                                o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
+                              )
+                              .map(o => (
+                              <button 
+                                key={o.id}
+                                className="btn btn-outline-primary btn-block text-left mb-2 d-flex justify-content-between align-items-center"
+                                style={{ 
+                                  fontSize: '14px', 
+                                  padding: '12px 16px',
+                                  borderRadius: '10px',
+                                  borderColor: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : o.color === 'blue-red' ? '#666' : '#667eea',
+                                  borderWidth: o.color === 'blue-red' ? '2px' : '1.5px',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.transform = 'translateX(5px)';
+                                  e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.transform = 'translateX(0)';
+                                  e.target.style.boxShadow = 'none';
+                                }}
+                                onClick={() => agregarProcedimiento(o)}
+                              >
+                                <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                                  <i className="fas fa-check-circle me-2" style={{ fontSize: '12px', opacity: 0.6 }}></i>
+                                  {o.nombre}
+                                </span>
+                                <span 
+                                  className="badge font-weight-bold" 
+                                  style={{ 
+                                    fontSize: '13px',
+                                    background: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : '#667eea',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  ${o.precio.toFixed(2)}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Footer del Modal */}
+                  <div 
+                    className="modal-footer border-top"
+                    style={{ 
+                      padding: '15px 30px',
+                      borderRadius: '0 0 16px 16px',
+                      background: '#f8f9fa'
+                    }}
+                  >
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setSeleccionCara(null);
+                        setFiltroProcedimientos("");
+                      }}
+                      style={{
+                        borderRadius: '10px',
+                        padding: '10px 25px',
+                        fontWeight: '600'
+                      }}
+                    >
+                      <i className="fas fa-times me-2"></i>Cancelar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

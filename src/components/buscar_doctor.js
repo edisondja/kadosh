@@ -40,7 +40,8 @@ class BuscarDoctor extends React.Component{
 		}	
 
 		cargar_doctores(){
-				Axios.get(`${cargar_doctores.url_base}/api/doctores`).then(data=>{
+				// Cargar todos los doctores (incluyendo inactivos) para administración
+				Axios.get(`${cargar_doctores.url_base}/api/doctores_todos`).then(data=>{
 
 					this.setState({doctores:data.data})
 
@@ -51,6 +52,34 @@ class BuscarDoctor extends React.Component{
 				})
 
 
+		}
+
+		activar_doctor(id){
+			alertify.confirm("¿Deseas activar este doctor?", ()=>{
+				Axios.post(`${cargar_doctores.url_base}/api/activar_doctor`, {
+					id_doctor: id
+				}).then(data=>{
+					alertify.success("Doctor activado correctamente");
+					this.cargar_doctores(); // Recargar lista
+				}).catch(error=>{
+					alertify.error("No se pudo activar el doctor");
+					console.error(error);
+				});
+			});
+		}
+
+		desactivar_doctor(id){
+			alertify.confirm("¿Deseas desactivar este doctor? No aparecerá en los filtros de facturas.", ()=>{
+				Axios.post(`${cargar_doctores.url_base}/api/desactivar_doctor`, {
+					id_doctor: id
+				}).then(data=>{
+					alertify.success("Doctor desactivado correctamente");
+					this.cargar_doctores(); // Recargar lista
+				}).catch(error=>{
+					alertify.error("No se pudo desactivar el doctor");
+					console.error(error);
+				});
+			});
 		}
 
 		actualizar_doctor=(id)=>{
@@ -132,30 +161,66 @@ class BuscarDoctor extends React.Component{
 										{data.nombre} {data.apellido}
 										</h5>
 
-										<div className="d-flex justify-content-end">
-										<button
-											className="btn btn-outline-primary"
-											onClick={() => this.actualizar_doctor(data.id)}
-											style={{
-											borderRadius: "12px",
-											padding: "8px 20px",
-											fontWeight: 500,
-											marginRight: "10px",
-											}}
-										>
-											✏️ Actualizar
-										</button>
-										<button
-											className="btn btn-outline-danger"
-											onClick={() => this.eliminar_doctor(data.id)}
-											style={{
-											borderRadius: "12px",
-											padding: "8px 20px",
-											fontWeight: 500,
-											}}
-										>
-											🗑️ Eliminar
-										</button>
+										<div className="d-flex justify-content-between align-items-center">
+											<div>
+												{data.estado === true || data.estado === 1 ? (
+													<span className="badge bg-success">Activo</span>
+												) : (
+													<span className="badge bg-secondary">Inactivo</span>
+												)}
+											</div>
+											<div>
+												<button
+													className="btn btn-outline-primary"
+													onClick={() => this.actualizar_doctor(data.id)}
+													style={{
+													borderRadius: "12px",
+													padding: "8px 20px",
+													fontWeight: 500,
+													marginRight: "10px",
+													}}
+												>
+													✏️ Actualizar
+												</button>
+												{data.estado === true || data.estado === 1 ? (
+													<button
+														className="btn btn-outline-warning"
+														onClick={() => this.desactivar_doctor(data.id)}
+														style={{
+														borderRadius: "12px",
+														padding: "8px 20px",
+														fontWeight: 500,
+														marginRight: "10px",
+														}}
+													>
+														⏸️ Desactivar
+													</button>
+												) : (
+													<button
+														className="btn btn-outline-success"
+														onClick={() => this.activar_doctor(data.id)}
+														style={{
+														borderRadius: "12px",
+														padding: "8px 20px",
+														fontWeight: 500,
+														marginRight: "10px",
+														}}
+													>
+														▶️ Activar
+													</button>
+												)}
+												<button
+													className="btn btn-outline-danger"
+													onClick={() => this.eliminar_doctor(data.id)}
+													style={{
+													borderRadius: "12px",
+													padding: "8px 20px",
+													fontWeight: 500,
+													}}
+												>
+													🗑️ Eliminar
+												</button>
+											</div>
 										</div>
 									</div>
 									</div>

@@ -2,7 +2,7 @@
   "api_url1":"https://leonardobatista.odontoed.com/",
   "api_url": "https://felix.noeodontoestetic.com",
   "api_url2": "https://service.clinickadosh.com/",
-  "api_url8": "http://localhost:8000",
+  "api_url6": "http://localhost:8000",
   "name_company": "NOE ODONTO ESTETIC",
   "password_admin":"noe2025",
   "app_version": "1.0.0",

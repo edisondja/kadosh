@@ -262,6 +262,10 @@ function obtener_proximo_pago_usuario(usuario_id) {
     return Axios.get(`${url_base}/api/proximo_pago_usuario/${usuario_id}`)
         .then(response => response.data)
         .catch(error => {
+            // 404 es esperado cuando no hay pagos pendientes, no es un error real
+            if (error.response && error.response.status === 404) {
+                return null;
+            }
             console.error("Error al obtener próximo pago:", error);
             return null;
         });

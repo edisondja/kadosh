@@ -99,7 +99,7 @@ class ActualizarDoctor extends React.Component{
         return(
             <div className="container-fluid mt-4">
                 <div className="row justify-content-center">
-                    <div className="col-md-10 col-lg-8">
+                    <div className="col-md-12 col-lg-11 col-xl-10">
                         {/* Card principal con gradiente */}
                         <div className="card shadow-lg border-0" style={{ 
                             borderRadius: '20px',
