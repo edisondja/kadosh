@@ -136,7 +136,6 @@ class Reporte extends React.Component{ds
                             <td>Paciente</td>
                             <td>Concepto de pago</td>
                             <td>Tipo de pago</td>
-                            <td>Estado actual</td>
                             <td>Monto</td>
                             <td>Fecha de pago</td>
                         </tr>
@@ -156,7 +155,6 @@ class Reporte extends React.Component{ds
                                             </td>
                                             <td>{data.concepto_pago}</td>
                                             <td>{data.tipo_de_pago}</td>
-                                            <td>{data.estado_actual}</td>
                                             <td>{data.monto}</td>
                                             <td>{data.fecha_pago}</td>
                                         </tr>

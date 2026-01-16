@@ -13,6 +13,8 @@ const OPCIONES_TRATAMIENTO = [
   { id: 3, nombre: "Sellante", precio: 25.00, color: "green" },
   { id: 4, nombre: "Extracción", precio: 60.00, color: "black" },
   { id: 5, nombre: "Implante", precio: 250.00, color: "purple" },
+  { id: 6, nombre: "Restauración", precio: 50.00, color: "blue" },
+  { id: 7, nombre: "Restaurado por repetir", precio: 55.00, color: "blue-red" },
 ];
 
 // Dientes de adultos (permanentes)
@@ -40,6 +42,8 @@ const OdontogramaCompletoHibrido = () => {
   const [colorDibujo, setColorDibujo] = useState("red"); // Para el canvas principal
   const [dibujoGuardado, setDibujoGuardado] = useState(Odontograma); // Almacena el Data URL del canvas principal
   const [opciones_tratamiento, setOpcionesTratamiento] = useState([]);
+  const [filtroProcedimientos, setFiltroProcedimientos] = useState(""); // Filtro de búsqueda
+  const [facturarMarcadoRapido, setFacturarMarcadoRapido] = useState(false); // Si el marcado rápido debe facturarse
   const [tipoOdontograma, setTipoOdontograma] = useState("adulto"); // "adulto" o "nino"
   const [paciente, setPaciente] = useState({ nombre: '', apellido: '' });
   const [doctor, setDoctor] = useState({ nombre: '', apellido: '' });
@@ -341,9 +345,7 @@ const OdontogramaCompletoHibrido = () => {
     setSeleccionCara({ diente, cara });
   };
 
-  const agregarProcedimiento = (proc) => {
-
-    
+  const agregarProcedimiento = (proc, facturar = true) => {
     const nuevo = { 
       ...proc, 
       diente: seleccionCara.diente, 
@@ -351,11 +353,40 @@ const OdontogramaCompletoHibrido = () => {
       id_paciente:2,
       cara: seleccionCara.cara, 
       tipo: "procedimiento", 
+      precio: facturar ? (proc.precio || 0) : 0, // Si no se factura, precio es 0
       tempId: Date.now() 
     };
     setPresupuesto([...presupuesto, nuevo]);
     setSeleccionCara(null); 
+    setFiltroProcedimientos(""); // Limpiar filtro al agregar
   };
+
+  // Función para agregar solo color sin procedimiento
+  const agregarSoloColor = (color, nombreColor) => {
+    if (!seleccionCara) return;
+    
+    // Crear un "procedimiento" ficticio solo con el color, sin precio
+    const marcadoSoloColor = {
+      diente: seleccionCara.diente,
+      cara: seleccionCara.cara,
+      color: color,
+      nombre: nombreColor,
+      tipo: "marcado_color",
+      precio: 0, // Siempre precio 0 para solo color
+      tempId: Date.now()
+    };
+    
+    // Eliminar cualquier marcado previo en la misma cara
+    const presupuestoActualizado = presupuesto.filter(
+      p => !(p.diente === seleccionCara.diente && p.cara === seleccionCara.cara)
+    );
+    
+    setPresupuesto([...presupuestoActualizado, marcadoSoloColor]);
+    setSeleccionCara(null);
+    setFiltroProcedimientos("");
+    Alertify.success(`Color ${nombreColor} aplicado (sin facturar)`);
+  };
+
     
 
   const total = presupuesto.reduce((acc, item) => acc + item.precio, 0);
@@ -363,7 +394,12 @@ const OdontogramaCompletoHibrido = () => {
   const DienteCaraACara = ({ num }) => {
     const getColor = (c) => {
       const found = presupuesto.find(p => p.diente === num && p.cara === c);
-      return found ? found.color : "white";
+      if (!found) return "white";
+      // Si el color es "blue-red", retornamos un gradiente especial
+      if (found.color === "blue-red") {
+        return `url(#blueRedGradient-${num})`;
+      }
+      return found.color;
     };
 
     const isSelected = (c) => {
@@ -381,10 +417,25 @@ const OdontogramaCompletoHibrido = () => {
       return isSelected(c) ? 3 : 1;
     };
 
+    // Verificar si alguna cara tiene el color especial "blue-red"
+    const tieneBlueRed = presupuesto.some(p => p.diente === num && p.color === "blue-red");
+    const gradientId = `blueRedGradient-${num}`;
+    
     return (
       <div className="text-center" style={{ width: "42px", display: "inline-block" }}>
         <div className="small font-weight-bold text-muted mb-1">{num}</div>
         <svg viewBox="0 0 100 100" width="36" height="36" style={{ cursor: "pointer" }}>
+          {/* Definir gradiente para blue-red si es necesario */}
+          {tieneBlueRed && (
+            <defs>
+              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: "#0066ff", stopOpacity: 1 }} />
+                <stop offset="50%" style={{ stopColor: "#0066ff", stopOpacity: 1 }} />
+                <stop offset="50%" style={{ stopColor: "#ff0000", stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: "#ff0000", stopOpacity: 1 }} />
+              </linearGradient>
+            </defs>
+          )}
           <polygon 
             points="0,0 100,0 75,25 25,25" 
             fill={getColor("V")} 
@@ -603,26 +654,181 @@ const OdontogramaCompletoHibrido = () => {
 
           {/* PANEL DE SELECCIÓN PARA CARA A CARA */}
           {seleccionCara && (
-            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-3" style={{ maxHeight: '200px', overflowY: 'auto', maxWidth: '400px', margin: '0 auto' }}>
-              <div className="card-header bg-primary text-white py-1 px-2 d-flex justify-content-between align-items-center" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                <span className="font-weight-bold" style={{ fontSize: '13px' }}>
+            <div className="card border-primary shadow animate__animated animate__fadeInUp mb-3" style={{ maxWidth: '500px', margin: '0 auto' }}>
+              <div className="card-header bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+                <span className="font-weight-bold" style={{ fontSize: '14px' }}>
                    Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
                 </span>
-                <button className="btn btn-sm btn-light font-weight-bold p-1" style={{ minWidth: '25px', height: '25px', lineHeight: '1' }} onClick={() => setSeleccionCara(null)}>×</button>
+                <button className="btn btn-sm btn-light font-weight-bold p-1" style={{ minWidth: '25px', height: '25px', lineHeight: '1' }} onClick={() => {
+                  setSeleccionCara(null);
+                  setFiltroProcedimientos("");
+                }}>×</button>
               </div>
-              <div className="card-body p-2" style={{ padding: '8px' }}>
-                <div className="row no-gutters">
-                  {opciones_tratamiento.map(o => (
-                    <div key={o.id} className="col-md-6 p-1">
-                      <button 
-                        className="btn btn-outline-dark btn-block text-left d-flex justify-content-between align-items-center"
-                        style={{ fontSize: '12px', padding: '4px 8px' }}
-                        onClick={() => agregarProcedimiento(o)}>
-                        <span style={{ fontSize: '11px' }}>{o.nombre}</span>
-                        <span className="badge badge-primary font-weight-bold" style={{ fontSize: '10px' }}>${o.precio}</span>
-                      </button>
+              <div className="card-body p-3">
+                {/* Paleta de opciones rápidas para restaurado */}
+                <div className="mb-3 pb-3 border-bottom">
+                  <label className="form-label mb-2" style={{ fontSize: '12px', fontWeight: 'bold', color: '#495057' }}>
+                    <i className="fas fa-palette me-1"></i>Marcado Rápido:
+                  </label>
+                  <small className="text-muted d-block mb-2" style={{ fontSize: '10px' }}>
+                    Elige si agregar solo el color (sin facturar) o con procedimiento
+                  </small>
+                  <div className="d-flex gap-2 flex-wrap">
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        background: 'linear-gradient(135deg, #0066ff 0%, #0066ff 50%, #ff0000 50%, #ff0000 100%)',
+                        color: 'white',
+                        border: '2px solid #333',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        padding: '8px 14px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'scale(1.05)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'scale(1)';
+                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                      }}
+                      onClick={() => {
+                        // Restaurado por repetir es solo un color (azul/rojo), no busca procedimiento
+                        agregarSoloColor('blue-red', 'Restaurado por repetir');
+                      }}
+                      title="Marcar como Restaurado por repetir (Azul y Rojo)"
+                    >
+                      <i className="fas fa-paint-brush me-1"></i>Restaurado (Azul/Rojo)
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        background: '#0066ff',
+                        color: 'white',
+                        border: '2px solid #0044cc',
+                        fontWeight: 'bold',
+                        fontSize: '11px',
+                        padding: '8px 14px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'scale(1.05)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+                        e.target.style.background = '#0052cc';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'scale(1)';
+                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                        e.target.style.background = '#0066ff';
+                      }}
+                      onClick={() => {
+                        Alertify.confirm(
+                          "Restauración",
+                          "¿Cómo deseas marcar?",
+                          () => {
+                            // Solo color (sin procedimiento)
+                            agregarSoloColor('blue', 'Restauración');
+                          },
+                          () => {
+                            // Con procedimiento
+                            const restauracion = opciones_tratamiento.find(o => o.nombre === "Restauración");
+                            if (restauracion) {
+                              agregarProcedimiento(restauracion, facturarMarcadoRapido);
+                            } else {
+                              Alertify.warning("Procedimiento 'Restauración' no encontrado");
+                            }
+                          }
+                        ).set('labels', {ok:'Solo Color', cancel:'Con Procedimiento'});
+                      }}
+                      title="Marcar como Restauración (Azul)"
+                    >
+                      <i className="fas fa-tooth me-1"></i>Restauración (Azul)
+                    </button>
+                  </div>
+                  <div className="form-check mt-2">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="facturarMarcadoRapido"
+                      checked={facturarMarcadoRapido}
+                      onChange={(e) => setFacturarMarcadoRapido(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <label className="form-check-label" htmlFor="facturarMarcadoRapido" style={{ fontSize: '11px', cursor: 'pointer', color: '#495057' }}>
+                      <i className="fas fa-dollar-sign me-1"></i>Facturar procedimientos (solo aplica si eliges "Con Procedimiento")
+                    </label>
+                  </div>
+                </div>
+
+                {/* Campo de búsqueda */}
+                <div className="mb-3">
+                  <div className="input-group input-group-sm">
+                    <div className="input-group-prepend">
+                      <span className="input-group-text" style={{ backgroundColor: '#f8f9fa' }}>
+                        <i className="fas fa-search"></i>
+                      </span>
                     </div>
-                  ))}
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Buscar procedimiento..."
+                      value={filtroProcedimientos}
+                      onChange={(e) => setFiltroProcedimientos(e.target.value)}
+                      style={{ fontSize: '13px' }}
+                    />
+                    {filtroProcedimientos && (
+                      <div className="input-group-append">
+                        <button
+                          className="btn btn-outline-secondary"
+                          type="button"
+                          onClick={() => setFiltroProcedimientos("")}
+                          style={{ fontSize: '12px', padding: '4px 8px' }}
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Lista de procedimientos filtrados */}
+                <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                  {opciones_tratamiento
+                    .filter(o => 
+                      o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
+                    )
+                    .length === 0 ? (
+                    <div className="text-center text-muted py-3" style={{ fontSize: '12px' }}>
+                      <i className="fas fa-search me-2"></i>
+                      No se encontraron procedimientos
+                    </div>
+                  ) : (
+                    <div className="row no-gutters">
+                      {opciones_tratamiento
+                        .filter(o => 
+                          o.nombre.toLowerCase().includes(filtroProcedimientos.toLowerCase())
+                        )
+                        .map(o => (
+                        <div key={o.id} className="col-md-6 p-1">
+                          <button 
+                            className="btn btn-outline-dark btn-block text-left d-flex justify-content-between align-items-center"
+                            style={{ 
+                              fontSize: '12px', 
+                              padding: '6px 10px',
+                              borderColor: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : o.color === 'blue-red' ? '#666' : '#333',
+                              borderWidth: o.color === 'blue-red' ? '2px' : '1px'
+                            }}
+                            onClick={() => agregarProcedimiento(o)}>
+                            <span style={{ fontSize: '11px', fontWeight: '500' }}>{o.nombre}</span>
+                            <span className="badge badge-primary font-weight-bold" style={{ fontSize: '10px' }}>${o.precio.toFixed(2)}</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

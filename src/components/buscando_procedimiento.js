@@ -52,17 +52,41 @@ class BuscandoProcedimiento extends  React.Component{
 
     }
     actualizar=(id)=>{
+        // Primero obtener la configuración para validar la clave secreta
+        Axios.get(`${Core.url_base}/api/configs`).then(configResponse => {
+            const config = configResponse.data && configResponse.data.length > 0 ? configResponse.data[0] : null;
+            const claveSecreta = config ? config.clave_secreta : null;
 
-        this.setState({modal_update:true})
- 
-           Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data=>{
-            
-                this.setState({nombre:data.data.nombre,precio:data.data.precio,id:data.data.id});
+            if (!claveSecreta) {
+                alertify.error("No se ha configurado una clave secreta. Por favor configúrela primero en Configuración.");
+                return;
+            }
 
-        }).catch(error=>{
-            alertify.error("No se puedo cargar este paciente");
+            // Pedir la clave secreta antes de permitir actualizar
+            alertify.prompt("Actualizar Procedimiento", "Ingrese la clave secreta del administrador para actualizar este procedimiento:", "", 
+                (evt, value) => {
+                    if (value === claveSecreta) {
+                        alertify.success("Clave correcta!");
+                        // Si la clave es correcta, abrir el modal y cargar los datos
+                        this.setState({modal_update: true});
+                        
+                        Axios.get(`${Core.url_base}/api/cargar_procedimiento/${id}`).then(data => {
+                            this.setState({nombre: data.data.nombre, precio: data.data.precio, id: data.data.id, color: data.data.color});
+                        }).catch(error => {
+                            alertify.error("No se pudo cargar este procedimiento");
+                        });
+                    } else {
+                        alertify.error("Clave secreta incorrecta");
+                    }
+                },
+                () => {
+                    alertify.error("Operación cancelada");
+                }
+            );
+        }).catch(error => {
+            console.error("Error al obtener configuración:", error);
+            alertify.error("Error al obtener la configuración para validar la clave secreta");
         });
-
     }
 
     actualizar_procedimiento=()=>{

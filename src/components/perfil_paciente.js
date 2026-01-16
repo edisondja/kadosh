@@ -78,6 +78,7 @@ class PerfilPaciente extends React.Component{
 					antecedentes_familiares: '',
 					alergias: [],
 					alergias_detalle: '',
+					observaciones: '',
 
 			};
 		}
@@ -101,7 +102,8 @@ class PerfilPaciente extends React.Component{
 						otros_habitos: res.data.otros_habitos,
 						alergias: res.data.alergias ? res.data.alergias.split(',') : [],
 						created_at: res.data.created_at,
-						alergias_detalle: res.data.alergias_detalle
+						alergias_detalle: res.data.alergias_detalle,
+						observaciones: res.data.observaciones || ''
 						});
 
 						this.setState({ desactivar_campos_ficha: true });
@@ -129,7 +131,8 @@ class PerfilPaciente extends React.Component{
 				alcohol: this.state.alcohol,
 				otros_habitos: this.state.otros_habitos,
 				alergias: this.state.alergias.toString(),
-				alergias_detalle: this.state.alergias_detalle
+				alergias_detalle: this.state.alergias_detalle,
+				observaciones: this.state.observaciones
 			
 			};
 
@@ -1059,6 +1062,25 @@ class PerfilPaciente extends React.Component{
 									</div>
 								</div>
 								</fieldset>
+
+								{/* OBSERVACIONES */}
+								<fieldset className="mb-4">
+								<legend className="fw-semibold mb-3">Observaciones</legend>
+								<div className="row g-3">
+									<div className="col-12">
+									<label className="form-label">Observaciones generales</label>
+									<textarea
+										disabled={this.state.desactivar_campos_ficha}
+										name="observaciones"
+										className="form-control"
+										rows="4"
+										placeholder="Ingrese cualquier observación adicional sobre el paciente..."
+										value={this.state.observaciones || ""}
+										onChange={this.handleChange}
+									/>
+									</div>
+								</div>
+								</fieldset>
 							</form>
 							</div>
 
@@ -1149,21 +1171,59 @@ class PerfilPaciente extends React.Component{
 					style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
 					<div
 					className="modal-dialog modal-xxl modal-dialog-centered"
-					style={{ maxWidth: "90%" }}
+					style={{ maxWidth: "95%", width: "95%" }}
 					>
 					<div className="modal-content mac-box">
-						<div className="modal-header border-0">
-						<h4 className="modal-title flex items-center gap-2">
+						<div className="modal-header border-0 d-flex justify-content-between align-items-center" style={{ padding: '15px 20px' }}>
+						<h4 className="modal-title flex items-center gap-2 mb-0">
 							<i className="fa-solid fa-folder"></i>
 							<span>&nbsp;Documentos del paciente</span>
 						</h4>
-						<button
-							className="btn-close"
-							onClick={() => this.setState({ modal_documento_visible: false })}
-						></button>
+						<div className="d-flex align-items-center">
+							{/* Botón de subir en el header */}
+							<button 
+								className="btn btn-primary btn-sm" 
+								style={{ 
+									padding: '8px 16px',
+									marginRight: '15px',
+									borderRadius: '6px',
+									fontWeight: '600'
+								}}
+								onClick={() => {
+									// Si hay un archivo seleccionado, subirlo directamente
+									if (this.state.nuevoArchivo) {
+										this.subirDocumento();
+									} else {
+										// Si no hay archivo, abrir el selector
+										const fileInput = document.getElementById('fileInput');
+										if (fileInput) {
+											fileInput.click();
+										}
+									}
+								}}
+								disabled={this.state.subiendoArchivo}
+								title={this.state.nuevoArchivo ? "Subir documento seleccionado" : "Seleccionar archivo para subir"}
+							>
+								{this.state.subiendoArchivo ? (
+									<>
+										<span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+										Subiendo...
+									</>
+								) : (
+									<>
+										<i className="fas fa-upload me-1"></i>
+										{this.state.nuevoArchivo ? 'Subir' : 'Subir Documento'}
+									</>
+								)}
+							</button>
+							<button
+								className="btn-close"
+								onClick={() => this.setState({ modal_documento_visible: false })}
+							></button>
+						</div>
 						</div>
 
-						<div className="modal-body bg-gray-50 rounded-xl p-4">
+						<div className="modal-body bg-gray-50 rounded-xl p-3" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
 						{/* Selector de vista */}
 						{this.state.documentos.length > 0 && (
 							<div className="d-flex justify-content-end mb-3">
@@ -1409,16 +1469,16 @@ class PerfilPaciente extends React.Component{
 						)}
 
 						{/* Subir nuevo documento */}
-						<hr className="my-4" />
-						<h6 className="text-lg font-semibold mb-3">
+						<hr className="my-2" />
+						<h6 className="text-lg font-semibold mb-2" style={{ fontSize: '16px' }}>
 							<i className="fas fa-cloud-upload-alt me-2"></i>
 							Agregar nuevo documento
 						</h6>
 
-						<div className="bg-white p-4 rounded-2xl shadow-sm">
+						<div className="bg-white p-3 rounded-2xl shadow-sm">
 							{/* Área de drag & drop */}
 							<div
-								className={`border-2 border-dashed rounded-lg p-5 text-center mb-3 transition-all ${
+								className={`border-2 border-dashed rounded-lg p-3 text-center mb-2 transition-all ${
 									this.state.dragActive 
 										? 'border-primary bg-primary bg-opacity-10' 
 										: 'border-gray-300 hover:border-primary hover:bg-gray-50'
@@ -1426,43 +1486,48 @@ class PerfilPaciente extends React.Component{
 								onDragOver={this.handleDragOver}
 								onDragLeave={this.handleDragLeave}
 								onDrop={this.handleDrop}
-								style={{ cursor: 'pointer', minHeight: '150px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
-								onClick={() => document.getElementById('fileInput')?.click()}
+								style={{ cursor: 'pointer', minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
+								onClick={() => {
+									const fileInput = document.getElementById('fileInput');
+									if (fileInput) {
+										fileInput.click();
+									}
+								}}
 							>
 								{this.state.previewArchivo ? (
 									<div className="w-100">
 										<img 
 											src={this.state.previewArchivo} 
 											alt="Preview" 
-											className="img-thumbnail mb-3"
-											style={{ maxHeight: '200px', maxWidth: '100%' }}
+											className="img-thumbnail mb-2"
+											style={{ maxHeight: '150px', maxWidth: '100%' }}
 										/>
-										<p className="text-muted mb-0">
+										<p className="text-muted mb-0" style={{ fontSize: '13px' }}>
 											<i className="fas fa-check-circle text-success me-2"></i>
 											{this.state.nuevoArchivo?.name}
 										</p>
-										<small className="text-muted">
+										<small className="text-muted" style={{ fontSize: '12px' }}>
 											{(this.state.nuevoArchivo?.size / 1024 / 1024).toFixed(2)} MB
 										</small>
 									</div>
 								) : this.state.nuevoArchivo ? (
 									<div>
-										<i className={`fas fa-file fa-4x mb-3 ${
+										<i className={`fas fa-file fa-3x mb-2 ${
 											this.state.nuevoArchivo.type.startsWith('image/') ? 'text-success' :
 											this.state.nuevoArchivo.type === 'application/pdf' ? 'text-danger' :
 											'text-primary'
 										}`}></i>
-										<p className="mb-1 fw-bold">{this.state.nuevoArchivo.name}</p>
-										<small className="text-muted">
+										<p className="mb-1 fw-bold" style={{ fontSize: '13px' }}>{this.state.nuevoArchivo.name}</p>
+										<small className="text-muted" style={{ fontSize: '12px' }}>
 											{(this.state.nuevoArchivo.size / 1024 / 1024).toFixed(2)} MB
 										</small>
 									</div>
 								) : (
 									<div>
-										<i className="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
-										<p className="mb-2 fw-bold">Arrastra y suelta archivos aquí</p>
-										<p className="text-muted mb-0">o haz clic para seleccionar</p>
-										<small className="text-muted d-block mt-2">
+										<i className="fas fa-cloud-upload-alt fa-3x text-primary mb-2"></i>
+										<p className="mb-1 fw-bold" style={{ fontSize: '14px' }}>Arrastra y suelta archivos aquí</p>
+										<p className="text-muted mb-0" style={{ fontSize: '13px' }}>o haz clic para seleccionar</p>
+										<small className="text-muted d-block mt-1" style={{ fontSize: '11px' }}>
 											Formatos: JPG, PNG, PDF, DOC, DOCX (Máx. 10MB)
 										</small>
 									</div>
@@ -1480,8 +1545,14 @@ class PerfilPaciente extends React.Component{
 							{!this.state.nuevoArchivo && (
 								<button
 									type="button"
-									className="btn btn-outline-primary w-100 mb-3"
-									onClick={() => document.getElementById('fileInput')?.click()}
+									className="btn btn-outline-primary w-100 mb-2"
+									style={{ fontSize: '13px', padding: '6px 12px' }}
+									onClick={() => {
+										const fileInput = document.getElementById('fileInput');
+										if (fileInput) {
+											fileInput.click();
+										}
+									}}
 								>
 									<i className="fas fa-folder-open me-2"></i>
 									Seleccionar archivo
@@ -1492,7 +1563,7 @@ class PerfilPaciente extends React.Component{
 							{this.state.nuevoArchivo && (
 								<button
 									type="button"
-									className="btn btn-outline-secondary w-100 mb-3"
+									className="btn btn-outline-secondary w-100 mb-2"
 									onClick={() => {
 										this.setState({ nuevoArchivo: null, previewArchivo: null });
 										const fileInput = document.getElementById('fileInput');
@@ -1505,38 +1576,33 @@ class PerfilPaciente extends React.Component{
 							)}
 
 							{/* Comentarios */}
-							<textarea
-								className="form-control mb-3"
-								placeholder="Agregar comentarios o descripción del documento (opcional)"
-								rows="3"
-								value={this.state.nuevoComentario}
-								onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
-							/>
-
-							{/* Botón de subir */}
-							<button 
-								className="btn btn-primary w-100" 
-								onClick={this.subirDocumento}
-								disabled={!this.state.nuevoArchivo || this.state.subiendoArchivo}
-							>
-								{this.state.subiendoArchivo ? (
-									<>
-										<span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-										Subiendo...
-									</>
-								) : (
-									<>
-										<i className="fas fa-upload me-2"></i>
-										Subir Documento
-									</>
-								)}
-							</button>
+							<div className="mb-2">
+								<label className="form-label fw-bold mb-1" style={{ fontSize: '13px', color: '#495057' }}>
+									<i className="fas fa-comment-alt me-1"></i>
+									Comentarios
+								</label>
+								<textarea
+									className="form-control"
+									placeholder="Agregar comentarios o descripción del documento (opcional)"
+									rows="2"
+									value={this.state.nuevoComentario}
+									onChange={(e) => this.setState({ nuevoComentario: e.target.value })}
+									style={{ 
+										resize: 'none',
+										borderRadius: '6px',
+										border: '1px solid #dee2e6',
+										padding: '8px 12px',
+										fontSize: '13px',
+										marginBottom: '10px'
+									}}
+								/>
+							</div>
 
 							{/* Información adicional */}
-							<div className="mt-3 text-center">
-								<small className="text-muted">
+							<div className="mt-2 text-center">
+								<small className="text-muted" style={{ fontSize: '11px' }}>
 									<i className="fas fa-info-circle me-1"></i>
-									Los archivos se guardan de forma segura y pueden ser descargados en cualquier momento
+									Los archivos se guardan de forma segura
 								</small>
 							</div>
 						</div>

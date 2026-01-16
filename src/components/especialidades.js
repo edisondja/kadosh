@@ -368,9 +368,6 @@ class Especialidades extends React.Component {
                                 </div>
                             </div>
                             <div className="col-md-6">
-                                <label className="form-label fw-bold mb-2" style={{ fontSize: '14px', color: '#6e6e73' }}>
-                                    <i className="fas fa-search me-2"></i>Buscar Especialidad
-                                </label>
                                 <div className="input-group" style={{ borderRadius: '12px', overflow: 'hidden' }}>
                                     <span className="input-group-text bg-white border-end-0" style={{ border: '1px solid #d1d1d6' }}>
                                         <i className="fas fa-search text-muted"></i>
