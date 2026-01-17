@@ -83,6 +83,25 @@ class PerfilPaciente extends React.Component{
 			};
 		}
 
+	// Función para calcular la edad a partir de la fecha de nacimiento
+	calcularEdad = (fechaNacimiento) => {
+		if (!fechaNacimiento) return 'N/A';
+		
+		const hoy = new Date();
+		const fechaNac = new Date(fechaNacimiento);
+		
+		if (isNaN(fechaNac.getTime())) return 'N/A';
+		
+		let edad = hoy.getFullYear() - fechaNac.getFullYear();
+		const mes = hoy.getMonth() - fechaNac.getMonth();
+		
+		if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+			edad--;
+		}
+		
+		return edad;
+	}
+
 		cargar_ficha_medica = (id_paciente) => { 
 
 			
@@ -761,6 +780,7 @@ class PerfilPaciente extends React.Component{
 						<tr>
 							<th>{Verficar.lenguaje.paciente_admin.nombre}</th>
 							<th>{Verficar.lenguaje.paciente_admin.cedula}</th>
+							<th>Edad</th>
 							<th>{Verficar.lenguaje.paciente_admin.telefono} </th>
 							<th>{Verficar.lenguaje.paciente_admin.correo_electronico}</th>
 							<th>{Verficar.lenguaje.paciente_admin.fecha_de_ingreso}</th>
@@ -772,6 +792,9 @@ class PerfilPaciente extends React.Component{
 						<tr>
 							<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
 							<td>{this.state.paciente.cedula}</td>
+							<td style={{ color: '#667eea', fontWeight: '600' }}>
+								{this.calcularEdad(this.state.paciente.fecha_nacimiento)} años
+							</td>
 							<td>{this.state.paciente.telefono}</td>
 							<td>{this.state.paciente.correo_electronico}</td>
 							<td style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.fecha_de_ingreso}</td>

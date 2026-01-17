@@ -42,6 +42,10 @@ class DoctorFormulario extends React.Component{
 		}
 
 		guardar_doctor(){
+			// Prevenir múltiples envíos
+			if (this._guardando) {
+				return;
+			}
 
 			var nombre = document.getElementById("nombre").value;
 			var apellido =document.getElementById("apellido").value;
@@ -54,6 +58,8 @@ class DoctorFormulario extends React.Component{
 				return;
 			}
 
+			this._guardando = true;
+
 			Axios.post(`${Core.url_base}/api/crear_doctor_completo`, {
 				nombre: nombre,
 				apellido: apellido,
@@ -61,21 +67,20 @@ class DoctorFormulario extends React.Component{
 				telefono: telefono,
 				especialidad: especialidad || null
 			}).then(data=>{
-					Alertify.success("Doctor guardado con éxito");
-					// Limpiar campos
-					document.getElementById("nombre").value = "";
-					document.getElementById("apellido").value = "";
-					document.getElementById("cedula").value = "";
-					document.getElementById("telefono").value = "";
-					document.getElementById("especialidad").value = "";
-					this.setState({select_op:'buscar_doctor'});
+				Alertify.success("Doctor guardado con éxito");
+				// Limpiar campos
+				document.getElementById("nombre").value = "";
+				document.getElementById("apellido").value = "";
+				document.getElementById("cedula").value = "";
+				document.getElementById("telefono").value = "";
+				document.getElementById("especialidad").value = "";
+				this._guardando = false;
+				this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
 				Alertify.error("Error al guardar el doctor");
 				console.error(error);
+				this._guardando = false;
 			});
-
-
-
 		}
 
 		render(){

@@ -20,18 +20,39 @@ var clave_secreta = Config.passowrd_admin;
 
 
 function cargar_doctores(el){
+    // Evitar múltiples llamadas simultáneas
+    if (el._cargandoDoctores) {
+        console.log("Ya se están cargando doctores, saltando...");
+        return;
+    }
 
-    
+    el._cargandoDoctores = true;
+
+    console.log(`Cargando doctores desde: ${url_base}/api/doctores`);
+
     Axios.get(`${url_base}/api/doctores`).then(data=>{
-
-         el.setState({doctores:data.data});
-
-
+        const doctores = Array.isArray(data.data) ? data.data : [];
+        console.log(`Doctores cargados exitosamente: ${doctores.length}`);
+        
+        if (el && typeof el.setState === 'function') {
+            el.setState({doctores: doctores});
+        } else if (el && typeof el.setDoctors === 'function') {
+            el.setDoctors(doctores);
+        }
+        
+        el._cargandoDoctores = false;
     }).catch(error=>{
-
-        console.log(error);
-        cargar_doctores(el);
-
+        console.error("Error al cargar doctores:", error);
+        console.error("Detalles del error:", error.response?.data || error.message);
+        
+        if (el && typeof el.setState === 'function') {
+            el.setState({doctores:[]});
+        } else if (el && typeof el.setDoctors === 'function') {
+            el.setDoctors([]);
+        }
+        
+        el._cargandoDoctores = false;
+        // NO hacer llamada recursiva para evitar loop infinito
     });
 }
 

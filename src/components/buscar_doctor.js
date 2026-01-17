@@ -20,38 +20,100 @@ class BuscarDoctor extends React.Component{
 
 		constructor(props){
 				super(props);
-				this.state= {estado:true,doctores:[{nombre:"Alex"},{nombre:"Noelia"},{nombre:"Naiel"}],opcion:null,id_select:0};
+			this.state= {
+				estado:true,
+				doctores:[],
+				doctoresTodos:[],
+				opcion:null,
+				id_select:0
+			};
+				this.buscarTimeout = null;
+				this.cargando = false;
 		}
 
 		
 		componentDidMount(){
+			if (!this.cargando) {
+				this.cargando = true;
+				this.cargar_doctores();
+			}
+		}
 
-				cargar_doctores.cargar_doctores(this);
+		componentWillUnmount(){
+			// Limpiar timeout al desmontar
+			if (this.buscarTimeout) {
+				clearTimeout(this.buscarTimeout);
+			}
 		}
 
 		buscar_doctor=(e)=>{
-
-			var nombre_doctor =  e.target.value;
+			var nombre_doctor = e.target.value;
 			
-			Axios.get(`${cargar_doctores.url_base}/api/buscando_doctor/${nombre_doctor}`).then(data=>{
+			// Limpiar timeout anterior
+			if (this.buscarTimeout) {
+				clearTimeout(this.buscarTimeout);
+			}
+
+			// Si el campo está vacío, mostrar todos los doctores
+			if (!nombre_doctor || nombre_doctor.trim() === '') {
+				this.setState({doctores: this.state.doctoresTodos || []});
+				return;
+			}
+
+			// Búsqueda del lado del cliente (más rápido y funciona con todos los doctores)
+			this.buscarTimeout = setTimeout(() => {
+				const busqueda = nombre_doctor.trim().toLowerCase();
+				const todosDoctores = this.state.doctoresTodos || [];
+				
+				if (todosDoctores.length === 0) {
+					console.log('No hay doctores cargados para buscar');
+					return;
+				}
+
+				const doctoresFiltrados = todosDoctores.filter(doctor => {
+					if (!doctor) return false;
 					
-						this.setState({doctores:data.data});		
-			});
-		}	
+					const nombre = (doctor.nombre || '').toLowerCase().trim();
+					const apellido = (doctor.apellido || '').toLowerCase().trim();
+					const nombreCompleto = `${nombre} ${apellido}`.trim();
+					const dni = (doctor.dni || '').toLowerCase().trim();
+					
+					return nombreCompleto.includes(busqueda) || 
+						   nombre.includes(busqueda) ||
+						   apellido.includes(busqueda) ||
+						   dni.includes(busqueda);
+				});
+				
+				console.log(`Buscando: "${busqueda}", Encontrados: ${doctoresFiltrados.length} de ${todosDoctores.length}`);
+				this.setState({doctores: doctoresFiltrados});
+			}, 300);
+		}
 
 		cargar_doctores(){
-				// Cargar todos los doctores (incluyendo inactivos) para administración
-				Axios.get(`${cargar_doctores.url_base}/api/doctores_todos`).then(data=>{
+			// Evitar múltiples llamadas simultáneas
+			if (this.cargando) {
+				return;
+			}
 
-					this.setState({doctores:data.data})
-
-				}).catch(error=>{
-
-					console.log(error);
-
-				})
-
-
+			this.cargando = true;
+			
+			// Cargar todos los doctores (incluyendo inactivos) para administración
+			Axios.get(`${cargar_doctores.url_base}/api/doctores_todos`).then(data=>{
+				const doctores = Array.isArray(data.data) ? data.data : [];
+				console.log(`Doctores cargados: ${doctores.length}`);
+				this.setState({
+					doctores: doctores,
+					doctoresTodos: doctores
+				});
+				this.cargando = false;
+			}).catch(error=>{
+				console.error("Error al cargar doctores:", error);
+				this.setState({
+					doctores: [],
+					doctoresTodos: []
+				});
+				this.cargando = false;
+			});
 		}
 
 		activar_doctor(id){
@@ -60,7 +122,9 @@ class BuscarDoctor extends React.Component{
 					id_doctor: id
 				}).then(data=>{
 					alertify.success("Doctor activado correctamente");
-					this.cargar_doctores(); // Recargar lista
+					// Resetear flag y recargar lista
+					this.cargando = false;
+					this.cargar_doctores();
 				}).catch(error=>{
 					alertify.error("No se pudo activar el doctor");
 					console.error(error);
@@ -74,7 +138,9 @@ class BuscarDoctor extends React.Component{
 					id_doctor: id
 				}).then(data=>{
 					alertify.success("Doctor desactivado correctamente");
-					this.cargar_doctores(); // Recargar lista
+					// Resetear flag y recargar lista
+					this.cargando = false;
+					this.cargar_doctores();
 				}).catch(error=>{
 					alertify.error("No se pudo desactivar el doctor");
 					console.error(error);
@@ -90,23 +156,17 @@ class BuscarDoctor extends React.Component{
 		}
 
 		eliminar_doctor(id){
-
-			alertify.confirm("Seguro que deseas eliminar este doctor?",function(){
-
+			alertify.confirm("Seguro que deseas eliminar este doctor?", ()=>{
 				Axios.get(`${cargar_doctores.url_base}/api/eliminar_doctor/${id}`).then(data=>{
-
-					alertify.message("Registro borrado con exito");
-
+					alertify.success("Registro borrado con éxito");
+					// Resetear flag y recargar lista
+					this.cargando = false;
+					this.cargar_doctores();
 				}).catch(error=>{
-					
 					alertify.error("No se pudo eliminar este doctor");
-				})
-
-
-			},function(){
-
+					console.error(error);
+				});
 			});
-
 		}
 
 		render(){
@@ -118,115 +178,304 @@ class BuscarDoctor extends React.Component{
 			}
 			
 			return (
-						<div className="container py-5">
-							<div className="col-md-10 mx-auto">
-							<h2 className="mb-4 text-center" style={{ fontWeight: 300, color: "#555" }}>
-								Buscar Doctor
-							</h2>
-
-							<input
-								type="text"
-								className="form-control form-control-lg rounded-4 shadow-sm px-4"
-								onChange={this.buscar_doctor}
-								id="doctor_nombre"
-								placeholder="🔍 Escribe el nombre del doctor..."
-								style={{
-								fontSize: "1.1rem",
-								border: "1px solid #ddd",
-								backgroundColor: "#f9f9f9",
-								}}
-							/>
-
-							<div className="buscar_doctor mt-5">
-								{this.state.doctores.map((data) => (
-								<div className="mb-4" key={data.id}>
-									<div
-									className="card border-0 shadow-sm"
-									style={{
-										borderRadius: "20px",
-										backgroundColor: "#fff",
-										transition: "all 0.3s",
-									}}
-									>
-									<div className="card-body">
-										<h5
-										className="mb-3"
-										style={{
-											fontWeight: 500,
-											color: "#333",
-											borderBottom: "1px solid #eee",
-											paddingBottom: "10px",
-										}}
-										>
-										{data.nombre} {data.apellido}
-										</h5>
-
-										<div className="d-flex justify-content-between align-items-center">
-											<div>
-												{data.estado === true || data.estado === 1 ? (
-													<span className="badge bg-success">Activo</span>
-												) : (
-													<span className="badge bg-secondary">Inactivo</span>
-												)}
+						<div className="container py-5" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+							<div className="col-md-11 mx-auto">
+								{/* Header con gradiente */}
+								<div className="card border-0 shadow-lg mb-4" style={{ 
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									borderRadius: '20px',
+									overflow: 'hidden'
+								}}>
+									<div className="card-body text-white p-4">
+										<div className="d-flex align-items-center">
+											<div style={{
+												width: '60px',
+												height: '60px',
+												borderRadius: '15px',
+												background: 'rgba(255,255,255,0.2)',
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												marginRight: '20px',
+												fontSize: '28px'
+											}}>
+												<i className="fas fa-user-md"></i>
 											</div>
 											<div>
-												<button
-													className="btn btn-outline-primary"
-													onClick={() => this.actualizar_doctor(data.id)}
-													style={{
-													borderRadius: "12px",
-													padding: "8px 20px",
-													fontWeight: 500,
-													marginRight: "10px",
-													}}
-												>
-													✏️ Actualizar
-												</button>
-												{data.estado === true || data.estado === 1 ? (
-													<button
-														className="btn btn-outline-warning"
-														onClick={() => this.desactivar_doctor(data.id)}
-														style={{
-														borderRadius: "12px",
-														padding: "8px 20px",
-														fontWeight: 500,
-														marginRight: "10px",
-														}}
-													>
-														⏸️ Desactivar
-													</button>
-												) : (
-													<button
-														className="btn btn-outline-success"
-														onClick={() => this.activar_doctor(data.id)}
-														style={{
-														borderRadius: "12px",
-														padding: "8px 20px",
-														fontWeight: 500,
-														marginRight: "10px",
-														}}
-													>
-														▶️ Activar
-													</button>
-												)}
-												<button
-													className="btn btn-outline-danger"
-													onClick={() => this.eliminar_doctor(data.id)}
-													style={{
-													borderRadius: "12px",
-													padding: "8px 20px",
-													fontWeight: 500,
-													}}
-												>
-													🗑️ Eliminar
-												</button>
+												<h2 className="mb-0" style={{ fontWeight: 700, fontSize: '32px' }}>
+													Gestión de Doctores
+												</h2>
+												<p className="mb-0" style={{ opacity: 0.9, fontSize: '14px' }}>
+													Busca y administra los doctores del sistema
+												</p>
 											</div>
 										</div>
 									</div>
+								</div>
+
+								{/* Campo de búsqueda mejorado */}
+								<div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
+									<div className="card-body p-4">
+										<div style={{ position: 'relative' }}>
+											<div style={{
+												position: 'absolute',
+												left: '15px',
+												top: '50%',
+												transform: 'translateY(-50%)',
+												zIndex: 10,
+												color: '#667eea',
+												fontSize: '18px'
+											}}>
+												<i className="fas fa-search"></i>
+											</div>
+											<input
+												type="text"
+												className="form-control"
+												onChange={this.buscar_doctor}
+												id="doctor_nombre"
+												placeholder="Escribe el nombre del doctor para buscar..."
+												style={{
+													fontSize: "16px",
+													border: '2px solid #e0e0e0',
+													borderRadius: '12px',
+													padding: '14px 20px 14px 50px',
+													transition: 'all 0.3s ease',
+													width: '100%',
+													boxSizing: 'border-box'
+												}}
+												onFocus={(e) => {
+													e.target.style.borderColor = '#667eea';
+													e.target.style.boxShadow = '0 0 0 0.2rem rgba(102, 126, 234, 0.25)';
+												}}
+												onBlur={(e) => {
+													e.target.style.borderColor = '#e0e0e0';
+													e.target.style.boxShadow = 'none';
+												}}
+											/>
+										</div>
+										{this.state.doctores.length > 0 && (
+											<small className="text-muted mt-2 d-block">
+												<i className="fas fa-info-circle me-1"></i>
+												{this.state.doctores.length} {this.state.doctores.length === 1 ? 'doctor encontrado' : 'doctores encontrados'}
+											</small>
+										)}
 									</div>
 								</div>
-								))}
-							</div>
+
+								{/* Lista de doctores mejorada */}
+								{this.cargando ? (
+									<div className="card border-0 shadow-sm text-center" style={{ borderRadius: '16px' }}>
+										<div className="card-body p-5">
+											<div className="spinner-border text-primary mb-3" role="status">
+												<span className="sr-only">Cargando...</span>
+											</div>
+											<h5 className="text-muted mb-2">Cargando doctores...</h5>
+										</div>
+									</div>
+								) : this.state.doctores.length === 0 ? (
+									<div className="card border-0 shadow-sm text-center" style={{ borderRadius: '16px' }}>
+										<div className="card-body p-5">
+											<i className="fas fa-user-md fa-4x text-muted mb-3" style={{ opacity: 0.3 }}></i>
+											<h5 className="text-muted mb-2">No se encontraron doctores</h5>
+											<p className="text-muted mb-0" style={{ fontSize: '14px' }}>
+												{this.state.doctoresTodos.length === 0 
+													? 'No hay doctores registrados en el sistema' 
+													: 'Intenta con otro término de búsqueda'}
+											</p>
+										</div>
+									</div>
+								) : (
+									<div className="row">
+										{this.state.doctores.map((data) => (
+											<div className="col-md-6 col-lg-4 mb-4" key={data.id}>
+												<div
+													className="card border-0 shadow-sm h-100"
+													style={{
+														borderRadius: "16px",
+														backgroundColor: "#fff",
+														transition: "all 0.3s ease",
+														overflow: 'hidden',
+														border: '1px solid #f0f0f0'
+													}}
+													onMouseEnter={(e) => {
+														e.currentTarget.style.transform = 'translateY(-5px)';
+														e.currentTarget.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.15)';
+													}}
+													onMouseLeave={(e) => {
+														e.currentTarget.style.transform = 'translateY(0)';
+														e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+													}}
+												>
+													{/* Header de la tarjeta */}
+													<div style={{
+														background: data.estado === true || data.estado === 1 
+															? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+															: 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)',
+														padding: '20px',
+														textAlign: 'center'
+													}}>
+														<div style={{
+															width: '80px',
+															height: '80px',
+															borderRadius: '50%',
+															background: 'rgba(255,255,255,0.2)',
+															display: 'inline-flex',
+															alignItems: 'center',
+															justifyContent: 'center',
+															marginBottom: '10px',
+															fontSize: '36px',
+															color: 'white'
+														}}>
+															<i className="fas fa-user-md"></i>
+														</div>
+														<h5 className="text-white mb-1" style={{ fontWeight: 600, fontSize: '18px' }}>
+															Dr. {data.nombre} {data.apellido}
+														</h5>
+														{data.estado === true || data.estado === 1 ? (
+															<span className="badge bg-light text-success" style={{ 
+																padding: '6px 12px',
+																fontSize: '12px',
+																fontWeight: 600
+															}}>
+																<i className="fas fa-check-circle me-1"></i>Activo
+															</span>
+														) : (
+															<span className="badge bg-light text-secondary" style={{ 
+																padding: '6px 12px',
+																fontSize: '12px',
+																fontWeight: 600
+															}}>
+																<i className="fas fa-pause-circle me-1"></i>Inactivo
+															</span>
+														)}
+													</div>
+
+													{/* Body de la tarjeta */}
+													<div className="card-body p-4">
+														{data.especialidad && (
+															<div className="mb-3">
+																<small className="text-muted d-block mb-1" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+																	<i className="fas fa-graduation-cap me-1"></i>Especialidad
+																</small>
+																<span className="badge bg-light text-dark" style={{ 
+																	padding: '6px 12px',
+																	fontSize: '12px'
+																}}>
+																	{data.especialidad}
+																</span>
+															</div>
+														)}
+														{data.numero_telefono && (
+															<div className="mb-3">
+																<small className="text-muted d-block mb-1" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+																	<i className="fas fa-phone me-1"></i>Teléfono
+																</small>
+																<span style={{ fontSize: '14px', color: '#495057' }}>
+																	{data.numero_telefono}
+																</span>
+															</div>
+														)}
+														{data.dni && (
+															<div className="mb-3">
+																<small className="text-muted d-block mb-1" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+																	<i className="fas fa-id-card me-1"></i>Cédula
+																</small>
+																<span style={{ fontSize: '14px', color: '#495057' }}>
+																	{data.dni}
+																</span>
+															</div>
+														)}
+
+														{/* Estado del usuario */}
+														{data.usuario && (
+															<div className="mb-3">
+																<small className="text-muted d-block mb-1" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+																	<i className="fas fa-user me-1"></i>Usuario
+																</small>
+																<span className="badge bg-success text-white" style={{ 
+																	padding: '6px 12px',
+																	fontSize: '12px'
+																}}>
+																	<i className="fas fa-check-circle me-1"></i>{data.usuario}
+																</span>
+															</div>
+														)}
+
+														{/* Botones de acción */}
+														<hr style={{ margin: '20px 0', borderColor: '#f0f0f0' }} />
+														<div className="d-flex flex-wrap gap-2">
+															<button
+																className="btn btn-sm"
+																onClick={() => this.actualizar_doctor(data.id)}
+																style={{
+																	background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+																	color: 'white',
+																	border: 'none',
+																	borderRadius: "8px",
+																	padding: "8px 16px",
+																	fontWeight: 500,
+																	fontSize: '13px',
+																	flex: 1,
+																	minWidth: '120px'
+																}}
+															>
+																<i className="fas fa-edit me-1"></i>Actualizar
+															</button>
+															{data.estado === true || data.estado === 1 ? (
+																<button
+																	className="btn btn-sm btn-warning text-white"
+																	onClick={() => this.desactivar_doctor(data.id)}
+																	style={{
+																		borderRadius: "8px",
+																		padding: "8px 16px",
+																		fontWeight: 500,
+																		fontSize: '13px',
+																		flex: 1,
+																		minWidth: '120px',
+																		border: 'none'
+																	}}
+																>
+																	<i className="fas fa-pause me-1"></i>Desactivar
+																</button>
+															) : (
+																<button
+																	className="btn btn-sm btn-success"
+																	onClick={() => this.activar_doctor(data.id)}
+																	style={{
+																		borderRadius: "8px",
+																		padding: "8px 16px",
+																		fontWeight: 500,
+																		fontSize: '13px',
+																		flex: 1,
+																		minWidth: '120px',
+																		border: 'none'
+																	}}
+																>
+																	<i className="fas fa-play me-1"></i>Activar
+																</button>
+															)}
+															<button
+																className="btn btn-sm btn-danger"
+																onClick={() => this.eliminar_doctor(data.id)}
+																style={{
+																	borderRadius: "8px",
+																	padding: "8px 16px",
+																	fontWeight: 500,
+																	fontSize: '13px',
+																	flex: 1,
+																	minWidth: '120px',
+																	border: 'none'
+																}}
+															>
+																<i className="fas fa-trash me-1"></i>Eliminar
+															</button>
+														</div>
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
 							</div>
 						</div>
 						);

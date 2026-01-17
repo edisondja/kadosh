@@ -269,39 +269,18 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, [id_doctor, id_paciente, cargarDatosDoctor, cargarPrimerDoctor]);
 
-  // Configurar Alertify para notificaciones blancas (solo una vez)
+  // Configurar Alertify para que alertify.message tenga fondo blanco (solo una vez)
   useEffect(() => {
     if (typeof Alertify !== 'undefined' && !document.getElementById('alertify-white-theme')) {
       Alertify.set('notifier', 'position', 'top-right');
-      // Configurar estilos personalizados para notificaciones blancas
+      // Configurar estilos personalizados para alertify.message con fondo blanco
       const style = document.createElement('style');
       style.id = 'alertify-white-theme';
       style.textContent = `
-        .alertify-notifier .ajs-message.ajs-success {
-          background: white !important;
-          color: #28a745 !important;
-          border: 2px solid #28a745 !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-          font-weight: 500 !important;
-        }
-        .alertify-notifier .ajs-message.ajs-error {
-          background: white !important;
-          color: #dc3545 !important;
-          border: 2px solid #dc3545 !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-          font-weight: 500 !important;
-        }
-        .alertify-notifier .ajs-message.ajs-warning {
-          background: white !important;
-          color: #ffc107 !important;
-          border: 2px solid #ffc107 !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-          font-weight: 500 !important;
-        }
         .alertify-notifier .ajs-message {
           background: white !important;
           color: #333 !important;
-          border: 2px solid #ddd !important;
+          border: 1px solid #ddd !important;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
           font-weight: 500 !important;
         }
@@ -421,16 +400,21 @@ const OdontogramaCompletoHibrido = () => {
     setPresupuesto([...presupuesto, nuevo]);
     setSeleccionCara(null); 
     setFiltroProcedimientos(""); // Limpiar filtro al agregar
+    alertify.message(`${proc.nombre} agregado al diente ${seleccionCara.diente} cara ${seleccionCara.cara}`);
   };
 
   // Función para agregar solo color sin procedimiento
   const agregarSoloColor = (color, nombreColor) => {
     if (!seleccionCara) return;
     
+    // Guardar valores antes de limpiar seleccionCara
+    const dienteSeleccionado = seleccionCara.diente;
+    const caraSeleccionada = seleccionCara.cara;
+    
     // Crear un "procedimiento" ficticio solo con el color, sin precio
     const marcadoSoloColor = {
-      diente: seleccionCara.diente,
-      cara: seleccionCara.cara,
+      diente: dienteSeleccionado,
+      cara: caraSeleccionada,
       color: color,
       nombre: nombreColor,
       tipo: "marcado_color",
@@ -440,13 +424,13 @@ const OdontogramaCompletoHibrido = () => {
     
     // Eliminar cualquier marcado previo en la misma cara
     const presupuestoActualizado = presupuesto.filter(
-      p => !(p.diente === seleccionCara.diente && p.cara === seleccionCara.cara)
+      p => !(p.diente === dienteSeleccionado && p.cara === caraSeleccionada)
     );
     
     setPresupuesto([...presupuestoActualizado, marcadoSoloColor]);
     setSeleccionCara(null);
     setFiltroProcedimientos("");
-    Alertify.success(`Color ${nombreColor} aplicado (sin facturar)`);
+    alertify.message(`${nombreColor} marcado en diente ${dienteSeleccionado} cara ${caraSeleccionada}`);
   };
 
     

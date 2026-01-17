@@ -318,13 +318,15 @@ class  Cita extends React.Component{
 				<div className="row" id="panel">
 					<div className="col-md-10">
 					<table className="table">
-						<tr>
-						<td>{Url.lenguaje.citas_c.cantidad_de_pacientes}</td>
-						<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
-						<td>{Url.lenguaje.citas_c.cantidad_de_procedimiento}</td>
-						<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
-						<td style={{ color: 'black' }}>{Url.lenguaje.citas_c.hoy_es}  {this.dia_actual()}</td>	
-						</tr>
+						<tbody>
+							<tr>
+								<td>{Url.lenguaje.citas_c.cantidad_de_pacientes}</td>
+								<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
+								<td>{Url.lenguaje.citas_c.cantidad_de_procedimiento}</td>
+								<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
+								<td style={{ color: 'black' }}>{Url.lenguaje.citas_c.hoy_es}  {this.dia_actual()}</td>	
+							</tr>
+						</tbody>
 					</table>
 					</div>
 				</div>

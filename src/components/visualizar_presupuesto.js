@@ -249,6 +249,7 @@ class VisualizarPresupuesto extends React.Component {
                 Axios.get(`${Core.url_base}/api/cargar_presupuesto/${id_prespusto}`).then(data => {
 
                         console.log("Datos correcto", data.data);
+                        // El backend ahora devuelve un objeto completo con created_at
                         this.setState({ presupuesto: data.data });
                         console.log("Presupuesto cargado", this.state.presupuesto);
 
@@ -319,7 +320,19 @@ class VisualizarPresupuesto extends React.Component {
 
                                 <div id="presupuesto">
                                         <img src={Core.Config.app_logo} width={Core.Config.logo_width_login} style={{ display: "block", margin: "auto" }} /><br />
-                                        <div style={{ textAlign: "right", fontSize: "14px" }}>{this.state.presupuesto.fecha}</div>
+                                        <div style={{ textAlign: "right", fontSize: "14px", marginBottom: "10px" }}>
+                                                <strong>Fecha de creación:</strong> {
+                                                        this.state.presupuesto.created_at 
+                                                                ? new Date(this.state.presupuesto.created_at).toLocaleDateString('es-ES', { 
+                                                                        year: 'numeric', 
+                                                                        month: 'long', 
+                                                                        day: 'numeric',
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit'
+                                                                })
+                                                                : (this.state.presupuesto.fecha || 'N/A')
+                                                }
+                                        </div>
 
                                         <div style={{ textAlign: "center", fontWeight: "bold", fontSize: "20px", backgroundColor: "#222", color: "#fff", padding: "10px", marginTop: "10px" }}>
                                                 PLAN DE TRATAMIENTO / PRESUPUESTO

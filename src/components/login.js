@@ -53,21 +53,24 @@ class Login extends React.Component{
 			let clave = document.querySelector("#clave").value;
 
 			Axios.get(`${Verificar.url_base}/api/login/${usuario}/${clave}`).then(data=>{
-				if(data.data!=""){
+				if(data.data && data.data.id && data.data.token){
 					this.setState({login:true});
-					this.setState({mensaje:" Creedenciales correcto"});
+					this.setState({mensaje:" Credenciales correctas"});
 					this.color_notifiacion={color:"green"}
 					localStorage.setItem('login', data.data.nombre+" "+data.data.apellido);
 					localStorage.setItem('id_usuario',data.data.id);
 					localStorage.setItem('token',data.data.token);
 					localStorage.setItem('roll',data.data.roll);
-
-
-					//alert(data.data.token);
-
+					if(data.data.tipo){
+						localStorage.setItem('tipo_usuario',data.data.tipo);
+					}
+				} else {
+					this.setState({mensaje:" Usuario y contraseña no válidos"});
+					this.color_notifiacion={color:"red"}
+					alertify.message("Usuario y contraseña no son correctos")
 				}
 			}).catch(error=>{
-				this.setState({mensaje:" usuario y Contraseña no validos"});
+				this.setState({mensaje:" Usuario y contraseña no válidos"});
 				this.color_notifiacion={color:"red"}
 				alertify.message("Usuario y contraseña no son correctos")
 			});
@@ -88,9 +91,9 @@ class Login extends React.Component{
 					
 						<div className="col-md-4 stilo_login"  onKeyPress={this.onKeyUp}><br/><br/>
 						<img src={Verificar.Config.app_logo} width={Verificar.Config.logo_width_login} style={this.logo_stilo}  /><br/> 
-							<storng>Usuario</storng><br/>
+							<strong>Usuario</strong><br/>
 							<input type='text' placeholder="&#9670; Usuario" className="form-control" id="usuario" /><br/>
-							<storng className="padding_text">Contraseña</storng><br/>
+							<strong className="padding_text">Contraseña</strong><br/>
 							<input type='password' placeholder="&#9673; Clave" className="form-control" id="clave" /><br/>
 							<button className="btn btn-primary boton_login" onClick={this.iniciar_sesion} id="boton_login">Login</button>
 							<hr/>

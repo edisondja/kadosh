@@ -14,6 +14,9 @@ class ImprimirRecibo extends React.Component {
       monto_total: 0,
       redirectPerfil: false,
       recibo: {},
+      config: {
+        tipo_numero_factura: 'comprobante' // Valor por defecto
+      }
     };
   }
 
@@ -22,6 +25,30 @@ class ImprimirRecibo extends React.Component {
     const { id_factura, id_recibo } = this.props.match.params;
     this.cargar_factura(id_factura);
     this.cargar_recibo(id_recibo);
+    this.cargar_configuracion();
+  }
+
+  cargar_configuracion = async () => {
+    try {
+      const { data } = await Axios.get(`${Core.url_base}/api/configs`);
+      if (data && data.length > 0) {
+        const config = data[0];
+        this.setState({
+          config: {
+            tipo_numero_factura: config.tipo_numero_factura || 'comprobante',
+            prefijo_factura: config.prefijo_factura || ''
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error al cargar configuración:", error);
+      // Usar Core.Config como fallback
+      this.setState({
+        config: {
+          tipo_numero_factura: Core.Config?.tipo_numero_factura || 'comprobante'
+        }
+      });
+    }
   }
 
   retroceder = () => {
@@ -251,7 +278,7 @@ generarPDFyEnviarWhatsApp = async () => {
           <hr />
           <p style={{ textAlign: 'center' }}>
             <strong>
-              {Core.Config?.tipo_numero_factura === 'factura' 
+              {this.state.config?.tipo_numero_factura === 'factura' 
                 ? 'FACTURA AUTORIZADA POR LA DGII' 
                 : 'COMPROBANTE AUTORIZADO POR LA DGII'}
             </strong>
@@ -260,8 +287,10 @@ generarPDFyEnviarWhatsApp = async () => {
 
           <p><strong>Fecha de pago:</strong> {recibo.fecha_pago}</p>
           <p>
-            {Core.Config?.tipo_numero_factura === 'factura' ? (
-              <strong>{recibo.codigo_recibo}</strong>
+            {this.state.config?.tipo_numero_factura === 'factura' ? (
+              <>
+                <strong>Factura:</strong> {recibo.codigo_recibo}
+              </>
             ) : (
               <>
                 <strong>Número de Comprobante:</strong> {recibo.codigo_recibo}

@@ -1,0 +1,49 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Habilitar compresión
+  <IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+  </IfModule>
+
+  # Cache para archivos estáticos
+  <IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+  </IfModule>
+
+  # IMPORTANTE: Primero verificar si el archivo existe
+  # Si el archivo o directorio existe, servirlo directamente (no redirigir)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  
+  # Si no es un archivo estático, redirigir a index.html para React Router
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+# Headers correctos para archivos JavaScript
+<FilesMatch "\.js$">
+  <IfModule mod_headers.c>
+    Header set Content-Type "application/javascript; charset=utf-8"
+  </IfModule>
+</FilesMatch>
+
+# Headers correctos para archivos CSS
+<FilesMatch "\.css$">
+  <IfModule mod_headers.c>
+    Header set Content-Type "text/css; charset=utf-8"
+  </IfModule>
+</FilesMatch>
+
+# Prevenir acceso a archivos sensibles
+<FilesMatch "^\.">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
