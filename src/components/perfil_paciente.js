@@ -9,6 +9,7 @@ import alertify from 'alertifyjs';
 import ImagenPerfil from '../usuario_listo.png'
 import { Link } from 'react-router-dom';
 import Recetas from './recetas';
+import VerPresupuesto from './ver_presupuestos';
 
 
 
@@ -50,6 +51,8 @@ class PerfilPaciente extends React.Component{
 				modal_documento_visible: false,
 				modal_ver_notas_visible: false,
 				modal_ficha_medica_visible: false,
+				modal_recetas_visible: false,
+				modal_presupuestos_visible: false,
 				desactivar_campos_ficha: false, 
 
 				// Notas y Documentos
@@ -695,26 +698,15 @@ class PerfilPaciente extends React.Component{
 							<span>{Verficar.lenguaje.perfil_paciente.documentos}</span>
 						</button>
 						
-					<Link to={`/crear_prepuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
 					<button
 						className="icon-btn"
-						title="Crear Presupuesto"
-						aria-label="Crear Presupuesto">
-					
-						<i className="fas fa-file-signature"></i>
-						<span>{Verficar.lenguaje.perfil_paciente.presupuesto}</span>
+						title="Presupuestos"
+						aria-label="Presupuestos"
+						onClick={() => this.setState({ modal_presupuestos_visible: true })}
+						>
+						<i className="fas fa-file-invoice-dollar"></i>
+						<span>Presupuestos</span>
 					</button>
-					</Link>
-
-					<Link to={`/presupuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}/${this.props.match.params.id_doc}`}>
-					<button
-						className="icon-btn"
-						title="Ver Presupuestos"
-						aria-label="Ver Presupuestos">
-						<i className="fas fa-file-alt"></i>
-						<span>{Verficar.lenguaje.perfil_paciente.ver_presupuestos}</span>
-					</button>
-					</Link>
 					<Link to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
 					<button
 						className="icon-btn"
@@ -1716,6 +1708,89 @@ class PerfilPaciente extends React.Component{
 									<button 
 										className="btn btn-secondary" 
 										onClick={() => this.setState({ modal_recetas_visible: false })}
+									>
+										Cerrar
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Modal de Presupuestos */}
+				{this.state.modal_presupuestos_visible && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+						<div className="modal-dialog modal-xl modal-dialog-centered" style={{ maxWidth: '95%' }}>
+							<div className="modal-content">
+								<div className="modal-header" style={{
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									color: 'white',
+									border: 'none'
+								}}>
+									<h5 className="modal-title" style={{ fontWeight: 700, fontSize: '20px' }}>
+										<i className="fas fa-file-invoice-dollar me-2"></i> Presupuestos
+									</h5>
+									<button 
+										className="btn-close btn-close-white" 
+										onClick={() => this.setState({ modal_presupuestos_visible: false })}
+									></button>
+								</div>
+								<div className="modal-body" style={{ maxHeight: '80vh', overflowY: 'auto', padding: 0, backgroundColor: '#f5f5f7' }}>
+									<div style={{ padding: '20px' }}>
+										<VerPresupuesto match={{ params: { id: this.props.match.params.id, id_doc: this.props.match.params.id_doc } }} enModal={true} onCerrar={() => this.setState({ modal_presupuestos_visible: false })} />
+									</div>
+								</div>
+								<div className="modal-footer" style={{ border: 'none' }}>
+									<Link to={`/crear_prepuestos/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+										<button 
+											className="btn" 
+											style={{
+												background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
+												color: 'white',
+												border: 'none',
+												borderRadius: '12px',
+												padding: '10px 24px',
+												fontWeight: 600,
+												fontSize: '15px',
+												marginRight: '10px',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 4px 12px rgba(28, 28, 30, 0.3)'
+											}}
+											onClick={() => this.setState({ modal_presupuestos_visible: false })}
+											onMouseEnter={(e) => {
+												e.target.style.transform = 'translateY(-2px)';
+												e.target.style.boxShadow = '0 6px 16px rgba(28, 28, 30, 0.4)';
+											}}
+											onMouseLeave={(e) => {
+												e.target.style.transform = 'translateY(0)';
+												e.target.style.boxShadow = '0 4px 12px rgba(28, 28, 30, 0.3)';
+											}}
+										>
+											<i className="fas fa-plus me-2"></i>Crear Presupuesto
+										</button>
+									</Link>
+									<button 
+										className="btn" 
+										onClick={() => this.setState({ modal_presupuestos_visible: false })}
+										style={{
+											background: 'linear-gradient(135deg, #8e8e93 0%, #a8a8a8 100%)',
+											color: 'white',
+											border: 'none',
+											borderRadius: '12px',
+											padding: '10px 24px',
+											fontWeight: 600,
+											fontSize: '15px',
+											transition: 'all 0.3s ease',
+											boxShadow: '0 4px 12px rgba(142, 142, 147, 0.3)'
+										}}
+										onMouseEnter={(e) => {
+											e.target.style.transform = 'translateY(-2px)';
+											e.target.style.boxShadow = '0 6px 16px rgba(142, 142, 147, 0.4)';
+										}}
+										onMouseLeave={(e) => {
+											e.target.style.transform = 'translateY(0)';
+											e.target.style.boxShadow = '0 4px 12px rgba(142, 142, 147, 0.3)';
+										}}
 									>
 										Cerrar
 									</button>

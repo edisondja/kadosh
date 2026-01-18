@@ -47,6 +47,7 @@ import PuntoVenta from './punto_venta';
 import SalariosDoctores from './salarios_doctores';
 import Especialidades from './especialidades';
 import ExportarImportar from './exportar_importar';
+import Presupuestos from './presupuestos';
 
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
@@ -59,7 +60,6 @@ class MenuDashboard extends React.Component {
       alertaPagoMostrada: false
     };
     this.estilos = { listStyleType: "none" };
-   
   }
 
   componentDidMount() {
@@ -269,6 +269,7 @@ class MenuDashboard extends React.Component {
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/historial_pagos" component={HistorialPagos} />
               <Route path="/exportar_importar" component={ExportarImportar} />
+              <Route path="/presupuestos" component={Presupuestos} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />

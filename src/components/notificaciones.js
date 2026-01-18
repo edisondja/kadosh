@@ -1,6 +1,7 @@
 import FuncionesExtras from './funciones_extras';
 import React from 'react';
 import { withRouter } from 'react-router-dom';
+import Axios from 'axios';
 import HDB from '../hbd.png';
 import okay from '../okay.png';
 import '../css/notificaciones.css';
@@ -10,11 +11,32 @@ class Notificacion extends React.Component {
         super(props);
         this.state = {
             notificaciones: [],
+            nombreClinica: '', // Nombre de la clínica desde la configuración
         };
     }
 
     componentDidMount() {
+        this.cargarConfiguracion();
         FuncionesExtras.notificar_cumple(this);
+    }
+
+    cargarConfiguracion = () => {
+        Axios.get(`${FuncionesExtras.url_base}/api/configs`)
+            .then((res) => {
+                if (res.data && res.data.length > 0) {
+                    const config = res.data[0];
+                    const nombreClinica = config.nombre_clinica || FuncionesExtras.Config.name_company || 'Clínica';
+                    this.setState({ nombreClinica });
+                } else {
+                    // Fallback al nombre del JSON si no hay config en BD
+                    this.setState({ nombreClinica: FuncionesExtras.Config.name_company || 'Clínica' });
+                }
+            })
+            .catch((err) => {
+                console.error('Error al cargar configuración:', err);
+                // Fallback al nombre del JSON si falla la petición
+                this.setState({ nombreClinica: FuncionesExtras.Config.name_company || 'Clínica' });
+            });
     }
 
     ver_paciente = (id, id_doctor) => {
@@ -23,7 +45,8 @@ class Notificacion extends React.Component {
 
    
     compartirWhatsapp = (telefono, nombre) => {
-        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de ${FuncionesExtras.Config.name_company} te desea un feliz cumpleaños 🎈.`;
+        const nombreClinica = this.state.nombreClinica || FuncionesExtras.Config.name_company || 'Clínica';
+        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de ${nombreClinica} te desea un feliz cumpleaños 🎈.`;
         const url = `https://web.whatsapp.com/send?phone=1${telefono}&text=${encodeURIComponent(mensaje)}`;
 
         if (this.waWindow && !this.waWindow.closed) {

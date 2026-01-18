@@ -400,7 +400,7 @@ const OdontogramaCompletoHibrido = () => {
     setPresupuesto([...presupuesto, nuevo]);
     setSeleccionCara(null); 
     setFiltroProcedimientos(""); // Limpiar filtro al agregar
-    alertify.message(`${proc.nombre} agregado al diente ${seleccionCara.diente} cara ${seleccionCara.cara}`);
+    // alertify.message eliminado para no deformar el modal
   };
 
   // Función para agregar solo color sin procedimiento
@@ -430,7 +430,7 @@ const OdontogramaCompletoHibrido = () => {
     setPresupuesto([...presupuestoActualizado, marcadoSoloColor]);
     setSeleccionCara(null);
     setFiltroProcedimientos("");
-    alertify.message(`${nombreColor} marcado en diente ${dienteSeleccionado} cara ${caraSeleccionada}`);
+    // alertify.message eliminado para no deformar el modal
   };
 
     

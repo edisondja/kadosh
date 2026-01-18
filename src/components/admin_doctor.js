@@ -15,7 +15,7 @@ class DoctorFormulario extends React.Component{
 					select_op:null,
 					especialidades: []
 				}
-
+				this._guardando = false;
 		}
 
 		componentDidMount() {
@@ -41,7 +41,7 @@ class DoctorFormulario extends React.Component{
 
 		}
 
-		guardar_doctor(){
+		guardar_doctor = () => {
 			// Prevenir múltiples envíos
 			if (this._guardando) {
 				return;
@@ -60,7 +60,9 @@ class DoctorFormulario extends React.Component{
 
 			this._guardando = true;
 
-			Axios.post(`${Core.url_base}/api/crear_doctor_completo`, {
+			// Normalizar URL (eliminar barra final si existe)
+			const urlBase = Core.url_base.endsWith('/') ? Core.url_base.slice(0, -1) : Core.url_base;
+			Axios.post(`${urlBase}/api/crear_doctor_completo`, {
 				nombre: nombre,
 				apellido: apellido,
 				cedula: cedula,
@@ -77,8 +79,9 @@ class DoctorFormulario extends React.Component{
 				this._guardando = false;
 				this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
-				Alertify.error("Error al guardar el doctor");
-				console.error(error);
+				const errorMessage = error.response?.data?.message || error.response?.data?.error || "Error al guardar el doctor";
+				Alertify.error(errorMessage);
+				console.error("Error completo:", error.response?.data || error);
 				this._guardando = false;
 			});
 		}

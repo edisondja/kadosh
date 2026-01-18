@@ -171,67 +171,69 @@ class VerPresupuesto extends React.Component{
                         }
                     }
                 `}</style>
-                <div className="col-md-10 mt-4" style={{ backgroundColor: '#f5f5f7', minHeight: '100vh', padding: '30px', borderRadius: '16px' }}>
-                    {/* Header estilo macOS */}
-                    <div className="card border-0 shadow-lg mb-4" style={{ 
-                        borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        overflow: 'hidden'
-                    }}>
-                        <div className="card-body text-white p-4">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div className="d-flex align-items-center">
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '15px',
-                                        background: 'rgba(255,255,255,0.2)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginRight: '20px',
-                                        fontSize: '28px'
-                                    }}>
-                                        <i className="fas fa-file-invoice-dollar"></i>
-                                    </div>
-                                    <div>
-                                        <h3 className="mb-0" style={{ fontWeight: 700, fontSize: '28px' }}>
-                                            Lista de Presupuestos
-                                        </h3>
-                                        <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px' }}>
-                                            Gestiona los presupuestos del paciente
-                                        </p>
-                                    </div>
-                                </div>
-                                <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
-                                    <button 
-                                        className="btn"
-                                        style={{
+                <div style={{ width: '100%', padding: this.props.enModal ? '0' : '30px' }}>
+                    {/* Header estilo macOS - solo si no está en modal */}
+                    {!this.props.enModal && (
+                        <div className="card border-0 shadow-lg mb-4" style={{ 
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            overflow: 'hidden'
+                        }}>
+                            <div className="card-body text-white p-4">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <div className="d-flex align-items-center">
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '15px',
                                             background: 'rgba(255,255,255,0.2)',
-                                            border: '2px solid rgba(255,255,255,0.3)',
-                                            color: 'white',
-                                            borderRadius: '12px',
-                                            padding: '12px 24px',
-                                            fontWeight: 600,
-                                            fontSize: '15px',
-                                            transition: 'all 0.3s ease',
-                                            backdropFilter: 'blur(10px)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.background = 'rgba(255,255,255,0.3)';
-                                            e.target.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.background = 'rgba(255,255,255,0.2)';
-                                            e.target.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <i className="fas fa-arrow-left me-2"></i>Retroceder
-                                    </button>
-                                </Link>
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: '20px',
+                                            fontSize: '28px'
+                                        }}>
+                                            <i className="fas fa-file-invoice-dollar"></i>
+                                        </div>
+                                        <div>
+                                            <h3 className="mb-0" style={{ fontWeight: 700, fontSize: '28px' }}>
+                                                Lista de Presupuestos
+                                            </h3>
+                                            <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px' }}>
+                                                Gestiona los presupuestos del paciente
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Link to={`/perfil_paciente/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
+                                        <button 
+                                            className="btn"
+                                            style={{
+                                                background: 'rgba(255,255,255,0.2)',
+                                                border: '2px solid rgba(255,255,255,0.3)',
+                                                color: 'white',
+                                                borderRadius: '12px',
+                                                padding: '12px 24px',
+                                                fontWeight: 600,
+                                                fontSize: '15px',
+                                                transition: 'all 0.3s ease',
+                                                backdropFilter: 'blur(10px)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.background = 'rgba(255,255,255,0.3)';
+                                                e.target.style.transform = 'translateY(-2px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.background = 'rgba(255,255,255,0.2)';
+                                                e.target.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <i className="fas fa-arrow-left me-2"></i>Retroceder
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Buscador */}
                     <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', overflow: 'hidden' }}>
