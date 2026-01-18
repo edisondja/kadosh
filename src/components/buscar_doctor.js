@@ -28,15 +28,50 @@ class BuscarDoctor extends React.Component{
 				id_select:0
 			};
 				this.buscarTimeout = null;
-				this.cargando = false;
 		}
 
 		
 		componentDidMount(){
-			if (!this.cargando) {
-				this.cargando = true;
-				this.cargar_doctores();
+			// Cargar todos los doctores (incluyendo inactivos) para administración
+			this.cargar_todos_doctores();
+		}
+
+		cargar_todos_doctores(){
+			// Para gestión de doctores, necesitamos ver TODOS (activos e inactivos)
+			// para poder activar los desactivados
+			if (this._cargandoDoctores) {
+				return;
 			}
+
+			this._cargandoDoctores = true;
+
+			// Usar /api/doctores_todos para ver todos los doctores (activos e inactivos)
+			Axios.get(`${cargar_doctores.url_base}/api/doctores_todos`).then(data=>{
+				const doctores = Array.isArray(data.data) ? data.data : [];
+				this.setState({
+					doctores: doctores,
+					doctoresTodos: doctores // También actualizar doctoresTodos para la búsqueda
+				});
+				this._cargandoDoctores = false;
+			}).catch(error=>{
+				console.error("Error al cargar doctores:", error);
+				// Si falla doctores_todos, intentar con doctores activos como fallback
+				Axios.get(`${cargar_doctores.url_base}/api/doctores`).then(data=>{
+					const doctores = Array.isArray(data.data) ? data.data : [];
+					this.setState({
+						doctores: doctores,
+						doctoresTodos: doctores
+					});
+					this._cargandoDoctores = false;
+				}).catch(error2=>{
+					console.error("Error al cargar doctores activos:", error2);
+					this.setState({
+						doctores: [],
+						doctoresTodos: []
+					});
+					this._cargandoDoctores = false;
+				});
+			});
 		}
 
 		componentWillUnmount(){
@@ -89,32 +124,6 @@ class BuscarDoctor extends React.Component{
 			}, 300);
 		}
 
-		cargar_doctores(){
-			// Evitar múltiples llamadas simultáneas
-			if (this.cargando) {
-				return;
-			}
-
-			this.cargando = true;
-			
-			// Cargar todos los doctores (incluyendo inactivos) para administración
-			Axios.get(`${cargar_doctores.url_base}/api/doctores_todos`).then(data=>{
-				const doctores = Array.isArray(data.data) ? data.data : [];
-				console.log(`Doctores cargados: ${doctores.length}`);
-				this.setState({
-					doctores: doctores,
-					doctoresTodos: doctores
-				});
-				this.cargando = false;
-			}).catch(error=>{
-				console.error("Error al cargar doctores:", error);
-				this.setState({
-					doctores: [],
-					doctoresTodos: []
-				});
-				this.cargando = false;
-			});
-		}
 
 		activar_doctor(id){
 			alertify.confirm("¿Deseas activar este doctor?", ()=>{
@@ -122,9 +131,9 @@ class BuscarDoctor extends React.Component{
 					id_doctor: id
 				}).then(data=>{
 					alertify.success("Doctor activado correctamente");
-					// Resetear flag y recargar lista
-					this.cargando = false;
-					this.cargar_doctores();
+					// Recargar lista
+					this._cargandoDoctores = false;
+					this.cargar_todos_doctores();
 				}).catch(error=>{
 					alertify.error("No se pudo activar el doctor");
 					console.error(error);
@@ -138,9 +147,9 @@ class BuscarDoctor extends React.Component{
 					id_doctor: id
 				}).then(data=>{
 					alertify.success("Doctor desactivado correctamente");
-					// Resetear flag y recargar lista
-					this.cargando = false;
-					this.cargar_doctores();
+					// Recargar lista
+					this._cargandoDoctores = false;
+					this.cargar_todos_doctores();
 				}).catch(error=>{
 					alertify.error("No se pudo desactivar el doctor");
 					console.error(error);
@@ -159,9 +168,9 @@ class BuscarDoctor extends React.Component{
 			alertify.confirm("Seguro que deseas eliminar este doctor?", ()=>{
 				Axios.get(`${cargar_doctores.url_base}/api/eliminar_doctor/${id}`).then(data=>{
 					alertify.success("Registro borrado con éxito");
-					// Resetear flag y recargar lista
-					this.cargando = false;
-					this.cargar_doctores();
+					// Recargar lista
+					this._cargandoDoctores = false;
+					this.cargar_todos_doctores();
 				}).catch(error=>{
 					alertify.error("No se pudo eliminar este doctor");
 					console.error(error);
@@ -263,7 +272,7 @@ class BuscarDoctor extends React.Component{
 								</div>
 
 								{/* Lista de doctores mejorada */}
-								{this.cargando ? (
+								{this._cargandoDoctores && this.state.doctoresTodos.length === 0 ? (
 									<div className="card border-0 shadow-sm text-center" style={{ borderRadius: '16px' }}>
 										<div className="card-body p-5">
 											<div className="spinner-border text-primary mb-3" role="status">
@@ -403,7 +412,7 @@ class BuscarDoctor extends React.Component{
 
 														{/* Botones de acción */}
 														<hr style={{ margin: '20px 0', borderColor: '#f0f0f0' }} />
-														<div className="d-flex flex-wrap gap-2">
+														<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 															<button
 																className="btn btn-sm"
 																onClick={() => this.actualizar_doctor(data.id)}
@@ -412,63 +421,97 @@ class BuscarDoctor extends React.Component{
 																	color: 'white',
 																	border: 'none',
 																	borderRadius: "8px",
-																	padding: "8px 16px",
+																	padding: "10px 16px",
 																	fontWeight: 500,
 																	fontSize: '13px',
-																	flex: 1,
-																	minWidth: '120px'
+																	width: '100%',
+																	transition: 'all 0.2s ease'
+																}}
+																onMouseEnter={(e) => {
+																	e.target.style.transform = 'translateY(-2px)';
+																	e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+																}}
+																onMouseLeave={(e) => {
+																	e.target.style.transform = 'translateY(0)';
+																	e.target.style.boxShadow = 'none';
 																}}
 															>
 																<i className="fas fa-edit me-1"></i>Actualizar
 															</button>
-															{data.estado === true || data.estado === 1 ? (
+															<div style={{ display: 'flex', gap: '10px' }}>
+																{data.estado === true || data.estado === 1 ? (
+																	<button
+																		className="btn btn-sm btn-warning text-white"
+																		onClick={() => this.desactivar_doctor(data.id)}
+																		style={{
+																			borderRadius: "8px",
+																			padding: "10px 16px",
+																			fontWeight: 500,
+																			fontSize: '13px',
+																			flex: 1,
+																			border: 'none',
+																			transition: 'all 0.2s ease'
+																		}}
+																		onMouseEnter={(e) => {
+																			e.target.style.transform = 'translateY(-2px)';
+																			e.target.style.boxShadow = '0 4px 12px rgba(255, 193, 7, 0.3)';
+																		}}
+																		onMouseLeave={(e) => {
+																			e.target.style.transform = 'translateY(0)';
+																			e.target.style.boxShadow = 'none';
+																		}}
+																	>
+																		<i className="fas fa-pause me-1"></i>Desactivar
+																	</button>
+																) : (
+																	<button
+																		className="btn btn-sm btn-success"
+																		onClick={() => this.activar_doctor(data.id)}
+																		style={{
+																			borderRadius: "8px",
+																			padding: "10px 16px",
+																			fontWeight: 500,
+																			fontSize: '13px',
+																			flex: 1,
+																			border: 'none',
+																			transition: 'all 0.2s ease'
+																		}}
+																		onMouseEnter={(e) => {
+																			e.target.style.transform = 'translateY(-2px)';
+																			e.target.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+																		}}
+																		onMouseLeave={(e) => {
+																			e.target.style.transform = 'translateY(0)';
+																			e.target.style.boxShadow = 'none';
+																		}}
+																	>
+																		<i className="fas fa-play me-1"></i>Activar
+																	</button>
+																)}
 																<button
-																	className="btn btn-sm btn-warning text-white"
-																	onClick={() => this.desactivar_doctor(data.id)}
+																	className="btn btn-sm btn-danger"
+																	onClick={() => this.eliminar_doctor(data.id)}
 																	style={{
 																		borderRadius: "8px",
-																		padding: "8px 16px",
+																		padding: "10px 16px",
 																		fontWeight: 500,
 																		fontSize: '13px',
 																		flex: 1,
-																		minWidth: '120px',
-																		border: 'none'
+																		border: 'none',
+																		transition: 'all 0.2s ease'
+																	}}
+																	onMouseEnter={(e) => {
+																		e.target.style.transform = 'translateY(-2px)';
+																		e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+																	}}
+																	onMouseLeave={(e) => {
+																		e.target.style.transform = 'translateY(0)';
+																		e.target.style.boxShadow = 'none';
 																	}}
 																>
-																	<i className="fas fa-pause me-1"></i>Desactivar
+																	<i className="fas fa-trash me-1"></i>Eliminar
 																</button>
-															) : (
-																<button
-																	className="btn btn-sm btn-success"
-																	onClick={() => this.activar_doctor(data.id)}
-																	style={{
-																		borderRadius: "8px",
-																		padding: "8px 16px",
-																		fontWeight: 500,
-																		fontSize: '13px',
-																		flex: 1,
-																		minWidth: '120px',
-																		border: 'none'
-																	}}
-																>
-																	<i className="fas fa-play me-1"></i>Activar
-																</button>
-															)}
-															<button
-																className="btn btn-sm btn-danger"
-																onClick={() => this.eliminar_doctor(data.id)}
-																style={{
-																	borderRadius: "8px",
-																	padding: "8px 16px",
-																	fontWeight: 500,
-																	fontSize: '13px',
-																	flex: 1,
-																	minWidth: '120px',
-																	border: 'none'
-																}}
-															>
-																<i className="fas fa-trash me-1"></i>Eliminar
-															</button>
+															</div>
 														</div>
 													</div>
 												</div>

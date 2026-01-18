@@ -305,10 +305,10 @@ class  crear_presupuesto extends React.Component{
                         to { opacity: 1; transform: translateY(0); }
                     }
                 `}</style>
-                <div className="col-md-10" style={{ 
+                <div className="col-12 col-md-10 col-lg-10" style={{ 
                     backgroundColor: '#f5f5f7',
                     minHeight: '100vh',
-                    padding: '30px',
+                    padding: '15px',
                     borderRadius: '16px'
                 }}>
                     {/* Header principal */}
@@ -380,7 +380,7 @@ class  crear_presupuesto extends React.Component{
                     }}>
                         <div className="card-body p-4">
                             <div className="row">
-                                <div className="col-md-6 mb-3">
+                                <div className="col-12 col-md-6 mb-3">
                                     <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', display: 'block' }}>
                                         <i className="fas fa-tag me-2"></i>Nombre del Presupuesto
                                     </label>
@@ -406,35 +406,42 @@ class  crear_presupuesto extends React.Component{
                                         }}
                                     />
                                 </div>
-                                <div className="col-md-6 mb-3">
+                                <div className="col-12 col-md-6 mb-3" style={{ display: 'flex', flexDirection: 'column' }}>
                                     <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', display: 'block' }}>
                                         <i className="fas fa-user-md me-2"></i>Seleccione el Doctor
                                     </label>
-                                    <select 
-                                        className="form-control" 
-                                        id="doctor_i" 
-                                        onChange={this.select_checked}
-                                        style={{
-                                            borderRadius: '12px',
-                                            border: '2px solid #e0e0e0',
-                                            padding: '12px 16px',
-                                            fontSize: '15px',
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#1c1c1e';
-                                            e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e0e0e0';
-                                            e.target.style.boxShadow = 'none';
-                                        }}
-                                    >
-                                        <option value="seleccione_doctor">Seleccione un doctor</option>
-                                        {this.state.doctores.map(data=>(
-                                             <option key={data.id} value={data.id}>{data.nombre} {data.apellido}</option>
-                                        ))}
-                                    </select>
+                                    <div style={{ width: '100%' }}>
+                                        <select 
+                                            className="form-control" 
+                                            id="doctor_i" 
+                                            onChange={this.select_checked}
+                                            style={{
+                                                borderRadius: '12px',
+                                                border: '2px solid #e0e0e0',
+                                                padding: '12px 16px',
+                                                fontSize: '15px',
+                                                transition: 'all 0.2s ease',
+                                                width: '100%',
+                                                minWidth: '100%',
+                                                maxWidth: '100%',
+                                                boxSizing: 'border-box',
+                                                appearance: 'auto'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#1c1c1e';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            <option value="seleccione_doctor">Seleccione un doctor</option>
+                                            {this.state.doctores.map(data=>(
+                                                 <option key={data.id} value={data.id}>{data.nombre} {data.apellido}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -655,10 +662,6 @@ class  crear_presupuesto extends React.Component{
                         animation: 'slideUp 0.8s ease'
                     }}>
                         <div className="card-body p-4">
-                            <h5 className="mb-3" style={{ fontWeight: 600, color: '#495057' }}>
-                                <i className="fas fa-search me-2" style={{ color: '#1c1c1e' }}></i>
-                                Buscar y Agregar Procedimientos
-                            </h5>
                             <div className="input-group mb-3">
                                 <span className="input-group-text" style={{
                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
