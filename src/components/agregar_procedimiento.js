@@ -210,9 +210,17 @@ class ProcedimientoForm extends React.Component{
 											style={{
 												borderRadius: '12px',
 												border: '2px solid #e0e0e0',
-												padding: '12px 16px',
+												padding: '14px 16px',
 												fontSize: '15px',
-												transition: 'all 0.2s ease'
+												minHeight: '50px',
+												height: 'auto',
+												lineHeight: '1.5',
+												transition: 'all 0.2s ease',
+												appearance: 'none',
+												backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+												backgroundRepeat: 'no-repeat',
+												backgroundPosition: 'right 16px center',
+												paddingRight: '40px'
 											}}
 											onFocus={(e) => {
 												e.target.style.borderColor = '#1c1c1e';

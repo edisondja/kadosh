@@ -616,248 +616,873 @@ class PerfilPaciente extends React.Component{
 				//return <VerFacturas id_paciente={this.props.id_paciente} paciente={this.state.paciente.nombre} />;
 			} else if (this.state.select === "perfil_paciente") {
 				return (
-				<div className="col-md-10 mx-auto my-4">
-					<hr />
-					<h3 className="mb-4" style={{ fontWeight: '600' }}>
-					{this.state.paciente.nombre} {this.state.paciente.apellido}
-					</h3>
+				<>
+					<style>{`
+						@keyframes fadeIn {
+							from { opacity: 0; transform: translateY(10px); }
+							to { opacity: 1; transform: translateY(0); }
+						}
+						@keyframes slideUp {
+							from { opacity: 0; transform: translateY(20px); }
+							to { opacity: 1; transform: translateY(0); }
+						}
+					`}</style>
+					<div className="col-12 col-md-10" style={{ 
+						backgroundColor: '#f5f5f7',
+						minHeight: '100vh',
+						padding: '15px',
+						borderRadius: '16px'
+					}}>
+						<input type="hidden" id="paciente_id" value={this.props.id_paciente} />
 
-					<input type="hidden" id="paciente_id" value={this.props.id_paciente} />
+						{/* Header principal */}
+						<div className="card border-0 shadow-lg mb-4" style={{ 
+							borderRadius: '16px',
+							background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+							overflow: 'hidden',
+							animation: 'fadeIn 0.5s ease'
+						}}>
+							<div className="card-body text-white p-4">
+								<div className="d-flex justify-content-between align-items-start flex-wrap mb-3">
+									<div className="d-flex align-items-center flex-wrap">
+										<img
+											id="foto_paciente"
+											src={Verficar.url_base + "/storage/" + this.state.paciente.foto_paciente}
+											alt="Foto Paciente"
+											style={{
+												width: '120px',
+												height: '120px',
+												objectFit: 'cover',
+												borderRadius: '50%',
+												border: '4px solid rgba(255,255,255,0.3)',
+												boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+												marginRight: '25px',
+												marginBottom: '15px'
+											}}
+										/>
+										<div>
+											<h2 className="mb-2" style={{ fontWeight: 700, fontSize: '36px' }}>
+												{this.state.paciente.nombre} {this.state.paciente.apellido}
+											</h2>
+										</div>
+									</div>
+									<button 
+										className="btn"
+										onClick={this.detras}
+										style={{
+											background: 'rgba(255,255,255,0.2)',
+											border: '2px solid rgba(255,255,255,0.3)',
+											color: 'white',
+											borderRadius: '12px',
+											padding: '10px 20px',
+											fontWeight: 600,
+											fontSize: '14px',
+											transition: 'all 0.3s ease',
+											backdropFilter: 'blur(10px)',
+											marginTop: '10px'
+										}}
+										onMouseEnter={(e) => {
+											e.target.style.background = 'rgba(255,255,255,0.3)';
+											e.target.style.transform = 'translateY(-2px)';
+										}}
+										onMouseLeave={(e) => {
+											e.target.style.background = 'rgba(255,255,255,0.2)';
+											e.target.style.transform = 'translateY(0)';
+										}}
+									>
+										<i className="fas fa-arrow-left me-2"></i>{Verficar.lenguaje.perfil_paciente.atras}
+									</button>
+								</div>
+								
+								{/* Datos del paciente separados */}
+								<div className="row g-3 mt-2">
+									<div className="col-12 col-md-6 col-lg-3">
+										<div style={{
+											background: 'rgba(255,255,255,0.15)',
+											backdropFilter: 'blur(10px)',
+											borderRadius: '12px',
+											padding: '15px',
+											border: '1px solid rgba(255,255,255,0.2)'
+										}}>
+											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+												<i className="fas fa-id-card me-2"></i>
+												{Verficar.lenguaje.paciente_admin.cedula}
+											</div>
+											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+												{this.state.paciente.cedula || 'N/A'}
+											</div>
+										</div>
+									</div>
+									<div className="col-12 col-md-6 col-lg-3">
+										<div style={{
+											background: 'rgba(255,255,255,0.15)',
+											backdropFilter: 'blur(10px)',
+											borderRadius: '12px',
+											padding: '15px',
+											border: '1px solid rgba(255,255,255,0.2)'
+										}}>
+											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+												<i className="fas fa-birthday-cake me-2"></i>
+												Edad
+											</div>
+											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+												{this.calcularEdad(this.state.paciente.fecha_nacimiento)} años
+											</div>
+										</div>
+									</div>
+									<div className="col-12 col-md-6 col-lg-3">
+										<div style={{
+											background: 'rgba(255,255,255,0.15)',
+											backdropFilter: 'blur(10px)',
+											borderRadius: '12px',
+											padding: '15px',
+											border: '1px solid rgba(255,255,255,0.2)'
+										}}>
+											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+												<i className="fas fa-phone me-2"></i>
+												{Verficar.lenguaje.paciente_admin.telefono}
+											</div>
+											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+												{this.state.paciente.telefono || 'N/A'}
+											</div>
+										</div>
+									</div>
+									<div className="col-12 col-md-6 col-lg-3">
+										<div style={{
+											background: this.state.deuda_total > 0 ? 'rgba(220, 53, 69, 0.3)' : 'rgba(40, 167, 69, 0.3)',
+											backdropFilter: 'blur(10px)',
+											borderRadius: '12px',
+											padding: '15px',
+											border: '1px solid rgba(255,255,255,0.2)'
+										}}>
+											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+												<i className={this.state.deuda_total > 0 ? "fas fa-exclamation-triangle me-2" : "fas fa-check-circle me-2"}></i>
+												Estado de Deuda
+											</div>
+											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+												{this.state.deuda_total > 0 ? (
+													<>${new Intl.NumberFormat().format(this.state.deuda_total)}</>
+												) : (
+													<>Sin deuda</>
+												)}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
-					<div className="d-flex gap-4 mb-4 align-items-start">
-				
-					<img
-							id="foto_paciente"
-							src={Verficar.url_base + "/storage/" + this.state.paciente.foto_paciente}
-							alt="Foto Paciente"
-							style={{
-								width: '100px',
-								height: '100px',
-								objectFit: 'cover',
-								borderRadius: '50%',
-								border: '2px solid #ddd',
-								boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-							}}
-							/>
-						
-					<div className="icon-buttons-container text-center">
-						&nbsp;&nbsp;
-						<Link to={`/agregar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
-						<button
-							className="icon-btn"
-							title="Agregar Factura"
-							aria-label="Agregar Factura">
-						
-							<i className="fas fa-file-invoice-dollar"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.factura}</span>
-						</button>
-						</Link>
-						<Link to={`/ver_facturas/${this.props.match.params.id}`}>
-						<button
-							className="icon-btn"
-							title="Ver Facturas"
-							aria-label="Ver Facturas">
-							<i className="fas fa-file-alt"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.ver_facturas}</span>
-						</button>
-						</Link>
+						{/* Tutor si existe */}
+						{this.state.paciente.nombre_tutor !== null && (
+							<div className="card border-0 shadow-sm mb-4" style={{ 
+								borderRadius: '16px',
+								background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+								animation: 'slideUp 0.6s ease'
+							}}>
+								<div className="card-body p-3">
+									<div style={{ display: 'flex', alignItems: 'center' }}>
+										<i className="fa-solid fa-user-tie me-3" style={{ fontSize: '24px', color: '#667eea' }}></i>
+										<div>
+											<strong style={{ color: '#495057', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+												{Verficar.lenguaje.perfil_paciente.nombre_tutor}:
+											</strong>
+											<span style={{ color: '#667eea', fontWeight: 600, fontSize: '16px', marginLeft: '10px' }}>
+												{this.state.paciente.nombre_tutor}
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						)}
 
-						<button onClick={() => this.setState({ modal_ficha_medica_visible: true })}
-							className="icon-btn"
-							title="Ficha Medica"
-							aria-label="Ficha Medica">
+						{/* Botones de acción */}
+						<div className="card border-0 shadow-sm mb-4" style={{ 
+							borderRadius: '16px',
+							overflow: 'hidden',
+							animation: 'slideUp 0.7s ease'
+						}}>
+							<div className="card-body p-4">
+								<h5 className="mb-3" style={{ fontWeight: 600, color: '#495057' }}>
+									<i className="fas fa-th-large me-2" style={{ color: '#1c1c1e' }}></i>
+									Acciones Rápidas
+								</h5>
+								<div className="row">
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<Link to={`/agregar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`} style={{ textDecoration: 'none' }}>
+											<div style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+											>
+												<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+													{Verficar.lenguaje.perfil_paciente.factura}
+												</h6>
+											</div>
+										</Link>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<Link to={`/ver_facturas/${this.props.match.params.id}`} style={{ textDecoration: 'none' }}>
+											<div style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+											>
+												<i className="fas fa-file-alt" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+													{Verficar.lenguaje.perfil_paciente.ver_facturas}
+												</h6>
+											</div>
+										</Link>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={() => this.setState({ modal_ficha_medica_visible: true })}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-file-medical" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={this.ver_notas}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-sticky-note" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												{Verficar.lenguaje.perfil_paciente.notas}
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={this.openModalNota}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-plus-circle" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												{Verficar.lenguaje.perfil_paciente.agregar_nota}
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={this.cargar_documentos}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-folder-open" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												{Verficar.lenguaje.perfil_paciente.documentos}
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={() => this.setState({ modal_presupuestos_visible: true })}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												Presupuestos
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<Link to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`} style={{ textDecoration: 'none' }}>
+											<div style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+											>
+												<i className="fas fa-tooth" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+													Odontograma
+												</h6>
+											</div>
+										</Link>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<Link to={`/ver_odontogramas/${this.props.match.params.id}`} style={{ textDecoration: 'none' }}>
+											<div style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+											>
+												<i className="fas fa-list" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+													Ver Odontogramas
+												</h6>
+											</div>
+										</Link>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={() => this.setState({ modal_recetas_visible: true })}
+											style={{
+												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+												border: '2px solid #e0e0e0',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+												e.currentTarget.style.borderColor = '#667eea';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+												e.currentTarget.style.borderColor = '#e0e0e0';
+											}}
+										>
+											<i className="fas fa-prescription" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												Recetas
+											</h6>
+										</div>
+									</div>
+									<div className="col-6 col-md-4 col-lg-3 mb-3">
+										<div 
+											onClick={() => this.eliminar_paciente(this.state.paciente.id)}
+											style={{
+												background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+												border: '2px solid transparent',
+												borderRadius: '16px',
+												padding: '20px',
+												textAlign: 'center',
+												cursor: 'pointer',
+												transition: 'all 0.3s ease',
+												boxShadow: '0 2px 8px rgba(220, 53, 69, 0.3)'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.transform = 'translateY(-5px)';
+												e.currentTarget.style.boxShadow = '0 6px 16px rgba(220, 53, 69, 0.4)';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.transform = 'translateY(0)';
+												e.currentTarget.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.3)';
+											}}
+										>
+											<i className="fas fa-trash-alt" style={{ fontSize: '32px', color: 'white', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: 'white' }}>
+												{Verficar.lenguaje.perfil_paciente.eliminar}
+											</h6>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
-							<i className="fas fa-file-medical"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}</span>
-						</button>
+						{/* Información del paciente */}
+						<div className="card border-0 shadow-sm mb-4" style={{ 
+							borderRadius: '16px',
+							overflow: 'hidden',
+							animation: 'slideUp 0.8s ease'
+						}}>
+							<div className="table-responsive">
+								<table className="table table-hover mb-0">
+									<thead style={{
+										background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+										borderBottom: '2px solid #e0e0e0'
+									}}>
+										<tr>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.nombre}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.cedula}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>Edad</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.telefono}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.correo_electronico}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.fecha_de_ingreso}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none'
+											}}>{Verficar.lenguaje.paciente_admin.ingresado}</th>
+											<th style={{ 
+												fontWeight: 600, 
+												fontSize: '13px',
+												textTransform: 'uppercase',
+												letterSpacing: '0.5px',
+												color: '#495057',
+												padding: '15px 20px',
+												border: 'none',
+												textAlign: 'right'
+											}}>{Verficar.lenguaje.citas_c.deuda}</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr style={{
+											transition: 'all 0.2s ease',
+											borderBottom: '1px solid #f0f0f0'
+										}}
+										onMouseEnter={(e) => {
+											e.currentTarget.style.background = '#f8f9fa';
+										}}
+										onMouseLeave={(e) => {
+											e.currentTarget.style.background = 'white';
+										}}
+										>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', fontWeight: 500 }}>
+												{this.state.paciente.nombre} {this.state.paciente.apellido}
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{this.state.paciente.cedula}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+												<span className="badge" style={{
+													background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+													color: 'white',
+													padding: '6px 12px',
+													borderRadius: '8px',
+													fontWeight: 600,
+													fontSize: '13px'
+												}}>
+													{this.calcularEdad(this.state.paciente.fecha_nacimiento)} años
+												</span>
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{this.state.paciente.telefono}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{this.state.paciente.correo_electronico || '-'}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+												<span style={{ color: '#667eea', fontWeight: 600 }}>
+													{this.state.paciente.fecha_de_ingreso}
+												</span>
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+												{this.state.doctor.nombre} {this.state.doctor.apellido}
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'right' }}>
+												<span className="badge" style={{
+													background: this.state.deuda_total > 0 
+														? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)'
+														: 'linear-gradient(135deg, #51d18a 0%, #3db870 100%)',
+													color: 'white',
+													padding: '8px 16px',
+													borderRadius: '8px',
+													fontWeight: 600,
+													fontSize: '14px',
+													boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+												}}>
+													${new Intl.NumberFormat().format(this.state.deuda_total || 0)}
+												</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
 
-						<button
-							className="icon-btn"
-							onClick={this.ver_notas}
-							title="Notas"
-							aria-label="Notas">
-							<i className="fas fa-sticky-note"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.notas}</span>
-						</button>
+						{/* Ficha Médica */}
+						<div className="card border-0 shadow-sm mb-4" style={{ 
+							borderRadius: '16px',
+							overflow: 'hidden',
+							animation: 'slideUp 0.9s ease'
+						}}>
+							<div className="card-body p-4">
+								<h5 className="mb-3" style={{ fontWeight: 600, color: '#495057' }}>
+									<i className="fas fa-file-medical me-2" style={{ color: '#1c1c1e' }}></i>
+									Ficha Médica
+								</h5>
+								<div className="table-responsive">
+									<table className="table table-hover mb-0">
+										<thead style={{
+											background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+											borderBottom: '2px solid #e0e0e0'
+										}}>
+											<tr>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.ficha_medica.direccion}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.ficha_medica.alergias}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.ficha_medica.enfermedades}</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr style={{
+												transition: 'all 0.2s ease',
+												borderBottom: '1px solid #f0f0f0'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.background = '#f8f9fa';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.background = 'white';
+											}}
+											>
+												<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+													{this.state.created_at || '-'}
+												</td>
+												<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+													{this.state.direccion || '-'}
+												</td>
+												<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+													{this.state.alergias && this.state.alergias.length > 0 
+														? this.state.alergias.join(', ') 
+														: (this.state.alergias_detalle || 'No especificadas')}
+												</td>
+												<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+													{this.state.enfermedades && this.state.enfermedades.length > 0
+														? this.state.enfermedades.map((enfermedad, index) => (
+															<span key={index} className="badge" style={{
+																background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+																color: '#495057',
+																padding: '4px 10px',
+																borderRadius: '6px',
+																marginRight: '5px',
+																fontSize: '12px',
+																fontWeight: 500
+															}}>
+																{enfermedad}
+															</span>
+														))
+														: '-'}
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
 
-						<button
-							className="icon-btn"
-							onClick={this.openModalNota}
-							title="Agregar Nota"
-							aria-label="Agregar Nota">
-							<i className="fas fa-plus-circle"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.agregar_nota}</span>
-						</button>
-
-						<button
-							className="icon-btn"
-							onClick={this.cargar_documentos}
-							title="Documentos"
-							aria-label="Documentos">
-							<i className="fas fa-folder-open"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.documentos}</span>
-						</button>
-						
-					<button
-						className="icon-btn"
-						title="Presupuestos"
-						aria-label="Presupuestos"
-						onClick={() => this.setState({ modal_presupuestos_visible: true })}
-						>
-						<i className="fas fa-file-invoice-dollar"></i>
-						<span>Presupuestos</span>
-					</button>
-					<Link to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`}>
-					<button
-						className="icon-btn"
-						title="Crear Odontograma"
-						aria-label="Crear Odontograma"
-						>
-						<i className="fas fa-tooth"></i>
-						<span>Crear Odontograma</span>
-						</button>
-					</Link>
-					<Link to={`/ver_odontogramas/${this.props.match.params.id}`}>
-					<button
-						className="icon-btn"
-						title="Ver Odontogramas"
-						aria-label="Ver Odontogramas"
-						>
-						<i className="fas fa-list"></i>
-						<span>Ver Odontogramas</span>
-						</button>
-					</Link>
-					<button
-						className="icon-btn"
-						title="Recetas Médicas"
-						aria-label="Recetas Médicas"
-						onClick={() => this.setState({ modal_recetas_visible: true })}
-						>
-						<i className="fas fa-prescription"></i>
-						<span>Recetas</span>
-					</button>
-
-						<button
-							className="icon-btn danger"
-							onClick={() => this.eliminar_paciente(this.state.paciente.id)}
-							title="Eliminar Paciente"
-							aria-label="Eliminar Paciente">
-							<i className="fas fa-trash-alt"></i>
-							<span>{Verficar.lenguaje.perfil_paciente.eliminar}</span>
-						</button>
-
+						{/* Lista de Citas */}
+						<div className="card border-0 shadow-sm mb-4" style={{ 
+							borderRadius: '16px',
+							overflow: 'hidden',
+							animation: 'slideUp 1s ease'
+						}}>
+							<div className="card-body p-4">
+								<h5 className="mb-3" style={{ fontWeight: 600, color: '#495057' }}>
+									<i className="fas fa-calendar-alt me-2" style={{ color: '#1c1c1e' }}></i>
+									{Verficar.lenguaje.perfil_paciente.lista_de_citas.nombre}
+								</h5>
+								<div className="table-responsive">
+									<table className="table table-hover mb-0">
+										<thead style={{
+											background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+											borderBottom: '2px solid #e0e0e0'
+										}}>
+											<tr>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.lista_de_citas.inicio}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.lista_de_citas.fin}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.lista_de_citas.motivo}</th>
+												<th style={{ 
+													fontWeight: 600, 
+													fontSize: '13px',
+													textTransform: 'uppercase',
+													letterSpacing: '0.5px',
+													color: '#495057',
+													padding: '15px 20px',
+													border: 'none'
+												}}>{Verficar.lenguaje.perfil_paciente.lista_de_citas.doctor}</th>
+											</tr>
+										</thead>
+										<tbody>
+											{this.state.lista_citas.length > 0 ? (
+												this.state.lista_citas.map((data) => (
+													<tr 
+														key={data.id}
+														style={{
+															transition: 'all 0.2s ease',
+															borderBottom: '1px solid #f0f0f0'
+														}}
+														onMouseEnter={(e) => {
+															e.currentTarget.style.background = '#f8f9fa';
+														}}
+														onMouseLeave={(e) => {
+															e.currentTarget.style.background = 'white';
+														}}
+													>
+														<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.inicio}</td>
+														<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.fin}</td>
+														<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.motivo || '-'}</td>
+														<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>
+															{data.doctor ? `${data.doctor.nombre} ${data.doctor.apellido}` : '-'}
+														</td>
+													</tr>
+												))
+											) : (
+												<tr>
+													<td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#6c757d' }}>
+														<i className="fas fa-calendar-times me-2"></i>
+														No hay citas registradas
+													</td>
+												</tr>
+											)}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
 					</div>
-
-				
-					</div>
-
-					<div className="interfaz_perfil mb-4">
-					<button className="btn btn-secondary mb-3" onClick={this.detras}>
-						← {Verficar.lenguaje.perfil_paciente.atras}
-					</button>
-				   {this.state.paciente.nombre_tutor!==null && (
-						<table className='table'>
-							<thead className="">
-							<tr>
-								<th><i className="fa-solid fa-user-tie"></i><strong  style={{ color: 'black', fontWeight: '600' }}>
-									&nbsp;{Verficar.lenguaje.perfil_paciente.nombre_tutor}:&nbsp;&nbsp;
-									<strong style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.nombre_tutor}</strong>
-									</strong></th>
-							</tr>
-							</thead>
-						</table>
-					)}
-						<table className="table table-hover shadow-sm">
-						<thead className="table-primary">
-						<tr>
-							<th>{Verficar.lenguaje.paciente_admin.nombre}</th>
-							<th>{Verficar.lenguaje.paciente_admin.cedula}</th>
-							<th>Edad</th>
-							<th>{Verficar.lenguaje.paciente_admin.telefono} </th>
-							<th>{Verficar.lenguaje.paciente_admin.correo_electronico}</th>
-							<th>{Verficar.lenguaje.paciente_admin.fecha_de_ingreso}</th>
-							<th>{Verficar.lenguaje.paciente_admin.ingresado}</th>
-							<th>{Verficar.lenguaje.citas_c.deuda}</th>
-						</tr>
-						</thead>
-						<tbody>
-						<tr>
-							<td>{this.state.paciente.nombre} {this.state.paciente.apellido}</td>
-							<td>{this.state.paciente.cedula}</td>
-							<td style={{ color: '#667eea', fontWeight: '600' }}>
-								{this.calcularEdad(this.state.paciente.fecha_nacimiento)} años
-							</td>
-							<td>{this.state.paciente.telefono}</td>
-							<td>{this.state.paciente.correo_electronico}</td>
-							<td style={{ color: 'purple', fontWeight: '600' }}>{this.state.paciente.fecha_de_ingreso}</td>
-							<td>{this.state.doctor.nombre} {this.state.doctor.apellido}</td>
-							<td className="fw-bold">$RD {this.state.deuda_total}</td>
-						</tr>
-						</tbody>
-					</table>
-					</div>
-
-
-					<hr />
-
-					<strong className="mb-3 d-block">Ficha Medica</strong>
-					<div className="mb-4">
-						<table className="table table-bordered shadow-sm">
-						<thead>
-							<tr>
-								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.nombre}</th>
-								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.direccion}</th>
-								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.alergias}</th>
-								<th>{Verficar.lenguaje.perfil_paciente.ficha_medica.enfermedades}</th>
-						</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>{this.state.created_at}</td>
-								<td>{this.state.direccion}</td>
-								<td>
-									{this.state.alergias || "No especificadas"},&nbsp;
-									{this.state.alergias_detalle}
-								</td>
-								<td>
-									{this.state.enfermedades.map((enfermedad, index) => (
-							
-										<span key={index}>{enfermedad},&nbsp;</span>
-									))
-								}
-								</td>
-
-							</tr>
-						</tbody>
-					</table>
-					</div>
-
-					<div className="mb-4">
-					<h5 className="text-xl font-semibold mb-4 text-gray-800">📋 {Verficar.lenguaje.perfil_paciente.lista_de_citas.nombre}</h5>
-
-					<div className="overflow-x-auto">
-						<table className="table min-w-full border-collapse bg-white rounded-xl shadow-md">
-						<thead className="bg-gray-50 border-b">
-							<tr>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.inicio}</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.fin}</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.motivo}</th>
-							<th className="text-left text-gray-500 font-medium px-4 py-3">{Verficar.lenguaje.perfil_paciente.lista_de_citas.doctor}</th>
-							</tr>
-						</thead>
-						<tbody>
-							{this.state.lista_citas.map((data) => (
-							<tr key={data.id} className="border-t hover:bg-gray-50 transition">
-								<td className="px-4 py-3 text-gray-800">{data.inicio}</td>
-								<td className="px-4 py-3 text-gray-800">{data.fin}</td>
-								<td className="px-4 py-3 text-gray-800">{data.motivo}</td>
-								<td className="px-4 py-3 text-gray-800">{data.doctor.nombre} {data.doctor.apellido}</td>
-							</tr>
-							))}
-						</tbody>
-						</table>
-					</div>
-				</div>
 				{this.state.modal_ficha_medica_visible && (
 					<div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
 						<div
@@ -1799,9 +2424,8 @@ class PerfilPaciente extends React.Component{
 						</div>
 					</div>
 				)}
-
-			</div>
-				);
+				</>
+			);
 			} else if (this.state.select === "ver_pacientes") {
 				return <Pacientes />;
 			} else if (this.state.select === "crear_presupuesto") {

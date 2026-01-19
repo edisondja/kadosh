@@ -177,7 +177,33 @@ class ActualizarPaciente extends React.Component{
                         <input type='text' id="cedula" value={this.state.paciente.cedula} onChange={this.actualizar_paciente} className="form-control"/><br/>
 
                         <strong>Sexo</strong><br/>
-                            <select id="sexo" className="form-control">
+                            <select 
+                                id="sexo" 
+                                className="form-control"
+                                style={{
+                                    borderRadius: '12px',
+                                    border: '2px solid #e0e0e0',
+                                    padding: '14px 16px',
+                                    fontSize: '15px',
+                                    minHeight: '50px',
+                                    height: 'auto',
+                                    lineHeight: '1.5',
+                                    transition: 'all 0.2s ease',
+                                    appearance: 'none',
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'right 16px center',
+                                    paddingRight: '40px'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = '#1c1c1e';
+                                    e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = '#e0e0e0';
+                                    e.target.style.boxShadow = 'none';
+                                }}
+                            >
                                 <option value="h">Hombre</option>
                                 <option value="m">Mujer</option>
                                 <option value="hm">Hombre moderno</option>
@@ -197,9 +223,37 @@ class ActualizarPaciente extends React.Component{
                         <input type='email'  id="correo" onChange={this.actualizar_paciente} value={this.state.paciente.correo_electronico} className="form-control"/><br/>
 
                         <strong>Ingresado por doctor</strong><br/>
-                        <select id="doctores_select" className="form-control">
+                        <select 
+                            id="doctores_select" 
+                            className="form-control"
+                            style={{
+                                borderRadius: '12px',
+                                border: '2px solid #e0e0e0',
+                                padding: '14px 16px',
+                                fontSize: '15px',
+                                minHeight: '50px',
+                                height: 'auto',
+                                lineHeight: '1.5',
+                                transition: 'all 0.2s ease',
+                                appearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 16px center',
+                                paddingRight: '40px',
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#1c1c1e';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#e0e0e0';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        >
                             {this.state.doctores.map((data=>(
-                                        <option value={data.id}>{data.nombre} {data.apellido}</option>
+                                        <option key={data.id} value={data.id}>{data.nombre} {data.apellido}</option>
                             )))}
                         </select><br/>
                         <button className="btn btn-primary" onClick={this.actualizar}>Actualizar</button>

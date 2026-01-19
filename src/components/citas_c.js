@@ -314,83 +314,458 @@ class  Cita extends React.Component{
 
 
 		return (
-				<div className="col-md-10"><br/><br/>
-				<div className="row" id="panel">
-					<div className="col-md-10">
-					<table className="table">
-						<tbody>
-							<tr>
-								<td>{Url.lenguaje.citas_c.cantidad_de_pacientes}</td>
-								<td style={{ color: 'rgb(142 141 255)' }}>{this.state.cantidad_de_pacientes}</td>
-								<td>{Url.lenguaje.citas_c.cantidad_de_procedimiento}</td>
-								<td style={{ color: '#51d18a' }}>{this.state.procedimientos_hechos}</td>	
-								<td style={{ color: 'black' }}>{Url.lenguaje.citas_c.hoy_es}  {this.dia_actual()}</td>	
-							</tr>
-						</tbody>
-					</table>
+			<>
+				<style>{`
+					@keyframes fadeIn {
+						from { opacity: 0; transform: translateY(10px); }
+						to { opacity: 1; transform: translateY(0); }
+					}
+					@keyframes slideUp {
+						from { opacity: 0; transform: translateY(20px); }
+						to { opacity: 1; transform: translateY(0); }
+					}
+				`}</style>
+				<div className="col-12 col-md-10" style={{ 
+					backgroundColor: '#f5f5f7',
+					minHeight: '100vh',
+					padding: '15px',
+					borderRadius: '16px'
+				}}>
+					{/* Header principal */}
+					<div className="card border-0 shadow-lg mb-4" style={{ 
+						borderRadius: '16px',
+						background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+						overflow: 'hidden',
+						animation: 'fadeIn 0.5s ease'
+					}}>
+						<div className="card-body text-white p-4">
+							<div className="d-flex align-items-center">
+								<div style={{
+									width: '60px',
+									height: '60px',
+									borderRadius: '15px',
+									background: 'rgba(255,255,255,0.2)',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									marginRight: '20px',
+									fontSize: '28px'
+								}}>
+									<i className="fas fa-users"></i>
+								</div>
+								<div>
+									<h2 className="mb-0" style={{ fontWeight: 700, fontSize: '32px' }}>
+										Gestión de Pacientes
+									</h2>
+									<p className="mb-0" style={{ opacity: 0.9, fontSize: '15px' }}>
+										Administra y busca pacientes del sistema
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Estadísticas */}
+					<div className="row mb-4" id="panel" style={{ animation: 'slideUp 0.6s ease' }}>
+						<div className="col-12 col-md-4 mb-3">
+							<div className="card border-0 shadow-sm" style={{
+								borderRadius: '16px',
+								background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+								overflow: 'hidden',
+								transition: 'all 0.3s ease'
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.transform = 'translateY(-5px)';
+								e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.4)';
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.transform = 'translateY(0)';
+								e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+							}}
+							>
+								<div className="card-body text-white p-4">
+									<div className="d-flex align-items-center">
+										<div style={{
+											width: '50px',
+											height: '50px',
+											borderRadius: '12px',
+											background: 'rgba(255,255,255,0.2)',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											marginRight: '15px',
+											fontSize: '24px'
+										}}>
+											<i className="fas fa-user-friends"></i>
+										</div>
+										<div>
+											<p className="mb-1" style={{ fontSize: '14px', opacity: 0.9, fontWeight: 500 }}>
+												{Url.lenguaje.citas_c.cantidad_de_pacientes}
+											</p>
+											<h3 className="mb-0" style={{ fontSize: '32px', fontWeight: 700 }}>
+												{this.state.cantidad_de_pacientes}
+											</h3>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div className="col-12 col-md-4 mb-3">
+							<div className="card border-0 shadow-sm" style={{
+								borderRadius: '16px',
+								background: 'linear-gradient(135deg, #51d18a 0%, #3db870 100%)',
+								overflow: 'hidden',
+								transition: 'all 0.3s ease'
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.transform = 'translateY(-5px)';
+								e.currentTarget.style.boxShadow = '0 8px 24px rgba(81, 209, 138, 0.4)';
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.transform = 'translateY(0)';
+								e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+							}}
+							>
+								<div className="card-body text-white p-4">
+									<div className="d-flex align-items-center">
+										<div style={{
+											width: '50px',
+											height: '50px',
+											borderRadius: '12px',
+											background: 'rgba(255,255,255,0.2)',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											marginRight: '15px',
+											fontSize: '24px'
+										}}>
+											<i className="fas fa-procedures"></i>
+										</div>
+										<div>
+											<p className="mb-1" style={{ fontSize: '14px', opacity: 0.9, fontWeight: 500 }}>
+												{Url.lenguaje.citas_c.cantidad_de_procedimiento}
+											</p>
+											<h3 className="mb-0" style={{ fontSize: '32px', fontWeight: 700 }}>
+												{this.state.procedimientos_hechos}
+											</h3>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div className="col-12 col-md-4 mb-3">
+							<div className="card border-0 shadow-sm" style={{
+								borderRadius: '16px',
+								background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
+								overflow: 'hidden',
+								transition: 'all 0.3s ease'
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.transform = 'translateY(-5px)';
+								e.currentTarget.style.boxShadow = '0 8px 24px rgba(28, 28, 30, 0.4)';
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.transform = 'translateY(0)';
+								e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+							}}
+							>
+								<div className="card-body text-white p-4">
+									<div className="d-flex align-items-center">
+										<div style={{
+											width: '50px',
+											height: '50px',
+											borderRadius: '12px',
+											background: 'rgba(255,255,255,0.2)',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											marginRight: '15px',
+											fontSize: '24px'
+										}}>
+											<i className="fas fa-calendar-day"></i>
+										</div>
+										<div>
+											<p className="mb-1" style={{ fontSize: '14px', opacity: 0.9, fontWeight: 500 }}>
+												{Url.lenguaje.citas_c.hoy_es}
+											</p>
+											<h6 className="mb-0" style={{ fontSize: '16px', fontWeight: 600 }}>
+												{this.dia_actual()}
+											</h6>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Barra de búsqueda */}
+					<div className="card border-0 shadow-sm mb-4" style={{ 
+						borderRadius: '16px',
+						overflow: 'hidden',
+						animation: 'slideUp 0.7s ease'
+					}}>
+						<div className="card-body p-4">
+							<div className="input-group">
+								<span className="input-group-text" style={{
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									color: 'white',
+									border: 'none',
+									borderRadius: '12px 0 0 12px',
+									padding: '14px 20px',
+									fontSize: '18px'
+								}}>
+									<i className="fas fa-search"></i>
+								</span>
+								<input 
+									type="text" 
+									placeholder={Url.lenguaje.citas_c.buscar_paciente}  
+									className="form-control" 
+									id="buscar_paciente" 
+									onChange={this.buscarPaciente}
+									style={{
+										borderRadius: '0 12px 12px 0',
+										border: '2px solid #e0e0e0',
+										borderLeft: 'none',
+										padding: '14px 16px',
+										fontSize: '15px',
+										minHeight: '50px',
+										transition: 'all 0.2s ease'
+									}}
+									onFocus={(e) => {
+										e.target.style.borderColor = '#1c1c1e';
+										e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
+									}}
+									onBlur={(e) => {
+										e.target.style.borderColor = '#e0e0e0';
+										e.target.style.boxShadow = 'none';
+									}}
+								/>
+							</div>
+						</div>
+					</div>
+					{/* Tabla de pacientes */}
+					<div className="card border-0 shadow-sm" style={{ 
+						borderRadius: '16px',
+						overflow: 'hidden',
+						animation: 'slideUp 0.8s ease'
+					}}>
+						<div className="table-responsive">
+							<table className='table table-hover mb-0'>
+								<thead style={{
+									background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+									borderBottom: '2px solid #e0e0e0'
+								}}>
+									<tr>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none'
+										}}>{Url.lenguaje.citas_c.nombre}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none'
+										}}>{Url.lenguaje.citas_c.apellido}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none'
+										}}>{Url.lenguaje.citas_c.doctor}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none'
+										}}>{Url.lenguaje.citas_c.cedula}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none'
+										}}>{Url.lenguaje.citas_c.telefono}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none',
+											textAlign: 'right'
+										}}>{Url.lenguaje.citas_c.deuda}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none',
+											textAlign: 'center'
+										}}>{Url.lenguaje.citas_c.ver_perfil}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none',
+											textAlign: 'center'
+										}}>{Url.lenguaje.citas_c.asigar_cita}</th>
+										<th style={{ 
+											fontWeight: 600, 
+											fontSize: '13px',
+											textTransform: 'uppercase',
+											letterSpacing: '0.5px',
+											color: '#495057',
+											padding: '15px 20px',
+											border: 'none',
+											textAlign: 'center'
+										}}>{Url.lenguaje.citas_c.actualizar}</th>
+									</tr>
+								</thead>
+								<tbody>
+									{
+									this.state.clientes.map((data, index) => (
+										<tr 
+											key={data.id || index}
+											style={{
+												transition: 'all 0.2s ease',
+												borderBottom: '1px solid #f0f0f0'
+											}}
+											onMouseEnter={(e) => {
+												e.currentTarget.style.background = '#f8f9fa';
+											}}
+											onMouseLeave={(e) => {
+												e.currentTarget.style.background = 'white';
+											}}
+										>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.nombre || ''}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.apellido|| ''}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.doctor.nombre|| ''} {data.doctor.apellido|| ''}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.cedula|| ''}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.telefono || ''}</td> 
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'right' }}>
+												<span 
+													className="badge"
+													style={{
+														background: data.estatus_precio_estatus_sum > 0 
+															? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)'
+															: 'linear-gradient(135deg, #51d18a 0%, #3db870 100%)',
+														color: 'white',
+														padding: '8px 16px',
+														borderRadius: '8px',
+														fontWeight: 600,
+														fontSize: '14px',
+														boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+													}}
+												>
+													${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum || 0)}
+												</span>
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+												<a 
+													href={`/perfil_paciente/${data.id}/${data.id_doctor}`}
+													style={{ 
+														display: 'inline-block',
+														padding: '8px 12px',
+														borderRadius: '8px',
+														background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+														color: 'white',
+														transition: 'all 0.2s ease',
+														textDecoration: 'none'
+													}}
+													onMouseEnter={(e) => {
+														e.target.style.transform = 'scale(1.1)';
+														e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+													}}
+													onMouseLeave={(e) => {
+														e.target.style.transform = 'scale(1)';
+														e.target.style.boxShadow = 'none';
+													}}
+												>
+													<i className="fa-solid fa-user-circle" style={{ fontSize: '18px' }} />
+												</a>
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+												<button
+													className="btn"
+													onClick={() => this.asignar_cita(data.id, data.nombre)}
+													style={{
+														background: 'linear-gradient(135deg, #51d18a 0%, #3db870 100%)',
+														color: 'white',
+														border: 'none',
+														borderRadius: '8px',
+														padding: '8px 12px',
+														fontSize: '18px',
+														transition: 'all 0.2s ease',
+														cursor: 'pointer'
+													}}
+													onMouseEnter={(e) => {
+														e.target.style.transform = 'scale(1.1)';
+														e.target.style.boxShadow = '0 4px 12px rgba(81, 209, 138, 0.4)';
+													}}
+													onMouseLeave={(e) => {
+														e.target.style.transform = 'scale(1)';
+														e.target.style.boxShadow = 'none';
+													}}
+												>
+													<i className="fa-solid fa-calendar-plus" />
+												</button>
+											</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+												<a 
+													href={`/actualizar_paciente/${data.id}`}
+													style={{ 
+														display: 'inline-block',
+														padding: '8px 12px',
+														borderRadius: '8px',
+														background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
+														color: 'white',
+														transition: 'all 0.2s ease',
+														textDecoration: 'none'
+													}}
+													onMouseEnter={(e) => {
+														e.target.style.transform = 'scale(1.1)';
+														e.target.style.boxShadow = '0 4px 12px rgba(28, 28, 30, 0.4)';
+													}}
+													onMouseLeave={(e) => {
+														e.target.style.transform = 'scale(1)';
+														e.target.style.boxShadow = 'none';
+													}}
+												>
+													<i className="fa-solid fa-pen-to-square" style={{ fontSize: '18px' }} />
+												</a>
+											</td>
+										</tr>
+									))
+									}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
-				<hr />
-				
-				<input type="text" placeholder={Url.lenguaje.citas_c.buscar_paciente}  className="form-control" id="buscar_paciente" onChange={this.buscarPaciente} />
-				
-				<hr />
-				<div className="interfaz_cliente">
-					<table className='table table-hover'>
-					<thead>
-						<tr className="fijar_columnas">
-						<th scope="col">{Url.lenguaje.citas_c.nombre }</th>
-						<th scope="col">{Url.lenguaje.citas_c.apellido} </th>
-						<th scope="col">{Url.lenguaje.citas_c.doctor} </th>
-						<th scope="col">{Url.lenguaje.citas_c.cedula} </th>
-						<th scope="col">{Url.lenguaje.citas_c.telefono} </th>
-						<th scope="col">{Url.lenguaje.citas_c.deuda} </th> 
-						<th scope="col">{Url.lenguaje.citas_c.ver_perfil} </th>
-						<th scope="col">{Url.lenguaje.citas_c.asigar_cita} </th>
-						<th scope="col">{Url.lenguaje.citas_c.actualizar} </th>
-						</tr>
-					</thead>
-					<tbody>
-						{
-						this.state.clientes.map(data => (
-							<tr key={data.id || ''}>
-							<td>{data.nombre || ''}</td>
-							<td>{data.apellido|| ''}</td>
-							<td>{data.doctor.nombre|| ''} {data.doctor.apellido|| ''}</td>
-							<td>{data.cedula|| ''}</td>
-							<td>{data.telefono || ''}</td> 
-							<td>
-								<p style={this.leer_deuda(data.estatus_precio_estatus_sum)}>
-								${new Intl.NumberFormat().format(data.estatus_precio_estatus_sum)}
-								</p>
-							</td>
-							<td>
-								 <a href={`/perfil_paciente/${data.id}/${data.id_doctor}`}>
-								<i className="fa-solid fa-user-circle" style={{ cursor: 'pointer', fontSize: '20px', color: 'black' }} />
-								</a>
-
-							</td>
-							<td>
-								<i 
-								className="fa-solid fa-calendar-plus" 
-								style={{ cursor: 'pointer', fontSize: '20px', color: '#black' }} 
-								onClick={() => this.asignar_cita(data.id, data.nombre)}
-								></i>
-							</td>
-						<td>
-							<a href={`/actualizar_paciente/${data.id}`} style={{ marginRight: '10px', color: 'black' }}>
-								<i className="fa-solid fa-pen-to-square" style={{ cursor: 'pointer', fontSize: '20px' }}></i>
-							</a>
-							
-						</td>
-					</tr>
-						))
-						}
-					</tbody>
-					</table>
-				</div>
-				</div>
-				);
+			</>
+		);
 
 
 	}
