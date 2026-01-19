@@ -29,6 +29,53 @@ class  crear_presupuesto extends React.Component{
 
     }
 
+    // Función para reproducir sonido al agregar procedimiento
+    reproducirSonidoAgregar = () => {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800; // Frecuencia más aguda
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        } catch (error) {
+            console.log("Error al reproducir sonido:", error);
+        }
+    }
+
+    // Función para reproducir sonido al guardar/generar
+    reproducirSonidoGuardar = () => {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Sonido más grave y largo
+            oscillator.frequency.value = 600;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.4);
+        } catch (error) {
+            console.log("Error al reproducir sonido:", error);
+        }
+    }
+
     removeTodo(name,resta){
         this.setState({
             lista_procedimiento: this.state.lista_procedimiento.filter(el => el !== name),total:this.state.total-resta
@@ -165,6 +212,8 @@ class  crear_presupuesto extends React.Component{
                         })
                     }));
                     this.setState({total:this.state.total+(value*precio)});
+                    // Reproducir sonido al agregar procedimiento
+                    this.reproducirSonidoAgregar();
                 }
                ,()=> { Alertify.error('Cancel') }).set('type','text');
 
@@ -206,6 +255,8 @@ class  crear_presupuesto extends React.Component{
                         data: datosPresupuesto
                     }).then((data) => {
                         console.log(data.data);
+                        // Reproducir sonido al actualizar presupuesto
+                        this.reproducirSonidoGuardar();
                         Alertify.success("Presupuesto actualizado con éxito!");
                         this.setState({factura:'perfil_paciente'});
                     }).catch(error => {
@@ -218,6 +269,8 @@ class  crear_presupuesto extends React.Component{
                         data: datosPresupuesto
                     }).then((data) => {
                         console.log(data.data);
+                        // Reproducir sonido al generar presupuesto
+                        this.reproducirSonidoGuardar();
                         Alertify.success("Presupuesto generado con éxito!");
                         this.setState({factura:'perfil_paciente'});
                     }).catch(error => {
