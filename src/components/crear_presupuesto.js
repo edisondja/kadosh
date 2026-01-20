@@ -23,7 +23,8 @@ class  crear_presupuesto extends React.Component{
             boton_estado:true,
             esEdicion: false,
             presupuestoId: null,
-            nombrePresupuesto: ''
+            nombrePresupuesto: '',
+            paciente: { nombre: '', apellido: '' }
         };
         this.removeTodo = this.removeTodo.bind(this);
 
@@ -120,6 +121,7 @@ class  crear_presupuesto extends React.Component{
     componentDidMount(){
         cargar_doctores.cargar_procedimientos(this);
         cargar_doctores.cargar_doctores(this);
+        cargar_doctores.cargar_paciente(this, this.props.match.params.id);
         
         // Verificar si es edición (si viene id_presupuesto en la URL)
         const idPresupuesto = this.props.match.params.id_presupuesto;
@@ -392,7 +394,10 @@ class  crear_presupuesto extends React.Component{
                                             {this.state.esEdicion ? 'EDITAR PRESUPUESTO' : 'CREAR PRESUPUESTO'}
                                         </h2>
                                         <p className="mb-0" style={{ opacity: 0.9, fontSize: '15px' }}>
-                                            Agrega procedimientos y genera el presupuesto para el paciente
+                                            {this.state.paciente.nombre && this.state.paciente.apellido 
+                                                ? `Presupuesto para: ${this.state.paciente.nombre} ${this.state.paciente.apellido}`
+                                                : 'Agrega procedimientos y genera el presupuesto para el paciente'
+                                            }
                                         </p>
                                     </div>
                                 </div>

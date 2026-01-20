@@ -48,6 +48,7 @@ import SalariosDoctores from './salarios_doctores';
 import Especialidades from './especialidades';
 import ExportarImportar from './exportar_importar';
 import Presupuestos from './presupuestos';
+import AdministrarTenants from './administrar_tenants';
 
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
@@ -320,6 +321,7 @@ class MenuDashboard extends React.Component {
             <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
               <li><Link to="/configuracion"><i className="fas fa-cog"></i>&nbsp;Configuración</Link></li>
               <li><Link to="/exportar_importar"><i className="fas fa-exchange-alt"></i>&nbsp;Exportar/Importar</Link></li>
+              <li><Link to="/administrar_tenants"><i className="fas fa-building"></i>&nbsp;Administrar Tenants</Link></li>
               <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt"></i>&nbsp;{FuncionesExtras.lenguaje.cerrar_sesion}</Link></li>
             </ul>
           </div>
@@ -551,6 +553,7 @@ class MenuDashboard extends React.Component {
               <Route path="/ver_odontograma/:id" component={VerOdontogramaIndividual} />
               <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/auditoria" component={Auditoria} />
+              <Route path="/administrar_tenants" component={AdministrarTenants} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";

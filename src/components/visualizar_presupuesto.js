@@ -339,7 +339,7 @@ class VisualizarPresupuesto extends React.Component {
                                         </div>
 
                                         <div style={{ fontWeight: "bold", textAlign: "center", marginTop: "10px" }}>
-                                                DR. {this.state.doctore.nombre} {this.state.doctore.apellido}
+                                                {Core.formatearNombreDoctor ? Core.formatearNombreDoctor(this.state.doctore) : `DR. ${this.state.doctore.nombre} ${this.state.doctore.apellido}`}
                                         </div>
 
                                         <div style={{ marginTop: "10px", fontSize: "16px" }}>

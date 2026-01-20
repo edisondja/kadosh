@@ -94,7 +94,23 @@ class  AgregarFactura extends React.Component{
                     this.setState(state=>({
                         lista_procedimiento:state.lista_procedimiento.concat({nombre_procedimiento:nombre,total:precio*value,id_procedimiento:id,cantidad:value})
                     }));
-                    this.setState({total:this.state.total+(value*precio)});
+                    this.setState({total:this.state.total+(value*precio)}, () => {
+                        // Scroll suave hacia la lista de procedimientos agregados después de un pequeño delay
+                        setTimeout(() => {
+                            const listaProcedimientos = document.getElementById('lista-procedimientos-agregados');
+                            if (listaProcedimientos) {
+                                // Hacer scroll suave hacia el card de procedimientos agregados
+                                listaProcedimientos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                // También hacer scroll dentro de la tabla si hay muchos procedimientos
+                                const tableBody = listaProcedimientos.querySelector('tbody');
+                                if (tableBody && tableBody.lastElementChild) {
+                                    setTimeout(() => {
+                                        tableBody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }, 300);
+                                }
+                            }
+                        }, 150);
+                    });
                     // Reproducir sonido al agregar procedimiento
                     this.reproducirSonidoAgregar();
                 }
@@ -279,30 +295,41 @@ class  AgregarFactura extends React.Component{
                     {/* Resumen de factura */}
                     <div className="row g-3 mb-4">
                         <div className="col-12 col-md-8">
-                            <div className="card border-0 shadow-sm mb-4" style={{ 
-                                borderRadius: '16px',
-                                animation: 'slideUp 0.6s ease'
-                            }}>
+                            <div 
+                                id="lista-procedimientos-agregados"
+                                className="card border-0 shadow-sm mb-4" 
+                                style={{ 
+                                    borderRadius: '16px',
+                                    animation: 'slideUp 0.6s ease',
+                                    position: 'sticky',
+                                    top: '20px',
+                                    zIndex: 10,
+                                    maxHeight: 'calc(100vh - 100px)',
+                                    overflowY: 'auto'
+                                }}
+                            >
                                 <div className="card-header border-0" style={{
-                                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                     borderRadius: '16px 16px 0 0',
-                                    padding: '20px'
+                                    padding: '20px',
+                                    position: 'sticky',
+                                    top: 0,
+                                    zIndex: 11
                                 }}>
-                                    <h5 className="mb-0" style={{ 
-                                        fontWeight: 600, 
+                                    <h5 className="mb-0 text-white" style={{ 
+                                        fontWeight: 700, 
                                         fontSize: '18px',
-                                        color: '#2d2d2f',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.5px'
                                     }}>
-                                        <i className="fas fa-list me-2" style={{ color: '#667eea' }}></i>
-                                        Lista de Procedimientos
+                                        <i className="fas fa-list me-2"></i>
+                                        Procedimientos Agregados ({this.state.lista_procedimiento.length})
                                     </h5>
                                 </div>
-                                <div className="card-body p-0">
+                                <div className="card-body p-0" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                                     {this.state.lista_procedimiento.length > 0 ? (
                                         <div className="table-responsive">
-                                            <table className="table table-hover mb-0">
+                                            <table className="table table-hover mb-0" style={{ margin: 0 }}>
                                                 <thead style={{
                                                     background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
                                                 }}>
@@ -609,47 +636,53 @@ class  AgregarFactura extends React.Component{
                                 Procedimientos Disponibles
                             </h5>
                         </div>
-                        <div className="card-body p-4">
-                            <div className="row g-3">
+                        <div className="card-body p-3">
+                            <div className="row g-2">
                                 {this.state.procedimientos.length > 0 ? (
                                     this.state.procedimientos.map((data, index) => (
-                                        <div key={index} className="col-12 col-md-6 col-lg-4">
+                                        <div key={index} className="col-6 col-md-4 col-lg-3 col-xl-2">
                                             <div className="card border-0 shadow-sm h-100" style={{
-                                                borderRadius: '16px',
+                                                borderRadius: '12px',
                                                 transition: 'all 0.3s ease',
-                                                border: '2px solid #e0e0e0'
+                                                border: '2px solid #e0e0e0',
+                                                cursor: 'pointer'
                                             }}
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.transform = 'translateY(-5px)';
-                                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
+                                                e.currentTarget.style.transform = 'translateY(-3px)';
+                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.2)';
                                                 e.currentTarget.style.borderColor = '#667eea';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
                                                 e.currentTarget.style.borderColor = '#e0e0e0';
                                             }}>
-                                                <div className="card-body p-4">
+                                                <div className="card-body p-3">
                                                     <h6 style={{ 
                                                         fontWeight: 600, 
-                                                        fontSize: '16px',
+                                                        fontSize: '13px',
                                                         color: '#2d2d2f',
-                                                        marginBottom: '15px',
-                                                        minHeight: '48px'
+                                                        marginBottom: '10px',
+                                                        minHeight: '36px',
+                                                        lineHeight: '1.4',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
                                                     }}>
                                                         {data.nombre}
                                                     </h6>
-                                                    <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <div className="d-flex justify-content-between align-items-center mb-2">
                                                         <span style={{ 
-                                                            fontSize: '14px', 
+                                                            fontSize: '11px', 
                                                             color: '#6c757d',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px'
+                                                            fontWeight: 600
                                                         }}>
                                                             Precio:
                                                         </span>
                                                         <span style={{ 
-                                                            fontSize: '24px', 
+                                                            fontSize: '16px', 
                                                             fontWeight: 700,
                                                             color: '#28a745'
                                                         }}>
@@ -663,9 +696,9 @@ class  AgregarFactura extends React.Component{
                                                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                                             color: 'white',
                                                             border: 'none',
-                                                            borderRadius: '12px',
-                                                            padding: '12px 20px',
-                                                            fontSize: '14px',
+                                                            borderRadius: '8px',
+                                                            padding: '8px 12px',
+                                                            fontSize: '12px',
                                                             fontWeight: 600,
                                                             transition: 'all 0.2s ease'
                                                         }}
@@ -678,7 +711,7 @@ class  AgregarFactura extends React.Component{
                                                             e.target.style.boxShadow = 'none';
                                                         }}
                                                     >
-                                                        <i className="fas fa-plus me-2"></i>Agregar
+                                                        <i className="fas fa-plus me-1"></i>Agregar
                                                     </button>
                                                 </div>
                                             </div>

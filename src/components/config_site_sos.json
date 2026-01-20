@@ -1,10 +1,9 @@
 {
-  "api_url45": "https://sos.odontoed.com/",
+  "api_url": "https://sos.odontoed.com/",
   "api_url1":"https://leonardobatista.odontoed.com/",
   "api_url3": "https://felix.noeodontoestetic.com",
   "api_url2": "https://service.clinickadosh.com/",
-  "api_url": "http://localhost:8000",
-
+  "api_url33": "http://localhost:8000",
   "name_company": "SERVICIOS ODONTOLOGICOS ESPECIALIZADOS",
   "password_admin":"sos26",
   "app_version": "1.0.0",

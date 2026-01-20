@@ -73,6 +73,10 @@ class ActualizarDoctor extends React.Component{
             let doctor  = this.state.doctor;
             doctor.especialidad =e.target.value;
             this.setState({doctor:doctor});
+        }else if(e.target.id=="sexo"){
+            let doctor  = this.state.doctor;
+            doctor.sexo =e.target.value;
+            this.setState({doctor:doctor});
         }
 
     }
@@ -84,7 +88,8 @@ class ActualizarDoctor extends React.Component{
             apellido: this.state.doctor.apellido,
             cedula: this.state.doctor.dni,
             telefono: this.state.doctor.numero_telefono,
-            especialidad: this.state.doctor.especialidad || null
+            especialidad: this.state.doctor.especialidad || null,
+            sexo: this.state.doctor.sexo || null
         }).then(data=>{
             Alertify.success("Doctor actualizado correctamente");
         }).catch(error=>{
@@ -247,6 +252,51 @@ class ActualizarDoctor extends React.Component{
                                                     e.target.style.boxShadow = 'none';
                                                 }}
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-6 mb-4">
+                                        <div className="form-group">
+                                            <label className="form-label fw-bold mb-2" style={{ 
+                                                color: '#333',
+                                                fontSize: '14px',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                <i className="fas fa-venus-mars me-2 text-primary"></i>Sexo
+                                            </label>
+                                            <select 
+                                                id="sexo"  
+                                                onChange={this.editando_campo}  
+                                                className="form-control"
+                                                value={this.state.doctor.sexo || ''}
+                                                style={{
+                                                    borderRadius: '12px',
+                                                    border: '2px solid #e0e0e0',
+                                                    padding: '12px 16px',
+                                                    fontSize: '15px',
+                                                    minHeight: '50px',
+                                                    lineHeight: '1.5',
+                                                    appearance: 'none',
+                                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'right 16px center',
+                                                    paddingRight: '40px',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = '#667eea';
+                                                    e.target.style.boxShadow = '0 0 0 0.2rem rgba(102, 126, 234, 0.25)';
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.borderColor = '#e0e0e0';
+                                                    e.target.style.boxShadow = 'none';
+                                                }}
+                                            >
+                                                <option value="">Seleccionar sexo...</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Femenino</option>
+                                            </select>
                                         </div>
                                     </div>
 

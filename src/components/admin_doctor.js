@@ -52,8 +52,9 @@ class DoctorFormulario extends React.Component{
 			var cedula = document.getElementById("cedula").value;
 			var telefono = document.getElementById("telefono").value;
 			var especialidad = document.getElementById("especialidad").value;
+			var sexo = document.getElementById("sexo").value;
 
-			if (!nombre || !apellido || !cedula || !telefono) {
+			if (!nombre || !apellido || !cedula || !telefono || !sexo) {
 				Alertify.error("Complete todos los campos requeridos");
 				return;
 			}
@@ -67,7 +68,8 @@ class DoctorFormulario extends React.Component{
 				apellido: apellido,
 				cedula: cedula,
 				telefono: telefono,
-				especialidad: especialidad || null
+				especialidad: especialidad || null,
+				sexo: sexo
 			}).then(data=>{
 				Alertify.success("Doctor guardado con éxito");
 				// Limpiar campos
@@ -76,6 +78,7 @@ class DoctorFormulario extends React.Component{
 				document.getElementById("cedula").value = "";
 				document.getElementById("telefono").value = "";
 				document.getElementById("especialidad").value = "";
+				document.getElementById("sexo").value = "";
 				this._guardando = false;
 				this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
@@ -132,6 +135,26 @@ class DoctorFormulario extends React.Component{
 							placeholder="809-000-0000"
 							pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
 							/>
+						</div>
+
+						<div className="mac-form-group">
+							<label>Sexo</label>
+							<select className="mac-input" id="sexo" required style={{
+								minHeight: '50px',
+								padding: '14px 16px',
+								lineHeight: '1.5',
+								appearance: 'none',
+								backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+								backgroundRepeat: 'no-repeat',
+								backgroundPosition: 'right 16px center',
+								paddingRight: '40px',
+								whiteSpace: 'normal',
+								wordWrap: 'break-word'
+							}}>
+								<option value="">Seleccionar sexo...</option>
+								<option value="M">Masculino</option>
+								<option value="F">Femenino</option>
+							</select>
 						</div>
 
 						<div className="mac-form-group">

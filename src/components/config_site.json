@@ -1,27 +1,27 @@
 {
-  "api_url1":"https://leonardobatista.odontoed.com/",
-  "api_url": "https://felix.noeodontoestetic.com",
+  "api_url3":"https://leonardobatista.odontoed.com/",
   "api_url222": "https://service.clinickadosh.com/",
-  "api_url53": "http://localhost:8000",
-  "name_company": "NOE ODONTO ESTETIC",
-  "password_admin":"noe2025",
+  "api_url2": "http://clinica1.miapp.local:8000",
+  "api_url":"http://localhost:8000",
+  "name_company": "CLÍNICA DENTAL KADOSH OR SRL",
+  "passowrd_admin":"kadosh2019",
   "app_version": "1.0.0",
-  "app_description":"Sistema de gestión de pacientes",
+  "app_description": "Sistema de gestión de pacientes",
   "app_author": "Edison De Jesus Abreu",
   "app_email": "serive@odontoed.com",
-  "app_phone": "8498482814", 
-  "app_address": "Av. Prolongacion 27, Plaza A&R local 204, cruce de manoguayabo",
-  "app_logo": "https://noeodontoestetic.com/noe_logo.jpg",
+  "app_phone": "809-620-8641", 
+  "app_address": "C/San Antonio #33A Los Alcarrizos Santo Domingo, R.D",
+  "app_logo": "https://clinickadosh.com/logokadosh.jpg",
   "app_favicon": "/assets/images/favicon.ico",
   "website": "www.odontoed.com",
-  "name_company_visible":"none",
+  "name_company_visible":"display",
+  "logo_width_login":"200",
+  "logo_width_menu":"200",
   "default_language": "es",
   "developer":"Edison De Jesus Abreu",
   "info_app":"Copyright 2020 © 2025 Odontoed, All Rights Reserved by",
   "supported_languages": ["es", "en", "fr", "de"],
-  "rnc_company": "133-38602-1",
-  "logo_width_login":"200",
-  "logo_width_menu":"200",
+  "rnc_company": "131-76629-3",
   "app_lang": {
     "es": {
       "notifiaciones":"Notificaiones",
@@ -59,45 +59,44 @@
         "prt3":"¡Felicítalo y demuéstrale lo especial que es para la familia Kadoshor!"
       },
       "perfil_paciente":{
-        
-          "factura":"Factura",
-          "nombre_tutor":"Nombre tutor",
-          "ver_facturas":"Ver facturas",
-          "documentos_p":{
-            "nombre":"Documentos del paciente",
-            "subir_documento":"Subir Documentos",
-            "no_hay_doc":"No hay documentos registrados aún.",
-            "agregar_nuevo":"Agregar nuevo documento",
-            "cerrar":"Cerrar"
-          },
-          "notas_p":{
-            "nombre":"Notas del Paciente",
-            "contenido":"Contenido",
-            "fecha":"Fecha",
-            "eliminar":"Eliminar",
-            "cerrar":"Cerrar"
-          },
-          "ficha_medica":{
-              "nombre":"Ficha Medica",
-              "fecha":"Fecha",
-              "direccion":"Dirección",
-              "alergias":"Alergias",
-              "enfermedades":"Enfermedades"
-          },
-          "notas":"Notas",
-          "agregar_nota":"Agregar nota",
-          "documentos":"documentos",
-          "ver_presupuestos":"ver presupuestos",
-          "presupuesto":"Presupuesto",
-          "eliminar":"eliminar",
-          "atras":"atras",
-          "lista_de_citas":{
+        "factura":"Factura",
+        "nombre_tutor":"Nombre tutor",
+        "ver_facturas":"Ver facturas",
+        "documentos_p":{
+          "nombre":"Documentos del paciente",
+          "subir_documento":"Subir Documentos",
+          "no_hay_doc":"No hay documentos registrados aún.",
+          "agregar_nuevo":"Agregar nuevo documento",
+          "cerrar":"Cerrar"
+        },
+        "notas_p":{
+          "nombre":"Notas del Paciente",
+          "contenido":"Contenido",
+          "fecha":"Fecha",
+          "eliminar":"Eliminar",
+          "cerrar":"Cerrar"
+        },
+        "ficha_medica":{
+          "nombre":"Ficha Medica",
+          "fecha":"Fecha",
+          "direccion":"Dirección",
+          "alergias":"Alergias",
+          "enfermedades":"Enfermedades"
+        },
+        "notas":"Notas",
+        "agregar_nota":"Agregar nota",
+        "documentos":"documentos",
+        "ver_presupuestos":"ver presupuestos",
+        "presupuesto":"Presupuesto",
+        "eliminar":"eliminar",
+        "atras":"atras",
+        "lista_de_citas":{
           "nombre":"Lista de citas",
           "inicio":"Inicio",
           "fin":"Fin",
           "Motivo":"Motivo",
           "doctor":"doctor"
-          }
+        }
       },
       "paciente_admin":{
         "fecha_de_ingreso":"Fecha de ingreso",
@@ -121,705 +120,113 @@
         "agregar_cita":"Agregar Cita"
       },
       "registrar_usuario":{
+        "usuario":"Usuario",
+        "clave":"Clave",
+        "repetir_clave":"Repetir Cla",
+        "nombre":"Nombre",
+        "apellido":"Apellido",
+        "rol_usuario":"Rol del usuario",
+        "usuarios_reg":"Usuarios registrados",
+        "agregar_usuario":"Agregar usuario",
+        "tabla_usuarios":{
           "usuario":"Usuario",
           "clave":"Clave",
-          "repetir_clave":"Repetir Cla",
           "nombre":"Nombre",
           "apellido":"Apellido",
-          "rol_usuario":"Rol del usuario",
-          "usuarios_reg":"Usuarios registrados",
-          "agregar_usuario":"Agregar usuario",
-          "tabla_usuarios":{
-              "usuario":"Usuario",
-              "clave":"Clave",
-              "nombre":"Nombre",
-              "apellido":"Apellido",
-              "actualizar":"Actualizar",
-              "eliminar":"Eliminar"
-            }
-        },
-
-        "agregar_doctores":{
-            "nombre":"Agregar doctor",
-            "apellido":"Apellido",
-            "cedula":"Cédula",
-            "telefono":"Teléfono",
-            "especialidad":"especialidad",
-            "especialidades":[
-              "Odontólogo General",
-              "Odontopediatra",
-              "Ortodoncista",
-              "Endodoncista",
-              "Periodoncista",
-              "Prostodoncista",
-              "Cirujano Oral y Maxilofacial",
-              "Implantólogo",
-              "Estomatólogo",
-              "Odontólogo Estético",
-              "Patólogo Oral",
-              "Radiólogo Oral",
-              "Odontólogo Forense",
-              "Odontólogo Público",
-              "Odontólogo Privado"
-            ],
-            "correo_electronico":"Correo electrónico",
-            "buscar_doctor":"Buscar doctor",
-            "guardar":"guardar"
-          },
-          "agregar_procedimientos":{
-              "nombre":"Agregar Procedimiento",
-              "nombre_p":"Nombre",
-              "precio":"Precio",
-              "guardar_p":"Guardar",
-              "escriba_nombre_p":"Escriba el nombre del procedimiento",
-              "tabla_procedimientos":{
-                  "nombre":"Nombre",
-                  "precio":"Precio",
-                  "actualizar":"Actualizar",
-                  "eliminar":"Eliminar"
-                }
-
-          },
-
-          "generar_reporte":{
-            "nombre":"Generar reporte de ingresos",
-            "buscar":"Buscar",
-            "ver_reportes_g":"Ver reportes graficos",
-            "ver_reportes":"Ver reportes",
-            "ver_nomina":"Ver nomina",
-            "ingresa_la_fecha":"Ingrese la fecha de la semana que quieres consultar los ingresos",
-            "detalles_de_ingreesos":"Detalles de ingreso de la semana",
-            "dias":["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"],
-            "ingresos_hoy":"Ingresos de hoy",
-            "reportes":"Reportes",
-            "imprimir":"imprimir",
-            "nomina":"Nomina",
-            "tabla_reporte":{
-                "codigo":"Codigo",
-                "doctor":"Doctor",
-                "paciente":"Paciente",
-                "concpeto_de_pago":"Concepto de pago",
-                "estado_actual":"Estado actual",
-                "fecha_de_pago":"Fecha de pago",
-                "motno":"Monto"
-            },
-            "ingresos_total":"Ingresos total"
-          },
-          "administracion_financiera":{
-            "nombre":"Administración Financiera",
-            "suplidores":"suplidores",
-            "gastos":"Gastos",
-            "regristrar_productos":"Registrar productos",
-            "registrar_empleado":"Registrar empleado",
-            "ver_productos":"Ver productos",
-            "agregar_suplidor":"Agregar suplidor",
-            "registar_gasto":"Registrar gasto",
-            "imprimir":"Imprimir",
-            "exportar_msg":"Exportar reportes a CSV",
-            "fecha_inicial":"Fecha inicial",
-            "fecha_final":"Fecha final",
-            "buscar":"Buscar",
-            "tabla_suplidor":{
-              "nombre_suplidor":"Nombre suplidor",
-              "rmc_suplidor":"RMC suplidor",
-              "direccion_suplidor":"Dirección suplidor",
-              "Descripcion":"Descripcion",
-              "actualizar":"Actualizar",
-              "eliminar":"Eliminar"
-            },
-            "tabla_gastos":{
-              "factura":"Factura",
-              "suplidor":"Suplidor",
-              "forma_de_pago":"Forma de pago",
-              "tipo_de_gasto":"Tipo de gasto",
-              "comprobante_fiscal":"Comprobante fiscal",
-              "itebis":"Itebis",
-              "bruto":"Bruto",
-              "Total":"Total",
-              "fecha_de_pago:":"Fecha de pago",
-              "ver":"ver",
-              "actualizar":"Actualizar",
-              "eliminar":"Eliminar"
-            },
-            "id_factura":"ID de factura",
-            "total_en_gastos":"Total en Gastos"
-            
-
-          }
-      },
-   
-    "en": {
-      "agregar_paciente": "Add patient",
-      "agregar_usuario": "Add user",
-      "agregar_cita": "Add appointment",
-      "administracion_citas": "Appointment management",
-      "agregar_doctor": "Add doctor",
-      "agregar_procedimiento": "Add procedure",
-      "generar_reportes": "Generate reports",
-      "contabilidad": "Accounting",
-      "cerrar_sesion": "Log out",
-      "dispositivos_conectados": "Connected devices",
-      "auditoria": "Audit",
-      "configuracion": "Settings",
-
-      "citas_c": {
-        "buscar_paciente":"Search patient",
-        "cantidad_de_pacientes": "Number of registered patients",
-        "cantidad_de_citas": "Number of performed procedures",
-        "hoy_es": "Today is",
-        "nombre": "Name",
-        "Apellido": "Last name",
-        "doctor": "Doctor",
-        "Cedula": "ID",
-        "Telefono": "Phone",
-        "Deuda": "Debt",
-        "Ver_perfil": "View profile",
-        "Asigar_cita": "Assign appointment",
-        "Actualizar": "Update"
-      },
-
-      "notifiaciones_m": {
-        "mensaje_no": "There are no notifications at this time",
-        "prt1_mensaje": "Today is the birthday of",
-        "prt2_menseje": "Phone",
-        "prt3": "Congratulate them and show how special they are to the Kadosh family!"
-      },
-
-      "perfil_paciente": {
-        "nombre_tutor": "Guardian name",
-        "factura": "Invoice",
-        "ver_facturas": "View invoices",
-        "ficha_medica": {
-          "nombre": "Medical record",
-          "fecha": "Date",
-          "direccion": "Address",
-          "alergias": "Allergies",
-          "enfermedades": "Diseases"
-        },
-        "notas": "Notes",
-        "agregar_nota": "Add note",
-        "documentos": "Documents",
-        "ver_presupuestos": "View estimates",
-        "eliminar": "Delete",
-        "atras": "Back",
-        "lista_de_citas": {
-          "nombre": "Appointment list",
-          "inicio": "Start",
-          "fin": "End",
-          "Motivo": "Reason",
-          "Doctor": "Doctor"
+          "actualizar":"Actualizar",
+          "eliminar":"Eliminar"
         }
       },
-
-      "paciente_admin": {
-        "nombre": "Name",
-        "apellido": "Last name",
-        "cedula": "ID",
-        "telefono_p": "Phone",
-        "correo_electronico": "Email",
-        "foto": "Photo",
-        "sexo": "Gender",
-        "fecha_de_nacimiento": "Date of birth",
-        "telefono": "Phone number",
-        "ingresado": "Registered by doctor"
+      "agregar_doctores":{
+        "nombre":"Agregar doctor",
+        "apellido":"Apellido",
+        "cedula":"Cédula",
+        "telefono":"Teléfono",
+        "especialidad":"especialidad",
+        "especialidades":[
+          "Odontocista",
+          "Odontologo"
+        ],
+        "correo_electronico":"Correo electrónico",
+        "buscar_doctor":"Buscar doctor",
+        "guardar":"guardar"
       },
-
-      "agenda": {
-        "nombre": "Schedule",
-        "paciente": "Patient",
-        "ninguno": "None",
-        "seleccione_doc": "Select the doctor",
-        "dias": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "agregar_cita": "Add appointment"
-      },
-
-      "registrar_usuario": {
-        "usuario": "User",
-        "clave": "Password",
-        "repetir_clave": "Repeat password",
-        "nombre": "Name",
-        "apellido": "Last name",
-        "rol_usuario": "User role",
-        "usuarios_reg": "Registered users",
-        "agregar_usuario": "Add user",
-        "tabla_usuarios": {
-          "usuario": "User",
-          "clave": "Password",
-          "nombre": "Name",
-          "apellido": "Last name",
-          "actualizar": "Update",
-          "eliminar": "Delete"
+      "agregar_procedimientos":{
+        "nombre":"Agregar Procedimiento",
+        "nombre_p":"Nombre",
+        "precio":"Precio",
+        "guardar_p":"Guardar",
+        "escriba_nombre_p":"Escriba el nombre del procedimiento",
+        "tabla_procedimientos":{
+          "nombre":"Nombre",
+          "precio":"Precio",
+          "actualizar":"Actualizar",
+          "eliminar":"Eliminar"
         }
       },
-
-      "agregar_doctores": {
-        "nombre": "Add doctor",
-        "apellido": "Last name",
-        "cedula": "ID",
-        "telefono": "Phone",
-        "especialidad": "Specialty",
-        "especialidades": ["Dentist", "Odontologist"],
-        "correo_electronico": "Email",
-        "buscar_doctor": "Search doctor",
-        "guardar": "Save"
-      },
-
-      "agregar_procedimientos": {
-        "nombre": "Add procedure",
-        "nombre_p": "Name",
-        "precio": "Price",
-        "guardar_p": "Save",
-        "escriba_nombre_p": "Enter the procedure name",
-        "tabla_procedimientos": {
-          "nombre": "Name",
-          "precio": "Price",
-          "actualizar": "Update",
-          "eliminar": "Delete"
-        }
-      },
-      "generar_reporte": {
-        "nombre": "Generate income report",
-        "buscar": "Search",
-        "ver_reportes_g": "View graphical reports",
-        "ver_reportes": "View reports",
-        "ver_nomina": "View payroll",
-        "ingresa_la_fecha": "Enter the date of the week you want to check the income",
-        "detalles_de_ingreesos": "Income details of the week",
-        "dias": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "ingresos_hoy": "Today's income",
-        "reportes": "Reports",
-        "imprimir": "Print",
-        "nomina": "Payroll",
-        "tabla_reporte": {
-          "codigo": "Code",
-          "doctor": "Doctor",
-          "paciente": "Patient",
-          "concpeto_de_pago": "Payment concept",
-          "estado_actual": "Current status",
-          "fecha_de_pago": "Payment date",
-          "motno": "Amount"
+      "generar_reporte":{
+        "nombre":"Generar reporte de ingresos",
+        "buscar":"Buscar",
+        "ver_reportes_g":"Ver reportes graficos",
+        "ver_reportes":"Ver reportes",
+        "ver_nomina":"Ver nomina",
+        "ingresa_la_fecha":"Ingrese la fecha de la semana que quieres consultar los ingresos",
+        "detalles_de_ingreesos":"Detalles de ingreso de la semana",
+        "dias":["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"],
+        "ingresos_hoy":"Ingresos de hoy",
+        "reportes":"Reportes",
+        "imprimir":"imprimir",
+        "nomina":"Nomina",
+        "tabla_reporte":{
+          "codigo":"Codigo",
+          "doctor":"Doctor",
+          "paciente":"Paciente",
+          "concpeto_de_pago":"Concepto de pago",
+          "estado_actual":"Estado actual",
+          "fecha_de_pago":"Fecha de pago",
+          "motno":"Monto"
         },
-        "ingresos_total": "Total income"
+        "ingresos_total":"Ingresos total"
       },
-
-      "administracion_financiera": {
-        "nombre": "Financial administration",
-        "suplidores": "Suppliers",
-        "gastos": "Expenses",
-        "regristrar_productos": "Register products",
-        "registrar_empleado": "Register employee",
-        "ver_productos": "View products",
-        "agregar_suplidor": "Add supplier",
-        "registar_gasto": "Register expense",
-        "imprimir": "Print",
-        "exportar_msg": "Export reports to CSV",
-        "fecha_inicial": "Start date",
-        "fecha_final": "End date",
-        "buscar": "Search",
-        "tabla_suplidor": {
-          "nombre_suplidor": "Supplier name",
-          "rmc_suplidor": "Supplier RMC",
-          "direccion_suplidor": "Supplier address",
-          "Descripcion": "Description",
-          "actualizar": "Update",
-          "eliminar": "Delete"
+      "administracion_financiera":{
+        "nombre":"Administración Financiera",
+        "suplidores":"suplidores",
+        "gastos":"Gastos",
+        "regristrar_productos":"Registrar productos",
+        "registrar_empleado":"Registrar empleado",
+        "ver_productos":"Ver productos",
+        "agregar_suplidor":"Agregar suplidor",
+        "registar_gasto":"Registrar gasto",
+        "imprimir":"Imprimir",
+        "exportar_msg":"Exportar reportes a CSV",
+        "fecha_inicial":"Fecha inicial",
+        "fecha_final":"Fecha final",
+        "buscar":"Buscar",
+        "tabla_suplidor":{
+          "nombre_suplidor":"Nombre suplidor",
+          "rmc_suplidor":"RMC suplidor",
+          "direccion_suplidor":"Dirección suplidor",
+          "Descripcion":"Descripcion",
+          "actualizar":"Actualizar",
+          "eliminar":"Eliminar"
         },
-        "tabla_gastos": {
-          "factura": "Invoice",
-          "suplidor": "Supplier",
-          "forma_de_pago": "Payment method",
-          "tipo_de_gasto": "Expense type",
-          "comprobante_fiscal": "Fiscal receipt",
-          "itebis": "Tax (ITBIS)",
-          "bruto": "Gross",
-          "Total": "Total",
-          "fecha_de_pago:": "Payment date",
-          "ver": "View",
-          "actualizar": "Update",
-          "eliminar": "Delete"
+        "tabla_gastos":{
+          "factura":"Factura",
+          "suplidor":"Suplidor",
+          "forma_de_pago":"Forma de pago",
+          "tipo_de_gasto":"Tipo de gasto",
+          "comprobante_fiscal":"Comprobante fiscal",
+          "itebis":"Itebis",
+          "bruto":"Bruto",
+          "Total":"Total",
+          "fecha_de_pago:":"Fecha de pago",
+          "ver":"ver",
+          "actualizar":"Actualizar",
+          "eliminar":"Eliminar"
         },
-        "id_factura": "Invoice ID",
-        "total_en_gastos": "Total expenses"
-      }
-    },
-
-    "fr": {
-    "notifiaciones":"Notifications",
-    "agregar_paciente": "Ajouter un patient",
-    "agregar_usuario": "Ajouter un utilisateur",
-    "agregar_cita": "Ajouter un rendez-vous",
-    "administracion_citas": "Gestion des rendez-vous",
-    "agregar_doctor": "Ajouter un médecin",
-    "agregar_procedimiento": "Ajouter une procédure",
-    "generar_reportes": "Générer des rapports",
-    "contabilidad": "Comptabilité",
-    "cerrar_sesion": "Se déconnecter",
-    "dispositivos_conectados": "Appareils connectés",
-    "auditoria": "Audit",
-    "configuracion": "Configuration",
-    "citas_c": {
-      "buscar_paciente": "Rechercher un patient",
-      "cantidad_de_pacientes": "Nombre de patients enregistrés",
-      "cantidad_de_citas": "Nombre de procédures effectuées",
-      "hoy_es": "Aujourd'hui c'est",
-      "nombre": "Prénom",
-      "apellido": "Nom",
-      "doctor": "Médecin",
-      "cedula": "Carte d'identité",
-      "telefono": "Téléphone",
-      "deuda": "Dette",
-      "ver_perfil": "Voir le profil",
-      "asigar_cita": "Attribuer un rendez-vous",
-      "actualizar": "Mettre à jour"
-    },
-    "notifiaciones_m": {
-      "mensaje_no": "Aucune notification pour le moment",
-      "prt1_mensaje": "Aujourd'hui c'est l'anniversaire de",
-      "prt2_menseje": "Téléphone",
-      "prt3": "Souhaitez-lui un joyeux anniversaire et montrez-lui qu'il est spécial pour la famille Kadosh !"
-    },
-    "perfil_paciente": {
-      "nombre_tutor": "Nom du tuteur",
-      "factura": "Facture",
-      "ver_facturas": "Voir les factures",
-      "ficha_medica": {
-        "nombre": "Fiche médicale",
-        "fecha": "Date",
-        "direccion": "Adresse",
-        "alergias": "Allergies",
-        "enfermedades": "Maladies"
-      },
-      "notas": "Notes",
-      "agregar_nota": "Ajouter une note",
-      "documentos": "Documents",
-      "ver_presupuestos": "Voir les devis",
-      "eliminar": "Supprimer",
-      "atras": "Retour",
-      "lista_de_citas": {
-        "nombre": "Liste des rendez-vous",
-        "inicio": "Début",
-        "fin": "Fin",
-        "Motivo": "Motif",
-        "doctor": "Médecin"
-      }
-    },
-    "paciente_admin": {
-      "nombre": "Prénom",
-      "apellido": "Nom",
-      "cedula": "Carte d'identité",
-      "telefono_p": "Téléphone",
-      "correo_electronico": "Courriel",
-      "foto": "Photo",
-      "sexo": "Sexe",
-      "fecha_de_nacimiento": "Date de naissance",
-      "telefono": "Numéro de téléphone",
-      "ingresado": "Enregistré par le médecin"
-    },
-    "agenda": {
-      "nombre": "Agenda",
-      "paciente": "Patient",
-      "ninguno": "Aucun",
-      "seleccione_doc": "Sélectionnez le médecin",
-      "dias": ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"],
-      "agregar_cita": "Ajouter un rendez-vous"
-    },
-    "registrar_usuario": {
-      "usuario": "Utilisateur",
-      "clave": "Mot de passe",
-      "repetir_clave": "Répéter le mot de passe",
-      "nombre": "Prénom",
-      "apellido": "Nom",
-      "rol_usuario": "Rôle de l'utilisateur",
-      "usuarios_reg": "Utilisateurs enregistrés",
-      "agregar_usuario": "Ajouter un utilisateur",
-      "tabla_usuarios": {
-        "usuario": "Utilisateur",
-        "clave": "Mot de passe",
-        "nombre": "Prénom",
-        "apellido": "Nom",
-        "actualizar": "Mettre à jour",
-        "eliminar": "Supprimer"
-      }
-    },
-    "agregar_doctores": {
-      "nombre": "Ajouter un médecin",
-      "apellido": "Nom",
-      "cedula": "Carte d'identité",
-      "telefono": "Téléphone",
-      "especialidad": "Spécialité",
-      "especialidades": ["Dentiste","Odontologiste"],
-      "correo_electronico": "Courriel",
-      "buscar_doctor": "Rechercher un médecin",
-      "guardar": "Enregistrer"
-    },
-    "agregar_procedimientos": {
-      "nombre": "Ajouter une procédure",
-      "nombre_p": "Nom",
-      "precio": "Prix",
-      "guardar_p": "Enregistrer",
-      "escriba_nombre_p": "Entrez le nom de la procédure",
-      "tabla_procedimientos": {
-        "nombre": "Nom",
-        "precio": "Prix",
-        "actualizar": "Mettre à jour",
-        "eliminar": "Supprimer"
-      }
-    },
-    "generar_reporte": {
-      "nombre": "Générer un rapport de revenus",
-      "buscar": "Rechercher",
-      "ver_reportes_g": "Voir les rapports graphiques",
-      "ver_reportes": "Voir les rapports",
-      "ver_nomina": "Voir la paie",
-      "ingresa_la_fecha": "Entrez la date de la semaine à consulter",
-      "detalles_de_ingreesos": "Détails des revenus de la semaine",
-      "dias": ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"],
-      "ingresos_hoy": "Revenus d'aujourd'hui",
-      "reportes": "Rapports",
-      "imprimir": "Imprimer",
-      "nomina": "Paie",
-      "tabla_reporte": {
-        "codigo": "Code",
-        "doctor": "Médecin",
-        "paciente": "Patient",
-        "concpeto_de_pago": "Concept de paiement",
-        "estado_actual": "État actuel",
-        "fecha_de_pago": "Date de paiement",
-        "motno": "Montant"
-      },
-      "ingresos_total": "Revenu total"
-    },
-    "administracion_financiera": {
-      "nombre": "Administration financière",
-      "suplidores": "Fournisseurs",
-      "gastos": "Dépenses",
-      "regristrar_productos": "Enregistrer des produits",
-      "registrar_empleado": "Enregistrer un employé",
-      "ver_productos": "Voir les produits",
-      "agregar_suplidor": "Ajouter un fournisseur",
-      "registar_gasto": "Enregistrer une dépense",
-      "imprimir": "Imprimer",
-      "exportar_msg": "Exporter les rapports en CSV",
-      "fecha_inicial": "Date de début",
-      "fecha_final": "Date de fin",
-      "buscar": "Rechercher",
-      "tabla_suplidor": {
-        "nombre_suplidor": "Nom du fournisseur",
-        "rmc_suplidor": "RMC fournisseur",
-        "direccion_suplidor": "Adresse du fournisseur",
-        "Descripcion": "Description",
-        "actualizar": "Mettre à jour",
-        "eliminar": "Supprimer"
-      },
-      "tabla_gastos": {
-        "factura": "Facture",
-        "suplidor": "Fournisseur",
-        "forma_de_pago": "Mode de paiement",
-        "tipo_de_gasto": "Type de dépense",
-        "comprobante_fiscal": "Reçu fiscal",
-        "itebis": "TVA",
-        "bruto": "Brut",
-        "Total": "Total",
-        "fecha_de_pago:": "Date de paiement",
-        "ver": "Voir",
-        "actualizar": "Mettre à jour",
-        "eliminar": "Supprimer"
-      },
-      "id_factura": "ID de la facture",
-      "total_en_gastos": "Total des dépenses"
-    }
-  },
-    "zh": {
-      "agregar_paciente": "添加病人",
-      "agregar_usuario": "添加用户",
-      "agregar_cita": "添加预约",
-      "administracion_citas": "预约管理",
-      "agregar_doctor": "添加医生",
-      "agregar_procedimiento": "添加流程",
-      "generar_reportes": "生成报告",
-      "contabilidad": "会计",
-      "cerrar_sesion": "退出登录",
-      "dispositivos_conectados": "已连接设备",
-      "auditoria": "审计",
-      "configuracion": "设置",
-      "citas_c": {
-        "buscar_paciente": "查找患者",
-        "cantidad_de_pacientes": "已登记患者数量",
-        "cantidad_de_citas": "已执行的程序数量",
-        "hoy_es": "今天是",
-        "nombre": "名字",
-        "Apellido": "姓氏",
-        "doctor": "医生",
-        "Cedula": "身份证",
-        "Telefono": "电话",
-        "Deuda": "欠款",
-        "Ver_perfil": "查看档案",
-        "Asigar_cita": "分配预约",
-        "Actualizar": "更新"
-      },
-      "notifiaciones_m": {
-        "mensaje_no": "目前没有通知",
-        "prt1_mensaje": "今天是...的生日",
-        "prt2_menseje": "电话",
-        "prt3": "祝他生日快乐，向他展示Kadosh家族的关爱！"
-      },
-      "perfil_paciente": {
-        "nombre_tutor": "监护人姓名",
-        "factura": "发票",
-        "ver_facturas": "查看发票",
-        "ficha_medica": {
-          "nombre": "病历",
-          "fecha": "日期",
-          "direccion": "地址",
-          "alergias": "过敏",
-          "enfermedades": "疾病"
-        },
-        "notas": "备注",
-        "agregar_nota": "添加备注",
-        "documentos": "文件",
-        "ver_presupuestos": "查看预算",
-        "eliminar": "删除",
-        "atras": "返回",
-        "lista_de_citas": {
-          "nombre": "预约列表",
-          "inicio": "开始",
-          "fin": "结束",
-          "Motivo": "原因",
-          "Doctor": "医生"
-        }
-      },
-      "paciente_admin": {
-        "nombre": "名字",
-        "apellido": "姓氏",
-        "cedula": "身份证",
-        "telefono_p": "电话",
-        "correo_electronico": "电子邮件",
-        "foto": "照片",
-        "sexo": "性别",
-        "fecha_de_nacimiento": "出生日期",
-        "telefono": "电话号码",
-        "ingresado": "由医生登记"
-      },
-      "agenda": {
-        "nombre": "日程表",
-        "paciente": "患者",
-        "ninguno": "无",
-        "seleccione_doc": "选择医生",
-        "dias": ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"],
-        "agregar_cita": "添加预约"
-      },
-      "registrar_usuario": {
-        "usuario": "用户",
-        "clave": "密码",
-        "repetir_clave": "重复密码",
-        "nombre": "名字",
-        "apellido": "姓氏",
-        "rol_usuario": "用户角色",
-        "usuarios_reg": "已注册用户",
-        "agregar_usuario": "添加用户",
-        "tabla_usuarios": {
-          "usuario": "用户",
-          "clave": "密码",
-          "nombre": "名字",
-          "apellido": "姓氏",
-          "actualizar": "更新",
-          "eliminar": "删除"
-        }
-      },
-      "agregar_doctores": {
-        "nombre": "添加医生",
-        "apellido": "姓氏",
-        "cedula": "身份证",
-        "telefono": "电话",
-        "especialidad": "专长",
-        "especialidades": ["牙医","口腔科医生"],
-        "correo_electronico": "电子邮件",
-        "buscar_doctor": "搜索医生",
-        "guardar": "保存"
-      },
-      "agregar_procedimientos": {
-        "nombre": "添加程序",
-        "nombre_p": "名称",
-        "precio": "价格",
-        "guardar_p": "保存",
-        "escriba_nombre_p": "输入程序名称",
-        "tabla_procedimientos": {
-          "nombre": "名称",
-          "precio": "价格",
-          "actualizar": "更新",
-          "eliminar": "删除"
-        }
-      },
-      "generar_reporte": {
-        "nombre": "生成收入报告",
-        "buscar": "搜索",
-        "ver_reportes_g": "查看图表报告",
-        "ver_reportes": "查看报告",
-        "ver_nomina": "查看工资单",
-        "ingresa_la_fecha": "输入要查询的周日期",
-        "detalles_de_ingreesos": "本周收入详情",
-        "dias": ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"],
-        "ingresos_hoy": "今日收入",
-        "reportes": "报告",
-        "imprimir": "打印",
-        "nomina": "工资单",
-        "tabla_reporte": {
-          "codigo": "代码",
-          "doctor": "医生",
-          "paciente": "患者",
-          "concpeto_de_pago": "付款概念",
-          "estado_actual": "当前状态",
-          "fecha_de_pago": "付款日期",
-          "motno": "金额"
-        },
-        "ingresos_total": "总收入"
-      },
-      "administracion_financiera": {
-        "nombre": "财务管理",
-        "suplidores": "供应商",
-        "gastos": "开支",
-        "regristrar_productos": "登记产品",
-        "registrar_empleado": "登记员工",
-        "ver_productos": "查看产品",
-        "agregar_suplidor": "添加供应商",
-        "registar_gasto": "登记支出",
-        "imprimir": "打印",
-        "exportar_msg": "导出报告为CSV",
-        "fecha_inicial": "开始日期",
-        "fecha_final": "结束日期",
-        "buscar": "搜索",
-        "tabla_suplidor": {
-          "nombre_suplidor": "供应商名称",
-          "rmc_suplidor": "供应商RMC",
-          "direccion_suplidor": "供应商地址",
-          "Descripcion": "描述",
-          "actualizar": "更新",
-          "eliminar": "删除"
-        },
-        "tabla_gastos": {
-          "factura": "发票",
-          "suplidor": "供应商",
-          "forma_de_pago": "付款方式",
-          "tipo_de_gasto": "支出类型",
-          "comprobante_fiscal": "税务凭证",
-          "itebis": "增值税",
-          "bruto": "毛额",
-          "Total": "总计",
-          "fecha_de_pago:": "付款日期",
-          "ver": "查看",
-          "actualizar": "更新",
-          "eliminar": "删除"
-        },
-        "id_factura": "发票ID",
-        "total_en_gastos": "总支出"
+        "id_factura":"ID de factura",
+        "total_en_gastos":"Total en Gastos"
       }
     }
   }
-   
-  
-  }
-
-
-
-
-
+}

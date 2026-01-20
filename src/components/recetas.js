@@ -14,7 +14,8 @@ class Recetas extends React.Component {
             modoEdicion: false,
             medicamentos: [],
             mostrarEnviarEmail: false,
-            emailDestino: ''
+            emailDestino: '',
+            usarTextoLibre: false // Toggle para usar texto libre o medicamentos individuales
         };
     }
 
@@ -39,6 +40,13 @@ class Recetas extends React.Component {
     }
 
     abrirFormulario = (receta = null) => {
+        // Si hay receta y tiene indicaciones en texto libre pero no medicamentos, usar texto libre
+        const tieneIndicacionesTextoLibre = receta && receta.indicaciones && receta.indicaciones.trim() !== '';
+        const tieneMedicamentos = receta && receta.medicamentos && receta.medicamentos.length > 0;
+        
+        // Determinar si usar texto libre: si tiene indicaciones Y no tiene medicamentos, o si tiene indicaciones y medicamentos vacíos
+        const usarTextoLibre = tieneIndicacionesTextoLibre && (!tieneMedicamentos || (receta.medicamentos && receta.medicamentos.length === 0));
+        
         this.setState({
             recetaActual: receta || {
                 medicamentos: [],
@@ -46,9 +54,10 @@ class Recetas extends React.Component {
                 diagnostico: '',
                 fecha: new Date().toISOString().split('T')[0]
             },
-            medicamentos: receta ? [...receta.medicamentos] : [],
+            medicamentos: usarTextoLibre ? [] : (receta && receta.medicamentos ? [...receta.medicamentos] : []), // Si usa texto libre, limpiar medicamentos
             mostrarFormulario: true,
-            modoEdicion: receta !== null
+            modoEdicion: receta !== null,
+            usarTextoLibre: usarTextoLibre
         });
     }
 
@@ -57,7 +66,8 @@ class Recetas extends React.Component {
             mostrarFormulario: false,
             recetaActual: null,
             medicamentos: [],
-            modoEdicion: false
+            modoEdicion: false,
+            usarTextoLibre: false
         });
     }
 
@@ -99,19 +109,36 @@ class Recetas extends React.Component {
             return;
         }
 
-        if (medicamentos.length === 0) {
-            Alertify.error("Debe agregar al menos un medicamento");
-            return;
-        }
+        // Validar según el modo seleccionado
+        console.log('Modo texto libre:', this.state.usarTextoLibre);
+        console.log('Medicamentos:', medicamentos);
+        console.log('Indicaciones:', recetaActual.indicaciones);
+        
+        if (this.state.usarTextoLibre) {
+            // Si usa texto libre, SOLO validar que haya indicaciones
+            // NO validar medicamentos porque ya los está escribiendo en el texto libre
+            if (!recetaActual.indicaciones || recetaActual.indicaciones.trim() === '') {
+                Alertify.error("Debe escribir las indicaciones en el campo de texto libre");
+                return;
+            }
+            // No validar medicamentos cuando se usa texto libre - IGNORAR completamente
+            console.log('Modo texto libre activado - NO se validan medicamentos');
+        } else {
+            // Si usa medicamentos individuales, validar que haya al menos uno
+            if (medicamentos.length === 0) {
+                Alertify.error("Debe agregar al menos un medicamento");
+                return;
+            }
 
-        // Validar que todos los medicamentos tengan los campos requeridos
-        const medicamentosIncompletos = medicamentos.some(m => 
-            !m.nombre || !m.cantidad || !m.dosis || !m.frecuencia || !m.duracion
-        );
+            // Validar que todos los medicamentos tengan los campos requeridos
+            const medicamentosIncompletos = medicamentos.some(m => 
+                !m.nombre || !m.cantidad || !m.dosis || !m.frecuencia || !m.duracion
+            );
 
-        if (medicamentosIncompletos) {
-            Alertify.error("Complete todos los campos de los medicamentos");
-            return;
+            if (medicamentosIncompletos) {
+                Alertify.error("Complete todos los campos de los medicamentos");
+                return;
+            }
         }
 
         // Validar que la fecha existe
@@ -123,7 +150,7 @@ class Recetas extends React.Component {
         const datos = {
             id_paciente: parseInt(this.props.idPaciente),
             id_doctor: parseInt(this.props.idDoctor || 1),
-            medicamentos: medicamentos,
+            medicamentos: this.state.usarTextoLibre ? null : medicamentos, // Si usa texto libre, enviar null en lugar de array vacío
             indicaciones: recetaActual.indicaciones || '',
             diagnostico: recetaActual.diagnostico || '',
             fecha: recetaActual.fecha
@@ -400,7 +427,7 @@ class Recetas extends React.Component {
                                                 </td>
                                                 <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057', fontWeight: 500 }}>
                                                     {receta.doctor ? 
-                                                        `Dr. ${receta.doctor.nombre} ${receta.doctor.apellido || ''}` : 
+                                                        (Core.formatearNombreDoctor ? Core.formatearNombreDoctor(receta.doctor) : `Dr. ${receta.doctor.nombre} ${receta.doctor.apellido || ''}`) : 
                                                         <span className="text-muted">N/A</span>
                                                     }
                                                 </td>
@@ -736,53 +763,211 @@ class Recetas extends React.Component {
                                     />
                                 </div>
 
-                                {/* Medicamentos */}
-                                <div style={{ marginBottom: '24px' }}>
+                                {/* Toggle para elegir modo */}
+                                <div style={{ 
+                                    marginBottom: '24px',
+                                    background: 'white',
+                                    borderRadius: '16px',
+                                    padding: '20px',
+                                    border: '2px solid #e0e0e0',
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                                }}>
                                     <div style={{
                                         display: 'flex',
-                                        justifyContent: 'space-between',
                                         alignItems: 'center',
+                                        justifyContent: 'space-between',
                                         marginBottom: '16px'
                                     }}>
-                                        <label style={{
-                                            fontWeight: 600,
-                                            fontSize: '14px',
-                                            color: '#495057',
-                                            margin: 0
+                                        <div>
+                                            <label style={{
+                                                display: 'block',
+                                                fontWeight: 700,
+                                                fontSize: '16px',
+                                                color: '#495057',
+                                                marginBottom: '6px'
+                                            }}>
+                                                Modo de Ingreso
+                                            </label>
+                                            <p style={{
+                                                margin: 0,
+                                                fontSize: '13px',
+                                                color: '#6c757d'
+                                            }}>
+                                                Elija cómo desea ingresar las indicaciones médicas
+                                            </p>
+                                        </div>
+                                        <div style={{
+                                            display: 'flex',
+                                            gap: '12px',
+                                            alignItems: 'center'
                                         }}>
-                                            Medicamentos <span style={{ color: '#dc3545' }}>*</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    // Al cambiar a medicamentos individuales, limpiar indicaciones si están vacías
+                                                    this.setState({ usarTextoLibre: false });
+                                                }}
+                                                style={{
+                                                    padding: '10px 20px',
+                                                    borderRadius: '10px',
+                                                    border: this.state.usarTextoLibre ? '2px solid #e0e0e0' : '2px solid #667eea',
+                                                    background: this.state.usarTextoLibre ? 'white' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                    color: this.state.usarTextoLibre ? '#495057' : 'white',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px'
+                                                }}
+                                            >
+                                                <i className="fas fa-list"></i>
+                                                Medicamentos Individuales
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    // Al cambiar a texto libre, limpiar medicamentos del estado
+                                                    this.setState({ 
+                                                        usarTextoLibre: true,
+                                                        medicamentos: [] // Limpiar medicamentos cuando se usa texto libre
+                                                    });
+                                                }}
+                                                style={{
+                                                    padding: '10px 20px',
+                                                    borderRadius: '10px',
+                                                    border: this.state.usarTextoLibre ? '2px solid #667eea' : '2px solid #e0e0e0',
+                                                    background: this.state.usarTextoLibre ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                                                    color: this.state.usarTextoLibre ? 'white' : '#495057',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px'
+                                                }}
+                                            >
+                                                <i className="fas fa-file-medical"></i>
+                                                Texto Libre
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Indicaciones en Texto Libre */}
+                                {this.state.usarTextoLibre && (
+                                    <div style={{ 
+                                        marginBottom: '24px',
+                                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+                                        borderRadius: '16px',
+                                        padding: '20px',
+                                        border: '2px solid rgba(102, 126, 234, 0.2)',
+                                        animation: 'slideUp 0.3s ease-out'
+                                    }}>
+                                        <label style={{
+                                            display: 'block',
+                                            marginBottom: '12px',
+                                            fontWeight: 700,
+                                            fontSize: '16px',
+                                            color: '#495057',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}>
+                                            <i className="fas fa-file-medical" style={{ color: '#667eea', fontSize: '20px' }}></i>
+                                            Indicaciones Médicas (Texto Libre) <span style={{ color: '#dc3545' }}>*</span>
                                         </label>
-                                        <button
-                                            type="button"
-                                            onClick={this.agregarMedicamento}
+                                        <p style={{
+                                            margin: '0 0 12px 0',
+                                            fontSize: '13px',
+                                            color: '#6c757d',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            Escriba todas las indicaciones, medicamentos, dosis y recomendaciones en este campo
+                                        </p>
+                                        <textarea
+                                            value={recetaActual.indicaciones || ''}
+                                            onChange={(e) => this.setState({
+                                                recetaActual: { ...recetaActual, indicaciones: e.target.value }
+                                            })}
+                                            rows="8"
+                                            placeholder="Ejemplo:&#10;&#10;1. Amoxicilina 500mg - 1 tableta cada 8 horas por 7 días&#10;2. Ibuprofeno 400mg - 1 tableta cada 12 horas si hay dolor&#10;3. Enjuague bucal con clorhexidina 0.12% - 2 veces al día&#10;4. Evitar alimentos muy calientes o fríos por 48 horas&#10;5. Cepillado suave de la zona afectada&#10;6. Control en 7 días&#10;&#10;Escriba aquí todas las indicaciones que desee proporcionar al paciente..."
                                             style={{
-                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                border: 'none',
-                                                borderRadius: '10px',
-                                                padding: '10px 20px',
-                                                color: 'white',
+                                                width: '100%',
+                                                padding: '16px 20px',
+                                                borderRadius: '12px',
+                                                border: '2px solid #e0e0e0',
+                                                fontSize: '15px',
+                                                lineHeight: '1.6',
+                                                transition: 'all 0.2s ease',
+                                                outline: 'none',
+                                                resize: 'vertical',
+                                                fontFamily: 'inherit',
+                                                backgroundColor: 'white',
+                                                minHeight: '200px'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.15)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Medicamentos Individuales */}
+                                {!this.state.usarTextoLibre && (
+                                    <div style={{ marginBottom: '24px', animation: 'slideUp 0.3s ease-out' }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: '16px'
+                                        }}>
+                                            <label style={{
                                                 fontWeight: 600,
                                                 fontSize: '14px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                transition: 'all 0.2s ease',
-                                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.target.style.transform = 'translateY(-2px)';
-                                                e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.target.style.transform = 'translateY(0)';
-                                                e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
-                                            }}
-                                        >
-                                            <i className="fas fa-plus"></i>
-                                            Agregar Medicamento
-                                        </button>
-                                    </div>
+                                                color: '#495057',
+                                                margin: 0
+                                            }}>
+                                                Medicamentos <span style={{ color: '#dc3545' }}>*</span>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={this.agregarMedicamento}
+                                                style={{
+                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                    border: 'none',
+                                                    borderRadius: '10px',
+                                                    padding: '10px 20px',
+                                                    color: 'white',
+                                                    fontWeight: 600,
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    transition: 'all 0.2s ease',
+                                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.transform = 'translateY(-2px)';
+                                                    e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.transform = 'translateY(0)';
+                                                    e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                                                }}
+                                            >
+                                                <i className="fas fa-plus"></i>
+                                                Agregar Medicamento
+                                            </button>
+                                        </div>
                                     
                                     {medicamentos.map((med, index) => (
                                         <div key={index} style={{
@@ -1039,48 +1224,9 @@ class Recetas extends React.Component {
                                             </div>
                                         </div>
                                     ))}
-                                </div>
+                                    </div>
+                                )}
 
-                                {/* Indicaciones Adicionales */}
-                                <div style={{ marginBottom: '24px' }}>
-                                    <label style={{
-                                        display: 'block',
-                                        marginBottom: '8px',
-                                        fontWeight: 600,
-                                        fontSize: '14px',
-                                        color: '#495057'
-                                    }}>
-                                        Indicaciones Adicionales
-                                    </label>
-                                    <textarea
-                                        value={recetaActual.indicaciones || ''}
-                                        onChange={(e) => this.setState({
-                                            recetaActual: { ...recetaActual, indicaciones: e.target.value }
-                                        })}
-                                        rows="4"
-                                        placeholder="Ingrese indicaciones adicionales para el paciente..."
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px 16px',
-                                            borderRadius: '12px',
-                                            border: '2px solid #e0e0e0',
-                                            fontSize: '15px',
-                                            transition: 'all 0.2s ease',
-                                            outline: 'none',
-                                            resize: 'vertical',
-                                            fontFamily: 'inherit',
-                                            backgroundColor: 'white'
-                                        }}
-                                        onFocus={(e) => {
-                                            e.target.style.borderColor = '#667eea';
-                                            e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                                        }}
-                                        onBlur={(e) => {
-                                            e.target.style.borderColor = '#e0e0e0';
-                                            e.target.style.boxShadow = 'none';
-                                        }}
-                                    />
-                                </div>
                             </div>
 
                             {/* Footer con botones */}

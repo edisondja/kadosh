@@ -53,12 +53,19 @@ class PerfilPaciente extends React.Component{
 				modal_ficha_medica_visible: false,
 				modal_recetas_visible: false,
 				modal_presupuestos_visible: false,
+				modal_facturas_visible: false,
+				modal_odontogramas_visible: false,
 				desactivar_campos_ficha: false, 
 
 				// Notas y Documentos
 				nota_texto: '',
 				documentos: [],
 				notasPaciente: [],
+				
+				// Facturas
+				facturas: [],
+				// Odontogramas
+				odontogramas: [],
 				tiene_ficha_medica:false,
 				nuevoArchivo: null,
 				nuevoComentario: '',
@@ -196,24 +203,25 @@ class PerfilPaciente extends React.Component{
 		
 
 		guardarNota=()=>{
- 
+			if (!this.state.nota_texto || this.state.nota_texto.trim() === '') {
+				alertify.error('Por favor escriba una nota antes de guardar');
+				return;
+			}
 
 			let nota = {
 				id_paciente: this.props.match.params.id,
 				descripcion: this.state.nota_texto
 			};
 
-
-			console.log(nota);
 			Axios.post(`${Verficar.url_base}/api/crear_nota`, nota)
 				.then((data) => {
-				console.log(data);
-				alertify.message('<i className="mac-icon-check-circle" style="color:green;"></i> Nota creada con éxito');
-				
-					this.setState({ modal_nota_visible: false, nota_texto: '' });
+					alertify.success('Nota creada con éxito');
+					this.cargarNotas(); // Recargar las notas
+					this.setState({ nota_texto: '' }); // Limpiar el campo de texto
 				})
 				.catch((error) => {
-				alertify.message('<i className="mac-icon-x-circle" style="color:red;"></i> No se pudo crear la nota');
+					alertify.error('No se pudo crear la nota');
+					console.error(error);
 				});
 		}
 
@@ -289,14 +297,81 @@ class PerfilPaciente extends React.Component{
 				});
 		};
 
+		cargarOdontogramas = () => {
+			Verficar.obtener_odontogramas(this.props.match.params.id)
+				.then((data) => {
+					this.setState({ odontogramas: data || [] });
+				})
+				.catch((error) => {
+					alertify.error('No se pudieron cargar los odontogramas');
+					console.error(error);
+					this.setState({ odontogramas: [] });
+				});
+		};
+
+		cargarFacturas = () => {
+			Axios.get(`${Verficar.url_base}/api/cargar_facturas_paciente/${this.props.match.params.id}`)
+				.then((res) => {
+					this.setState({ facturas: res.data || [] });
+				})
+				.catch((error) => {
+					alertify.error('No se pudieron cargar las facturas');
+					console.error(error);
+				});
+		}
+
+		eliminarFactura = (id_factura) => {
+			Axios.get(`${Verficar.url_base}/api/cargar_recibos/${id_factura}`)
+				.then(data => {
+					if (data.data.length > 0) {
+						alertify.error('No puedes eliminar esta factura, ya que hay recibos generados que dependen de ella. Si deseas eliminarla, borra todos los recibos correspondientes primero.');
+					} else {
+						Axios.get(`${Verficar.url_base}/api/configs`).then(configResponse => {
+							const config = configResponse.data && configResponse.data.length > 0 ? configResponse.data[0] : null;
+							const claveSecreta = config ? config.clave_secreta : null;
+
+							if (!claveSecreta) {
+								alertify.error("No se ha configurado una clave secreta. Por favor configúrela primero en Configuración.");
+								return;
+							}
+
+							alertify.prompt("Eliminar Factura", "Digite la clave secreta para eliminar esta factura", "",
+								(event, value) => {
+									if (value === claveSecreta) {
+										const usuarioId = localStorage.getItem("id_usuario");
+										Axios.delete(`${Verficar.url_base}/api/eliminar_factura/${id_factura}`, {
+											data: {
+												clave_secreta: value,
+												usuario_id: usuarioId
+											}
+										}).then(data => {
+											alertify.success("Factura eliminada con éxito");
+											this.cargarFacturas(); // Recargar facturas
+										}).catch(error => {
+											const errorMsg = error.response?.data?.message || "No se pudo eliminar la factura";
+											alertify.error(errorMsg);
+										});
+									} else {
+										alertify.error("Clave secreta incorrecta");
+									}
+								}, function(error) {
+									// Cancelar
+								}).set('type', 'password');
+						}).catch(error => {
+							alertify.error("Error al cargar la configuración");
+						});
+					}
+				}).catch(error => {
+					alertify.error("Error al validar factura");
+				});
+		}
+
 
 		eliminarNota = (notaId) => {
 		Axios.post(`${Verficar.url_base}/api/eliminar_nota`, { nota_id: notaId })
 			.then(() => {
 			alertify.success('Nota eliminada con éxito');
-			this.setState((prevState) => ({
-				notasPaciente: prevState.notasPaciente.filter((n) => n.id !== notaId),
-			}));
+			this.cargarNotas(); // Recargar las notas desde el servidor
 			})
 			.catch(() => {
 			alertify.error('No se pudo eliminar la nota');
@@ -808,8 +883,12 @@ class PerfilPaciente extends React.Component{
 								</h5>
 								<div className="row">
 									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<Link to={`/agregar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`} style={{ textDecoration: 'none' }}>
-											<div style={{
+										<div 
+											onClick={() => {
+												this.cargarFacturas();
+												this.setState({ modal_facturas_visible: true });
+											}}
+											style={{
 												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
 												border: '2px solid #e0e0e0',
 												borderRadius: '16px',
@@ -829,43 +908,12 @@ class PerfilPaciente extends React.Component{
 												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
 												e.currentTarget.style.borderColor = '#e0e0e0';
 											}}
-											>
-												<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
-												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
-													{Verficar.lenguaje.perfil_paciente.factura}
-												</h6>
-											</div>
-										</Link>
-									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<Link to={`/ver_facturas/${this.props.match.params.id}`} style={{ textDecoration: 'none' }}>
-											<div style={{
-												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-												border: '2px solid #e0e0e0',
-												borderRadius: '16px',
-												padding: '20px',
-												textAlign: 'center',
-												cursor: 'pointer',
-												transition: 'all 0.3s ease',
-												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.transform = 'translateY(-5px)';
-												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
-												e.currentTarget.style.borderColor = '#667eea';
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.transform = 'translateY(0)';
-												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-												e.currentTarget.style.borderColor = '#e0e0e0';
-											}}
-											>
-												<i className="fas fa-file-alt" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
-												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
-													{Verficar.lenguaje.perfil_paciente.ver_facturas}
-												</h6>
-											</div>
-										</Link>
+										>
+											<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												{Verficar.lenguaje.perfil_paciente.factura}
+											</h6>
+										</div>
 									</div>
 									<div className="col-6 col-md-4 col-lg-3 mb-3">
 										<div 
@@ -899,7 +947,10 @@ class PerfilPaciente extends React.Component{
 									</div>
 									<div className="col-6 col-md-4 col-lg-3 mb-3">
 										<div 
-											onClick={this.ver_notas}
+											onClick={() => {
+												this.cargarNotas();
+												this.setState({ modal_ver_notas_visible: true });
+											}}
 											style={{
 												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
 												border: '2px solid #e0e0e0',
@@ -924,36 +975,6 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-sticky-note" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												{Verficar.lenguaje.perfil_paciente.notas}
-											</h6>
-										</div>
-									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<div 
-											onClick={this.openModalNota}
-											style={{
-												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-												border: '2px solid #e0e0e0',
-												borderRadius: '16px',
-												padding: '20px',
-												textAlign: 'center',
-												cursor: 'pointer',
-												transition: 'all 0.3s ease',
-												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.transform = 'translateY(-5px)';
-												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
-												e.currentTarget.style.borderColor = '#667eea';
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.transform = 'translateY(0)';
-												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-												e.currentTarget.style.borderColor = '#e0e0e0';
-											}}
-										>
-											<i className="fas fa-plus-circle" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
-											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
-												{Verficar.lenguaje.perfil_paciente.agregar_nota}
 											</h6>
 										</div>
 									</div>
@@ -1018,8 +1039,12 @@ class PerfilPaciente extends React.Component{
 										</div>
 									</div>
 									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<Link to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`} style={{ textDecoration: 'none' }}>
-											<div style={{
+										<div 
+											onClick={() => {
+												this.cargarOdontogramas();
+												this.setState({ modal_odontogramas_visible: true });
+											}}
+											style={{
 												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
 												border: '2px solid #e0e0e0',
 												borderRadius: '16px',
@@ -1039,43 +1064,12 @@ class PerfilPaciente extends React.Component{
 												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
 												e.currentTarget.style.borderColor = '#e0e0e0';
 											}}
-											>
-												<i className="fas fa-tooth" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
-												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
-													Odontograma
-												</h6>
-											</div>
-										</Link>
-									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<Link to={`/ver_odontogramas/${this.props.match.params.id}`} style={{ textDecoration: 'none' }}>
-											<div style={{
-												background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-												border: '2px solid #e0e0e0',
-												borderRadius: '16px',
-												padding: '20px',
-												textAlign: 'center',
-												cursor: 'pointer',
-												transition: 'all 0.3s ease',
-												boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.transform = 'translateY(-5px)';
-												e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
-												e.currentTarget.style.borderColor = '#667eea';
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.transform = 'translateY(0)';
-												e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-												e.currentTarget.style.borderColor = '#e0e0e0';
-											}}
-											>
-												<i className="fas fa-list" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
-												<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
-													Ver Odontogramas
-												</h6>
-											</div>
-										</Link>
+										>
+											<i className="fas fa-tooth" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
+											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
+												Odontogramas
+											</h6>
+										</div>
 									</div>
 									<div className="col-6 col-md-4 col-lg-3 mb-3">
 										<div 
@@ -1751,59 +1745,6 @@ class PerfilPaciente extends React.Component{
 						</div>
 					</div>
 					)}
-			{this.state.modal_nota_visible && (
-				<div
-					className="modal d-block"
-					style={{
-					backgroundColor: 'rgba(0,0,0,0.3)',
-					zIndex: 1050,
-					position: 'fixed',
-					top: 0,
-					left: 0,
-					width: '100%',
-					height: '100%',
-					overflow: 'auto',
-					pointerEvents: 'auto',
-					}}>
-					<div className="modal-dialog modal-dialog-centered" style={{ maxWidth: 600 }}>
-					<div
-						className="mac-box p-4 rounded-3 shadow-lg bg-white"
-						style={{
-						width: '100%',
-						zIndex: 1060,
-						pointerEvents: 'auto',
-						}}>
-						<div className="d-flex justify-content-between align-items-center mb-3">
-						<h5 className="fw-bold">📝 Escribir Nota del Paciente</h5>
-						<button type="button" className="btn-close" onClick={() => this.setState({ modal_nota_visible: false })}></button>
-						</div>
-
-						<textarea
-						className="mac-input w-100"
-						placeholder="Escribe aquí la nota..."
-						rows={6}
-						value={this.state.nota_texto}
-						onChange={(e) => this.setState({ nota_texto: e.target.value })}
-						style={{ resize: 'vertical' }}
-						></textarea>
-
-						<div className="d-flex justify-content-end gap-2 mt-4">
-						<button
-							className="mac-btn mac-btn-green"
-							onClick={() => {
-							this.guardarNota();
-							this.setState({ modal_nota_visible: false });
-							}}>
-							💾 Guardar
-						</button>
-						<button className="mac-btn mac-btn-gray" onClick={() => this.setState({ modal_nota_visible: false })}>
-							❌ Cancelar
-						</button>
-						</div>
-					</div>
-					</div>
-				</div>
-				)}
 	
 			{this.state.modal_documento_visible && (
 				<div
@@ -2261,52 +2202,665 @@ class PerfilPaciente extends React.Component{
 				</div>
 				)}
 				{this.state.modal_ver_notas_visible && (
-					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
-					<div className="modal-dialog modal-lg modal-dialog-centered">
-					<div className="modal-content" style={{ borderRadius: '12px' }}>
-						<div className="modal-header">
-						<h5 className="modal-title">Notas del Paciente 🗒️</h5>
-						<button className="btn-close" onClick={() => this.setState({ modal_ver_notas_visable: false })}></button>
-						</div>
-						<div className="modal-body">
-						<table className="table">
-							<thead>
-							<tr>
-								<th>Contenido</th>
-								<th>Fecha</th>
-								<th colSpan="2">Eliminar</th>
-							</tr>
-							</thead>
-							<tbody>
-							{this.state.notasPaciente.map((nota) => (
-								<tr key={nota.id}>
-								<td style={{ maxWidth: '300px', whiteSpace: 'pre-wrap' }}>
-									<p style={{ margin: 0 }}>{nota.descripcion}</p>
-								</td>
-								<td>{nota.updated_at}</td>
-						
-								<td>
-									<button
-									className="btn btn-outline-danger btn-sm"
-									onClick={() => this.eliminarNota(nota.id)}
-									title="Eliminar nota"
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+						<div className="modal-dialog modal-lg modal-dialog-centered">
+							<div className="modal-content" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+								<div className="modal-header" style={{
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									color: 'white',
+									border: 'none',
+									padding: '20px 25px'
+								}}>
+									<h5 className="modal-title mb-0" style={{ fontWeight: 700, fontSize: '20px' }}>
+										<i className="fas fa-sticky-note me-2"></i>Notas del Paciente
+									</h5>
+									<button 
+										className="btn-close btn-close-white" 
+										onClick={() => this.setState({ modal_ver_notas_visible: false, nota_texto: '' })}
+									></button>
+								</div>
+								<div className="modal-body" style={{ padding: '25px', maxHeight: '70vh', overflowY: 'auto' }}>
+									{/* Formulario para agregar nueva nota */}
+									<div className="card border-0 shadow-sm mb-4" style={{
+										background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+										borderRadius: '12px',
+										border: '2px solid rgba(102, 126, 234, 0.2)'
+									}}>
+										<div className="card-body p-4">
+											<h6 style={{ fontWeight: 600, marginBottom: '15px', color: '#495057' }}>
+												<i className="fas fa-plus-circle me-2" style={{ color: '#667eea' }}></i>
+												Agregar Nueva Nota
+											</h6>
+											<textarea
+												className="form-control"
+												placeholder="Escribe aquí la nota..."
+												value={this.state.nota_texto || ''}
+												onChange={(e) => this.setNotaTexto(e.target.value)}
+												rows="4"
+												style={{
+													borderRadius: '12px',
+													border: '2px solid #e0e0e0',
+													padding: '14px 16px',
+													fontSize: '15px',
+													resize: 'vertical',
+													transition: 'all 0.2s ease'
+												}}
+												onFocus={(e) => {
+													e.target.style.borderColor = '#667eea';
+													e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+												}}
+												onBlur={(e) => {
+													e.target.style.borderColor = '#e0e0e0';
+													e.target.style.boxShadow = 'none';
+												}}
+											/>
+											<button
+												className="btn mt-3"
+												onClick={this.guardarNota}
+												disabled={!this.state.nota_texto || this.state.nota_texto.trim() === ''}
+												style={{
+													background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+													color: 'white',
+													border: 'none',
+													borderRadius: '12px',
+													padding: '10px 20px',
+													fontWeight: 600,
+													transition: 'all 0.2s ease',
+													opacity: (!this.state.nota_texto || this.state.nota_texto.trim() === '') ? 0.5 : 1,
+													cursor: (!this.state.nota_texto || this.state.nota_texto.trim() === '') ? 'not-allowed' : 'pointer'
+												}}
+												onMouseEnter={(e) => {
+													if (!e.target.disabled) {
+														e.target.style.transform = 'translateY(-2px)';
+														e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+													}
+												}}
+												onMouseLeave={(e) => {
+													e.target.style.transform = 'translateY(0)';
+													e.target.style.boxShadow = 'none';
+												}}
+											>
+												<i className="fas fa-save me-2"></i>Guardar Nota
+											</button>
+										</div>
+									</div>
+
+									{/* Lista de notas existentes */}
+									<div>
+										<h6 style={{ fontWeight: 600, marginBottom: '15px', color: '#495057' }}>
+											<i className="fas fa-list me-2" style={{ color: '#667eea' }}></i>
+											Notas Existentes ({this.state.notasPaciente.length})
+										</h6>
+										{this.state.notasPaciente.length === 0 ? (
+											<div className="text-center p-5" style={{ color: '#6c757d' }}>
+												<i className="fas fa-inbox" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+												<p style={{ margin: 0, fontSize: '16px' }}>No hay notas registradas</p>
+											</div>
+										) : (
+											<div className="row g-3">
+												{this.state.notasPaciente.map((nota) => (
+													<div key={nota.id} className="col-12">
+														<div className="card border-0 shadow-sm" style={{
+															borderRadius: '12px',
+															border: '2px solid #e0e0e0',
+															position: 'relative',
+															transition: 'all 0.2s ease'
+														}}
+														onMouseEnter={(e) => {
+															e.currentTarget.style.borderColor = '#667eea';
+															e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+														}}
+														onMouseLeave={(e) => {
+															e.currentTarget.style.borderColor = '#e0e0e0';
+															e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+														}}>
+															{/* Botón X pequeño en esquina superior derecha */}
+															<button
+																onClick={() => {
+																	alertify.confirm(
+																		"Eliminar Nota",
+																		"¿Está seguro que desea eliminar esta nota?",
+																		() => {
+																			this.eliminarNota(nota.id);
+																			alertify.success("Nota eliminada");
+																		},
+																		() => {
+																			alertify.message("Cancelado");
+																		}
+																	);
+																}}
+																style={{
+																	position: 'absolute',
+																	top: '8px',
+																	right: '8px',
+																	width: '24px',
+																	height: '24px',
+																	borderRadius: '50%',
+																	background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+																	color: 'white',
+																	border: 'none',
+																	display: 'flex',
+																	alignItems: 'center',
+																	justifyContent: 'center',
+																	fontSize: '12px',
+																	fontWeight: 700,
+																	cursor: 'pointer',
+																	transition: 'all 0.2s ease',
+																	zIndex: 10,
+																	padding: 0,
+																	lineHeight: 1
+																}}
+																onMouseEnter={(e) => {
+																	e.target.style.transform = 'scale(1.15)';
+																	e.target.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.4)';
+																}}
+																onMouseLeave={(e) => {
+																	e.target.style.transform = 'scale(1)';
+																	e.target.style.boxShadow = 'none';
+																}}
+																title="Eliminar nota"
+															>
+																×
+															</button>
+															<div className="card-body p-4">
+																<p style={{ 
+																	margin: 0, 
+																	marginBottom: '10px',
+																	whiteSpace: 'pre-wrap',
+																	wordWrap: 'break-word',
+																	color: '#2d2d2f',
+																	lineHeight: '1.6',
+																	paddingRight: '30px'
+																}}>
+																	{nota.descripcion}
+																</p>
+																<small style={{ color: '#6c757d', fontSize: '12px' }}>
+																	<i className="fas fa-clock me-1"></i>
+																	{new Date(nota.updated_at).toLocaleString('es-ES', {
+																		year: 'numeric',
+																		month: 'short',
+																		day: 'numeric',
+																		hour: '2-digit',
+																		minute: '2-digit'
+																	})}
+																</small>
+															</div>
+														</div>
+													</div>
+												))}
+											</div>
+										)}
+									</div>
+								</div>
+								<div className="modal-footer" style={{ border: 'none', padding: '20px 25px' }}>
+									<button 
+										className="btn" 
+										onClick={() => this.setState({ modal_ver_notas_visible: false, nota_texto: '' })}
+										style={{
+											background: 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+											color: 'white',
+											border: 'none',
+											borderRadius: '12px',
+											padding: '10px 24px',
+											fontWeight: 600,
+											transition: 'all 0.2s ease'
+										}}
+										onMouseEnter={(e) => {
+											e.target.style.transform = 'translateY(-2px)';
+											e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+										}}
+										onMouseLeave={(e) => {
+											e.target.style.transform = 'translateY(0)';
+											e.target.style.boxShadow = 'none';
+										}}
 									>
-									<i className="icon icon-trash" />
+										<i className="fas fa-times me-2"></i>Cerrar
 									</button>
-								</td>
-								</tr>
-							))}
-							</tbody>
-						</table>
-						</div>
-						<div className="modal-footer">
-						<button className="btn btn-secondary" onClick={() => this.setState({ modal_ver_notas_visible: false })}>
-							Cerrar
-						</button>
+								</div>
+							</div>
 						</div>
 					</div>
+				)}
+
+				{/* Modal de Facturas */}
+				{this.state.modal_facturas_visible && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+						<div className="modal-dialog modal-lg modal-dialog-centered">
+							<div className="modal-content" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+								<div className="modal-header" style={{
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									color: 'white',
+									border: 'none',
+									padding: '20px 25px'
+								}}>
+									<h5 className="modal-title mb-0" style={{ fontWeight: 700, fontSize: '20px' }}>
+										<i className="fas fa-file-invoice-dollar me-2"></i>Facturas del Paciente
+									</h5>
+									<button 
+										className="btn-close btn-close-white" 
+										onClick={() => this.setState({ modal_facturas_visible: false })}
+									></button>
+								</div>
+								<div className="modal-body" style={{ padding: '25px', maxHeight: '70vh', overflowY: 'auto' }}>
+									{/* Botón para crear nueva factura */}
+									<div className="card border-0 shadow-sm mb-4" style={{
+										background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+										borderRadius: '12px',
+										border: '2px solid rgba(102, 126, 234, 0.2)'
+									}}>
+										<div className="card-body p-4 text-center">
+											<Link 
+												to={`/agregar_factura/${this.props.match.params.id}/${this.props.match.params.id_doc}`}
+												onClick={() => this.setState({ modal_facturas_visible: false })}
+												style={{ textDecoration: 'none' }}
+											>
+												<button
+													className="btn w-100"
+													style={{
+														background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+														color: 'white',
+														border: 'none',
+														borderRadius: '12px',
+														padding: '14px 24px',
+														fontWeight: 600,
+														fontSize: '16px',
+														transition: 'all 0.2s ease',
+														boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+													}}
+													onMouseEnter={(e) => {
+														e.target.style.transform = 'translateY(-2px)';
+														e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+													}}
+													onMouseLeave={(e) => {
+														e.target.style.transform = 'translateY(0)';
+														e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+													}}
+												>
+													<i className="fas fa-plus-circle me-2"></i>Crear Nueva Factura
+												</button>
+											</Link>
+										</div>
+									</div>
+
+									{/* Lista de facturas existentes */}
+									<div>
+										<h6 style={{ fontWeight: 600, marginBottom: '15px', color: '#495057' }}>
+											<i className="fas fa-list me-2" style={{ color: '#667eea' }}></i>
+											Facturas Existentes ({this.state.facturas.length})
+										</h6>
+										{this.state.facturas.length === 0 ? (
+											<div className="text-center p-5" style={{ color: '#6c757d' }}>
+												<i className="fas fa-inbox" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+												<p style={{ margin: 0, fontSize: '16px' }}>No hay facturas registradas</p>
+											</div>
+										) : (
+											<div className="row g-3">
+												{this.state.facturas.map((factura) => (
+													<div key={factura.id} className="col-12">
+														<div className="card border-0 shadow-sm" style={{
+															borderRadius: '12px',
+															border: '2px solid #e0e0e0',
+															position: 'relative',
+															transition: 'all 0.2s ease'
+														}}
+														onMouseEnter={(e) => {
+															e.currentTarget.style.borderColor = '#667eea';
+															e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+														}}
+														onMouseLeave={(e) => {
+															e.currentTarget.style.borderColor = '#e0e0e0';
+															e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+														}}>
+															{/* Botón X pequeño en esquina superior derecha */}
+															<button
+																onClick={() => {
+																	alertify.confirm(
+																		"Eliminar Factura",
+																		"¿Está seguro que desea eliminar esta factura?",
+																		() => {
+																			this.eliminarFactura(factura.id);
+																		},
+																		() => {
+																			alertify.message("Cancelado");
+																		}
+																	);
+																}}
+																style={{
+																	position: 'absolute',
+																	top: '8px',
+																	right: '8px',
+																	width: '24px',
+																	height: '24px',
+																	borderRadius: '50%',
+																	background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+																	color: 'white',
+																	border: 'none',
+																	display: 'flex',
+																	alignItems: 'center',
+																	justifyContent: 'center',
+																	fontSize: '12px',
+																	fontWeight: 700,
+																	cursor: 'pointer',
+																	transition: 'all 0.2s ease',
+																	zIndex: 10,
+																	padding: 0,
+																	lineHeight: 1
+																}}
+																onMouseEnter={(e) => {
+																	e.target.style.transform = 'scale(1.15)';
+																	e.target.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.4)';
+																}}
+																onMouseLeave={(e) => {
+																	e.target.style.transform = 'scale(1)';
+																	e.target.style.boxShadow = 'none';
+																}}
+																title="Eliminar factura"
+															>
+																×
+															</button>
+															<div className="card-body p-4">
+																<div className="d-flex justify-content-between align-items-center mb-2">
+																	<div>
+																		<h6 style={{ 
+																			margin: 0, 
+																			marginBottom: '5px',
+																			fontWeight: 600,
+																			color: '#2d2d2f',
+																			paddingRight: '30px'
+																		}}>
+																			<i className="fas fa-file-invoice-dollar me-2" style={{ color: '#667eea' }}></i>
+																			Factura #{factura.id}
+																		</h6>
+																		<small style={{ color: '#6c757d', fontSize: '12px' }}>
+																			<i className="fas fa-calendar me-1"></i>
+																			{new Date(factura.created_at).toLocaleString('es-ES', {
+																				year: 'numeric',
+																				month: 'short',
+																				day: 'numeric',
+																				hour: '2-digit',
+																				minute: '2-digit'
+																			})}
+																		</small>
+																	</div>
+																	<div style={{ textAlign: 'right' }}>
+																		<small style={{ color: '#6c757d', fontSize: '12px', display: 'block', marginBottom: '5px' }}>
+																			Total
+																		</small>
+																		<strong style={{ 
+																			fontSize: '20px', 
+																			fontWeight: 700,
+																			color: '#28a745'
+																		}}>
+																			RD$ {new Intl.NumberFormat().format(factura.precio_estatus || 0)}
+																		</strong>
+																	</div>
+																</div>
+																<div className="mt-3">
+																	<Link 
+																		to={`/ver_factura/${this.props.match.params.id}/${factura.id}`}
+																		onClick={() => this.setState({ modal_facturas_visible: false })}
+																	>
+																		<button
+																			className="btn btn-sm w-100"
+																			style={{
+																				background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+																				color: 'white',
+																				border: 'none',
+																				borderRadius: '8px',
+																				padding: '8px 16px',
+																				fontWeight: 600,
+																				transition: 'all 0.2s ease'
+																			}}
+																			onMouseEnter={(e) => {
+																				e.target.style.transform = 'translateY(-2px)';
+																				e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+																			}}
+																			onMouseLeave={(e) => {
+																				e.target.style.transform = 'translateY(0)';
+																				e.target.style.boxShadow = 'none';
+																			}}
+																		>
+																			<i className="fas fa-eye me-2"></i>Ver Detalles
+																		</button>
+																	</Link>
+																</div>
+															</div>
+														</div>
+													</div>
+												))}
+											</div>
+										)}
+									</div>
+								</div>
+								<div className="modal-footer" style={{ border: 'none', padding: '20px 25px' }}>
+									<button 
+										className="btn" 
+										onClick={() => this.setState({ modal_facturas_visible: false })}
+										style={{
+											background: 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+											color: 'white',
+											border: 'none',
+											borderRadius: '12px',
+											padding: '10px 24px',
+											fontWeight: 600,
+											transition: 'all 0.2s ease'
+										}}
+										onMouseEnter={(e) => {
+											e.target.style.transform = 'translateY(-2px)';
+											e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+										}}
+										onMouseLeave={(e) => {
+											e.target.style.transform = 'translateY(0)';
+											e.target.style.boxShadow = 'none';
+										}}
+									>
+										<i className="fas fa-times me-2"></i>Cerrar
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
-				</div>
+				)}
+
+				{/* Modal de Odontogramas */}
+				{this.state.modal_odontogramas_visible && (
+					<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+						<div className="modal-dialog modal-lg modal-dialog-centered">
+							<div className="modal-content" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+								<div className="modal-header" style={{
+									background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+									color: 'white',
+									border: 'none',
+									padding: '20px 25px'
+								}}>
+									<h5 className="modal-title mb-0" style={{ fontWeight: 700, fontSize: '20px' }}>
+										<i className="fas fa-tooth me-2"></i>Odontogramas del Paciente
+									</h5>
+									<button 
+										className="btn-close btn-close-white" 
+										onClick={() => this.setState({ modal_odontogramas_visible: false })}
+									></button>
+								</div>
+								<div className="modal-body" style={{ padding: '25px', maxHeight: '70vh', overflowY: 'auto' }}>
+									{/* Botón para crear nuevo odontograma */}
+									<div className="card border-0 shadow-sm mb-4" style={{
+										background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+										borderRadius: '12px',
+										border: '2px solid rgba(102, 126, 234, 0.2)'
+									}}>
+										<div className="card-body p-4 text-center">
+											<Link 
+												to={`/odontograma/${this.props.match.params.id}/${this.props.match.params.id_doc}`}
+												onClick={() => this.setState({ modal_odontogramas_visible: false })}
+												style={{ textDecoration: 'none' }}
+											>
+												<button
+													className="btn w-100"
+													style={{
+														background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+														color: 'white',
+														border: 'none',
+														borderRadius: '12px',
+														padding: '14px 24px',
+														fontWeight: 600,
+														fontSize: '16px',
+														transition: 'all 0.2s ease',
+														boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+													}}
+													onMouseEnter={(e) => {
+														e.target.style.transform = 'translateY(-2px)';
+														e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+													}}
+													onMouseLeave={(e) => {
+														e.target.style.transform = 'translateY(0)';
+														e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+													}}
+												>
+													<i className="fas fa-plus-circle me-2"></i>Crear Nuevo Odontograma
+												</button>
+											</Link>
+										</div>
+									</div>
+
+									{/* Lista de odontogramas existentes */}
+									<div>
+										<h6 style={{ fontWeight: 600, marginBottom: '15px', color: '#495057' }}>
+											<i className="fas fa-list me-2" style={{ color: '#667eea' }}></i>
+											Odontogramas Existentes ({this.state.odontogramas.length})
+										</h6>
+										{this.state.odontogramas.length === 0 ? (
+											<div className="text-center p-5" style={{ color: '#6c757d' }}>
+												<i className="fas fa-inbox" style={{ fontSize: '48px', marginBottom: '15px', opacity: 0.5 }}></i>
+												<p style={{ margin: 0, fontSize: '16px' }}>No hay odontogramas registrados</p>
+											</div>
+										) : (
+											<div className="row g-3">
+												{this.state.odontogramas.map((odontograma) => (
+													<div key={odontograma.id} className="col-12">
+														<div className="card border-0 shadow-sm" style={{
+															borderRadius: '12px',
+															border: '2px solid #e0e0e0',
+															transition: 'all 0.2s ease'
+														}}
+														onMouseEnter={(e) => {
+															e.currentTarget.style.borderColor = '#667eea';
+															e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+														}}
+														onMouseLeave={(e) => {
+															e.currentTarget.style.borderColor = '#e0e0e0';
+															e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+														}}>
+															<div className="card-body p-4">
+																<div className="d-flex justify-content-between align-items-center mb-2">
+																	<div>
+																		<h6 style={{ 
+																			margin: 0, 
+																			marginBottom: '5px',
+																			fontWeight: 600,
+																			color: '#2d2d2f'
+																		}}>
+																			<i className="fas fa-tooth me-2" style={{ color: '#667eea' }}></i>
+																			Odontograma #{odontograma.id}
+																		</h6>
+																		<small style={{ color: '#6c757d', fontSize: '12px' }}>
+																			<i className="fas fa-calendar me-1"></i>
+																			{new Date(odontograma.created_at).toLocaleString('es-ES', {
+																				year: 'numeric',
+																				month: 'short',
+																				day: 'numeric',
+																				hour: '2-digit',
+																				minute: '2-digit'
+																			})}
+																		</small>
+																		{odontograma.detalles && odontograma.detalles.length > 0 && (
+																			<div style={{ marginTop: '8px' }}>
+																				<small style={{ color: '#28a745', fontSize: '12px' }}>
+																					<i className="fas fa-check-circle me-1"></i>
+																					{odontograma.detalles.length} procedimiento{odontograma.detalles.length !== 1 ? 's' : ''} registrado{odontograma.detalles.length !== 1 ? 's' : ''}
+																				</small>
+																			</div>
+																		)}
+																	</div>
+																	<div style={{ textAlign: 'right' }}>
+																		<span className="badge" style={{
+																			background: odontograma.estado === 'activo' 
+																				? 'linear-gradient(135deg, #28a745 0%, #218838 100%)'
+																				: 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+																			color: 'white',
+																			padding: '6px 12px',
+																			borderRadius: '8px',
+																			fontSize: '12px',
+																			fontWeight: 600
+																		}}>
+																			{odontograma.estado || 'activo'}
+																		</span>
+																	</div>
+																</div>
+																<div className="mt-3">
+																	<Link 
+																		to={`/ver_odontograma/${odontograma.id}`}
+																		onClick={() => this.setState({ modal_odontogramas_visible: false })}
+																	>
+																		<button
+																			className="btn btn-sm w-100"
+																			style={{
+																				background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+																				color: 'white',
+																				border: 'none',
+																				borderRadius: '8px',
+																				padding: '8px 16px',
+																				fontWeight: 600,
+																				transition: 'all 0.2s ease'
+																			}}
+																			onMouseEnter={(e) => {
+																				e.target.style.transform = 'translateY(-2px)';
+																				e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+																			}}
+																			onMouseLeave={(e) => {
+																				e.target.style.transform = 'translateY(0)';
+																				e.target.style.boxShadow = 'none';
+																			}}
+																		>
+																			<i className="fas fa-eye me-2"></i>Ver Detalles
+																		</button>
+																	</Link>
+																</div>
+															</div>
+														</div>
+													</div>
+												))}
+											</div>
+										)}
+									</div>
+								</div>
+								<div className="modal-footer" style={{ border: 'none', padding: '20px 25px' }}>
+									<button 
+										className="btn" 
+										onClick={() => this.setState({ modal_odontogramas_visible: false })}
+										style={{
+											background: 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+											color: 'white',
+											border: 'none',
+											borderRadius: '12px',
+											padding: '10px 24px',
+											fontWeight: 600,
+											transition: 'all 0.2s ease'
+										}}
+										onMouseEnter={(e) => {
+											e.target.style.transform = 'translateY(-2px)';
+											e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+										}}
+										onMouseLeave={(e) => {
+											e.target.style.transform = 'translateY(0)';
+											e.target.style.boxShadow = 'none';
+										}}
+									>
+										<i className="fas fa-times me-2"></i>Cerrar
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
 				)}
 
 				{/* Modal de Recetas */}

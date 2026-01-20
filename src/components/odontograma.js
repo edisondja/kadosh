@@ -48,6 +48,8 @@ const OdontogramaCompletoHibrido = () => {
   const [paciente, setPaciente] = useState({ nombre: '', apellido: '' });
   const [doctor, setDoctor] = useState({ nombre: '', apellido: '' });
   const [doctorIdValido, setDoctorIdValido] = useState(null);
+  const [piezaAnimada, setPiezaAnimada] = useState(null); // Para animar la pieza clickeada
+  const [piezaConImpacto, setPiezaConImpacto] = useState(null); // Para animación de impacto al agregar procedimiento/color
 
   // === Lógica del CANVAS PRINCIPAL ===
   const canvasRef = useRef(null);
@@ -176,6 +178,8 @@ const OdontogramaCompletoHibrido = () => {
       maxContentLength: Infinity,
       maxBodyLength: Infinity
     }).then(response => {
+      // Reproducir sonido de logro al guardar el odontograma
+      reproducirSonidoLogro();
       Alertify.success("Odontograma guardado correctamente.");
       // Redirigir a la lista de odontogramas del paciente
       window.location.href = `/ver_odontogramas/${id_paciente}`;
@@ -351,10 +355,66 @@ const OdontogramaCompletoHibrido = () => {
   }, []);
 
   // === Lógica del ODONTOGRAMA CARA A CARA ===
-  // Función para reproducir sonido de click
+  // Función para reproducir sonido de kick suave con bajo al hacer clic en piezas
+  const reproducirSonidoMetalico = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Crear osciladores para el kick - más frecuencias para mejor audibilidad en laptop
+      const oscBajo = audioContext.createOscillator();
+      const oscMedio = audioContext.createOscillator();
+      const oscAlto = audioContext.createOscillator(); // Agregar frecuencia más alta para laptops
+      const gainNode = audioContext.createGain();
+      
+      // Conectar osciladores al gain
+      oscBajo.connect(gainNode);
+      oscMedio.connect(gainNode);
+      oscAlto.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Frecuencias ajustadas para mejor audibilidad en laptop
+      oscBajo.frequency.value = 80; // Bajo más audible
+      oscMedio.frequency.value = 150; // Cuerpo del kick más presente
+      oscAlto.frequency.value = 250; // Frecuencia alta para percusión clara en laptops
+      
+      // Usar tipo 'sine' para sonido más suave y redondeado
+      oscBajo.type = 'sine';
+      oscMedio.type = 'sine';
+      oscAlto.type = 'sine';
+      
+      // Envolvente más fuerte para mejor audibilidad
+      const now = audioContext.currentTime;
+      // Ataque rápido y fuerte, decay más largo
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.6, now + 0.01); // Ataque más fuerte
+      gainNode.gain.exponentialRampToValueAtTime(0.4, now + 0.05); // Decay medio más alto
+      gainNode.gain.exponentialRampToValueAtTime(0.15, now + 0.08); // Release más audible
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25); // Fade out suave
+      
+      // Modulación de frecuencia para efecto de kick más natural
+      oscBajo.frequency.setValueAtTime(80, now);
+      oscBajo.frequency.exponentialRampToValueAtTime(50, now + 0.05);
+      
+      oscMedio.frequency.setValueAtTime(150, now);
+      oscMedio.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+      
+      oscAlto.frequency.setValueAtTime(250, now);
+      oscAlto.frequency.exponentialRampToValueAtTime(180, now + 0.05);
+      
+      oscBajo.start(now);
+      oscMedio.start(now);
+      oscAlto.start(now);
+      oscBajo.stop(now + 0.25);
+      oscMedio.stop(now + 0.25);
+      oscAlto.stop(now + 0.25);
+    } catch (error) {
+      console.log('Audio no disponible');
+    }
+  };
+
+  // Función para reproducir sonido adicional (click/pop)
   const reproducirSonidoClick = () => {
     try {
-      // Crear un contexto de audio para generar un beep
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -362,16 +422,49 @@ const OdontogramaCompletoHibrido = () => {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 800; // Frecuencia del beep
+      // Sonido de click/pop más agudo
+      oscillator.frequency.value = 1000;
       oscillator.type = 'sine';
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      const now = audioContext.currentTime;
+      gainNode.gain.setValueAtTime(0.2, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
       
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
+      oscillator.start(now);
+      oscillator.stop(now + 0.08);
     } catch (error) {
-      // Si falla el audio, no hacer nada (silencioso)
+      console.log('Audio no disponible');
+    }
+  };
+
+  // Función para reproducir sonido de logro/éxito
+  const reproducirSonidoLogro = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Crear una secuencia de notas ascendentes para sonido de logro
+      const notas = [523.25, 659.25, 783.99]; // Do, Mi, Sol (acorde mayor)
+      const duracion = 0.15;
+      const tiempoInicio = audioContext.currentTime;
+      
+      notas.forEach((frecuencia, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = frecuencia;
+        oscillator.type = 'sine';
+        
+        const inicio = tiempoInicio + (index * 0.1);
+        gainNode.gain.setValueAtTime(0.2, inicio);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, inicio + duracion);
+        
+        oscillator.start(inicio);
+        oscillator.stop(inicio + duracion);
+      });
+    } catch (error) {
       console.log('Audio no disponible');
     }
   };
@@ -381,12 +474,31 @@ const OdontogramaCompletoHibrido = () => {
       event.preventDefault();
       event.stopPropagation();
     }
-    // Reproducir sonido de click
-    reproducirSonidoClick();
+    // Reproducir sonido metálico al hacer clic en pieza
+    reproducirSonidoMetalico();
+    
+    // Activar animación de la pieza
+    const piezaKey = `${diente}-${cara}`;
+    setPiezaAnimada(piezaKey);
+    // Quitar la animación después de que termine
+    setTimeout(() => {
+      setPiezaAnimada(null);
+    }, 600);
+    
     setSeleccionCara({ diente, cara });
   };
 
   const agregarProcedimiento = (proc, facturar = true) => {
+    // Reproducir sonido al seleccionar procedimiento
+    reproducirSonidoClick();
+    
+    // Activar animación de impacto en la pieza
+    const piezaKey = `${seleccionCara.diente}-${seleccionCara.cara}`;
+    setPiezaConImpacto(piezaKey);
+    setTimeout(() => {
+      setPiezaConImpacto(null);
+    }, 800);
+    
     const nuevo = { 
       ...proc, 
       diente: seleccionCara.diente, 
@@ -407,9 +519,19 @@ const OdontogramaCompletoHibrido = () => {
   const agregarSoloColor = (color, nombreColor) => {
     if (!seleccionCara) return;
     
+    // Reproducir sonido al seleccionar color
+    reproducirSonidoClick();
+    
     // Guardar valores antes de limpiar seleccionCara
     const dienteSeleccionado = seleccionCara.diente;
     const caraSeleccionada = seleccionCara.cara;
+    
+    // Activar animación de impacto en la pieza
+    const piezaKey = `${dienteSeleccionado}-${caraSeleccionada}`;
+    setPiezaConImpacto(piezaKey);
+    setTimeout(() => {
+      setPiezaConImpacto(null);
+    }, 800);
     
     // Crear un "procedimiento" ficticio solo con el color, sin precio
     const marcadoSoloColor = {
@@ -467,8 +589,19 @@ const OdontogramaCompletoHibrido = () => {
     const tieneBlueRed = presupuesto.some(p => p.diente === num && p.color === "blue-red");
     const gradientId = `blueRedGradient-${num}`;
     
+    // Verificar si esta pieza está siendo animada
+    const estaAnimada = piezaAnimada && piezaAnimada.startsWith(`${num}-`);
+    
     return (
-      <div className="text-center" style={{ width: "42px", display: "inline-block" }}>
+      <div 
+        className="text-center" 
+        style={{ 
+          width: "42px", 
+          display: "inline-block",
+          animation: estaAnimada ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 'none',
+          transformOrigin: 'center center'
+        }}
+      >
         <div className="small font-weight-bold text-muted mb-1">{num}</div>
         <svg viewBox="0 0 100 100" width="36" height="36" style={{ cursor: "pointer" }}>
           {/* Definir gradiente para blue-red si es necesario */}
@@ -488,7 +621,12 @@ const OdontogramaCompletoHibrido = () => {
             stroke={getStrokeColor("V")} 
             strokeWidth={getStrokeWidth("V")}
             onClick={(e) => handleCaraClick(num, "V", e)}
-            style={{ transition: 'all 0.2s ease' }}
+            style={{ 
+              transition: 'all 0.2s ease',
+              animation: piezaAnimada === `${num}-V` ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 
+                       piezaConImpacto === `${num}-V` ? 'impactoPieza 0.8s ease-out' : 'none',
+              transformOrigin: 'center center'
+            }}
           />
           <polygon 
             points="25,75 75,75 100,100 0,100" 
@@ -496,7 +634,12 @@ const OdontogramaCompletoHibrido = () => {
             stroke={getStrokeColor("L")} 
             strokeWidth={getStrokeWidth("L")}
             onClick={(e) => handleCaraClick(num, "L", e)}
-            style={{ transition: 'all 0.2s ease' }}
+            style={{ 
+              transition: 'all 0.2s ease',
+              animation: piezaAnimada === `${num}-L` ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 
+                       piezaConImpacto === `${num}-L` ? 'impactoPieza 0.8s ease-out' : 'none',
+              transformOrigin: 'center center'
+            }}
           />
           <polygon 
             points="0,0 25,25 25,75 0,100" 
@@ -504,7 +647,12 @@ const OdontogramaCompletoHibrido = () => {
             stroke={getStrokeColor("M")} 
             strokeWidth={getStrokeWidth("M")}
             onClick={(e) => handleCaraClick(num, "M", e)}
-            style={{ transition: 'all 0.2s ease' }}
+            style={{ 
+              transition: 'all 0.2s ease',
+              animation: piezaAnimada === `${num}-M` ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 
+                       piezaConImpacto === `${num}-M` ? 'impactoPieza 0.8s ease-out' : 'none',
+              transformOrigin: 'center center'
+            }}
           />
           <polygon 
             points="100,0 100,100 75,75 75,25" 
@@ -512,7 +660,12 @@ const OdontogramaCompletoHibrido = () => {
             stroke={getStrokeColor("D")} 
             strokeWidth={getStrokeWidth("D")}
             onClick={(e) => handleCaraClick(num, "D", e)}
-            style={{ transition: 'all 0.2s ease' }}
+            style={{ 
+              transition: 'all 0.2s ease',
+              animation: piezaAnimada === `${num}-D` ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 
+                       piezaConImpacto === `${num}-D` ? 'impactoPieza 0.8s ease-out' : 'none',
+              transformOrigin: 'center center'
+            }}
           />
           <rect 
             x="25" 
@@ -523,7 +676,12 @@ const OdontogramaCompletoHibrido = () => {
             stroke={getStrokeColor("O")} 
             strokeWidth={getStrokeWidth("O")}
             onClick={(e) => handleCaraClick(num, "O", e)}
-            style={{ transition: 'all 0.2s ease' }}
+            style={{ 
+              transition: 'all 0.2s ease',
+              animation: piezaAnimada === `${num}-O` ? 'pulsePieza 0.6s ease-in-out, shakePieza 0.6s ease-in-out' : 
+                       piezaConImpacto === `${num}-O` ? 'impactoPieza 0.8s ease-out' : 'none',
+              transformOrigin: 'center center'
+            }}
           />
         </svg>
       </div>
@@ -531,7 +689,85 @@ const OdontogramaCompletoHibrido = () => {
   };
 
   return (
-    <div className="container-fluid pt-2">
+    <>
+      <style>{`
+        @keyframes pulsePieza {
+          0% {
+            transform: scale(1) translateY(0);
+          }
+          25% {
+            transform: scale(1.15) translateY(-3px);
+          }
+          50% {
+            transform: scale(1.1) translateY(-5px);
+          }
+          75% {
+            transform: scale(1.05) translateY(-2px);
+          }
+          100% {
+            transform: scale(1) translateY(0);
+          }
+        }
+        @keyframes shakePieza {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          10% { transform: translateX(-2px) rotate(-1deg); }
+          20% { transform: translateX(2px) rotate(1deg); }
+          30% { transform: translateX(-2px) rotate(-1deg); }
+          40% { transform: translateX(2px) rotate(1deg); }
+          50% { transform: translateX(-1px) rotate(-0.5deg); }
+          60% { transform: translateX(1px) rotate(0.5deg); }
+          70% { transform: translateX(-1px) rotate(-0.5deg); }
+          80% { transform: translateX(1px) rotate(0.5deg); }
+          90% { transform: translateX(0) rotate(0deg); }
+        }
+        @keyframes impactoPieza {
+          0% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+          10% {
+            transform: scale(1.3);
+            filter: brightness(1.5);
+          }
+          20% {
+            transform: scale(0.95);
+            filter: brightness(0.8);
+          }
+          30% {
+            transform: scale(1.15);
+            filter: brightness(1.3);
+          }
+          40% {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+          }
+          50% {
+            transform: scale(0.98);
+            filter: brightness(0.9);
+          }
+          60% {
+            transform: scale(1.08);
+            filter: brightness(1.2);
+          }
+          70% {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+          }
+          80% {
+            transform: scale(0.99);
+            filter: brightness(0.95);
+          }
+          90% {
+            transform: scale(1.01);
+            filter: brightness(1.02);
+          }
+          100% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+        }
+      `}</style>
+      <div className="container-fluid pt-2">
       {/* HEADER INFO */}
       <div className="card shadow-sm mb-3 border-left border-primary" style={{ borderLeftWidth: '5px' }}>
         <div className="card-body py-2">
@@ -770,6 +1006,7 @@ const OdontogramaCompletoHibrido = () => {
                       </label>
                       <small className="text-muted d-block mb-3" style={{ fontSize: '12px' }}>
                         <strong>Azul:</strong> Solo para marcar trabajo realizado por otros (sin facturar). 
+                        <strong className="ml-2">Rojo:</strong> Marcar pieza en rojo.
                         <strong className="ml-2">Azul/Rojo:</strong> Restaurado por repetir.
                       </small>
                       <div className="d-flex gap-2 flex-wrap">
@@ -831,6 +1068,37 @@ const OdontogramaCompletoHibrido = () => {
                           title="Marcar como Restauración (Azul) - Trabajo por otros (sin facturar)"
                         >
                           <i className="fas fa-tooth me-2"></i>Restauración (Azul)
+                        </button>
+                        <button
+                          className="btn"
+                          style={{
+                            background: '#ff0000',
+                            color: 'white',
+                            border: '2px solid #cc0000',
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            padding: '10px 18px',
+                            borderRadius: '10px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(255,0,0,0.4)';
+                            e.target.style.background = '#cc0000';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                            e.target.style.background = '#ff0000';
+                          }}
+                          onClick={() => {
+                            // Marcar solo en rojo
+                            agregarSoloColor('red', 'Marcado en Rojo');
+                          }}
+                          title="Marcar pieza en rojo"
+                        >
+                          <i className="fas fa-circle me-2"></i>Marcar en Rojo
                         </button>
                       </div>
                       <div className="form-check mt-3">
@@ -924,7 +1192,8 @@ const OdontogramaCompletoHibrido = () => {
                                   borderRadius: '10px',
                                   borderColor: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : o.color === 'blue-red' ? '#666' : '#667eea',
                                   borderWidth: o.color === 'blue-red' ? '2px' : '1.5px',
-                                  transition: 'all 0.2s ease'
+                                  transition: 'all 0.2s ease',
+                                  minHeight: '48px'
                                 }}
                                 onMouseEnter={(e) => {
                                   e.target.style.transform = 'translateX(5px)';
@@ -936,7 +1205,17 @@ const OdontogramaCompletoHibrido = () => {
                                 }}
                                 onClick={() => agregarProcedimiento(o)}
                               >
-                                <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                                <span style={{ 
+                                  fontSize: '14px', 
+                                  fontWeight: '500',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                  minWidth: 0,
+                                  marginRight: '10px'
+                                }}
+                                title={o.nombre}>
                                   <i className="fas fa-check-circle me-2" style={{ fontSize: '12px', opacity: 0.6 }}></i>
                                   {o.nombre}
                                 </span>
@@ -946,7 +1225,8 @@ const OdontogramaCompletoHibrido = () => {
                                     fontSize: '13px',
                                     background: o.color === 'blue' ? '#0066ff' : o.color === 'red' ? '#ff0000' : '#667eea',
                                     padding: '6px 12px',
-                                    borderRadius: '8px'
+                                    borderRadius: '8px',
+                                    flexShrink: 0
                                   }}
                                 >
                                   ${o.precio.toFixed(2)}
@@ -1036,17 +1316,25 @@ const OdontogramaCompletoHibrido = () => {
               <table className="table table-sm table-hover mb-0">
                 <thead className="thead-light small">
                   <tr>
-                    <th className="pl-3">PIEZA</th>
-                    <th>TRATAMIENTO</th>
-                    <th className="text-right pr-3">PRECIO</th>
+                    <th className="pl-3" style={{ width: '20%', whiteSpace: 'nowrap' }}>PIEZA</th>
+                    <th style={{ width: '50%' }}>TRATAMIENTO</th>
+                    <th className="text-right pr-3" style={{ width: '30%', whiteSpace: 'nowrap' }}>PRECIO</th>
                   </tr>
                 </thead>
                 <tbody className="small">
                   {presupuesto.map(item => (
                     <tr key={item.tempId}>
-                      <td className="font-weight-bold pl-3">{item.diente}-{item.cara}</td>
-                      <td>{item.nombre}</td>
-                      <td className="text-right pr-3 font-weight-bold text-primary">${item.precio.toFixed(2)}</td>
+                      <td className="font-weight-bold pl-3" style={{ whiteSpace: 'nowrap' }}>{item.diente}-{item.cara}</td>
+                      <td style={{ 
+                        maxWidth: '200px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                      title={item.nombre}>
+                        {item.nombre}
+                      </td>
+                      <td className="text-right pr-3 font-weight-bold text-primary" style={{ whiteSpace: 'nowrap' }}>${item.precio.toFixed(2)}</td>
                     </tr>
                   ))}
                   {presupuesto.length === 0 && (
@@ -1071,6 +1359,7 @@ const OdontogramaCompletoHibrido = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

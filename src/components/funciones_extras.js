@@ -798,6 +798,22 @@ export default {eliminar_nota,
                     exportar_pacientes,
                     importar_pacientes,
                     exportar_usuarios,
-                    importar_usuarios
+                    importar_usuarios,
+                    obtenerTituloDoctor,
+                    formatearNombreDoctor
             };
 
+// Función helper para obtener el título del doctor (Dr./Dra.)
+function obtenerTituloDoctor(sexo) {
+    if (!sexo) return 'Dr.'; // Por defecto Dr. si no hay sexo
+    return sexo === 'F' || sexo === 'Femenino' || sexo === 'femenino' ? 'Dra.' : 'Dr.';
+}
+
+// Función helper para formatear el nombre completo del doctor con título
+function formatearNombreDoctor(doctor) {
+    if (!doctor) return 'N/A';
+    const titulo = obtenerTituloDoctor(doctor.sexo);
+    const nombre = doctor.nombre || '';
+    const apellido = doctor.apellido || '';
+    return `${titulo} ${nombre} ${apellido}`.trim();
+}

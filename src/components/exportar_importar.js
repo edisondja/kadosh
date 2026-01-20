@@ -139,38 +139,40 @@ class ExportarImportar extends React.Component {
 
         return (
             <div className="container-fluid mt-4">
-                <h3 className="mb-4 text-primary">
-                    <i className="fas fa-exchange-alt me-2"></i>Exportar / Importar Datos
-                </h3>
-
-                {/* Selector de tipo */}
-                <div className="card shadow-sm border-0 mb-4" style={{ borderRadius: '16px' }}>
-                    <div className="card-body p-4">
-                        <label className="form-label fw-bold mb-3" style={{ fontSize: '16px' }}>
-                            <i className="fas fa-filter me-2"></i>Seleccionar Tipo de Datos
-                        </label>
-                        <div className="btn-group w-100" role="group">
-                            <button
-                                type="button"
-                                className={`btn ${tipo === 'pacientes' ? 'btn-primary' : 'btn-outline-primary'}`}
-                                onClick={() => this.cambiarTipo('pacientes')}
-                                style={{ fontSize: '16px', padding: '12px' }}
-                            >
-                                <i className="fas fa-user-injured me-2"></i>Pacientes
-                            </button>
-                            <button
-                                type="button"
-                                className={`btn ${tipo === 'usuarios' ? 'btn-primary' : 'btn-outline-primary'}`}
-                                onClick={() => this.cambiarTipo('usuarios')}
-                                style={{ fontSize: '16px', padding: '12px' }}
-                            >
-                                <i className="fas fa-users me-2"></i>Usuarios
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="row">
+                    <div className="col-md-10">
+                        <h3 className="mb-4 text-primary">
+                            <i className="fas fa-exchange-alt me-2"></i>Exportar / Importar Datos
+                        </h3>
+
+                        {/* Selector de tipo */}
+                        <div className="card shadow-sm border-0 mb-4" style={{ borderRadius: '16px' }}>
+                            <div className="card-body p-4">
+                                <label className="form-label fw-bold mb-3" style={{ fontSize: '16px' }}>
+                                    <i className="fas fa-filter me-2"></i>Seleccionar Tipo de Datos
+                                </label>
+                                <div className="btn-group w-100" role="group">
+                                    <button
+                                        type="button"
+                                        className={`btn ${tipo === 'pacientes' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        onClick={() => this.cambiarTipo('pacientes')}
+                                        style={{ fontSize: '16px', padding: '12px' }}
+                                    >
+                                        <i className="fas fa-user-injured me-2"></i>Pacientes
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`btn ${tipo === 'usuarios' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        onClick={() => this.cambiarTipo('usuarios')}
+                                        style={{ fontSize: '16px', padding: '12px' }}
+                                    >
+                                        <i className="fas fa-users me-2"></i>Usuarios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="row">
                     {/* Sección de Exportación */}
                     <div className="col-md-6 mb-4">
                         <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px' }}>
@@ -342,6 +344,8 @@ class ExportarImportar extends React.Component {
                                 </li>
                             )}
                         </ul>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>

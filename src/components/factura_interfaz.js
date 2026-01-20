@@ -17,10 +17,29 @@ class FacturaInterfaz extends React.Component {
 
     constructor(props){
         super(props);
-        this.state={descuentos_aplicados:0,contador:false,paciente:{},
-        procedimientos_imprimir:[],config:'normal',data_factura:[],
-        valor:true,factura:{precio_estatus:0,id:0}
-        ,procedimientos:[],monto_total:0,recibos:[],mensaje:""};
+        this.state={
+            descuentos_aplicados:0,
+            contador:false,
+            paciente:{},
+            procedimientos_imprimir:[],
+            config:'normal',
+            data_factura:[],
+            valor:true,
+            factura:{precio_estatus:0,id:0},
+            procedimientos:[],
+            monto_total:0,
+            recibos:[],
+            mensaje:"",
+            // Estados para el modal de pago
+            modal_pago_visible: false,
+            tipo_pago: '1', // 1: Efectivo, 2: Tarjeta, 3: Transferencia, 4: Cheque, 5: Pago Mixto
+            monto_pago: '',
+            codigo_tarjeta: '',
+            monto_efectivo: '',
+            monto_tarjeta: '',
+            id_factura_pago: null,
+            precio_estatus_pago: 0
+        };
 
         
     }
@@ -338,116 +357,152 @@ eliminar_recibo(id_recibo, id_factura, monto) {
         return true;
     }
 
+abrirModalPago = (id_factura, precio_estatus) => {
+    this.setState({
+        modal_pago_visible: true,
+        id_factura_pago: id_factura,
+        precio_estatus_pago: precio_estatus,
+        tipo_pago: '1',
+        monto_pago: '',
+        codigo_tarjeta: '',
+        monto_efectivo: '',
+        monto_tarjeta: ''
+    });
+};
+
+cerrarModalPago = () => {
+    this.setState({
+        modal_pago_visible: false,
+        tipo_pago: '1',
+        monto_pago: '',
+        codigo_tarjeta: '',
+        monto_efectivo: '',
+        monto_tarjeta: ''
+    });
+};
+
 procesar_pago = (id_factura, precio_estatus) => {
-    const monto_total = this.state.monto_total;
-    const procedimientos = JSON.stringify(this.state.procedimientos);
+    this.abrirModalPago(id_factura, precio_estatus);
+};
 
-   const enviarPago = (cantidad, concepto_pago, tipo_de_pago = '') => {
-    const monto = parseFloat(cantidad.toString().replace(/[^0-9.-]+/g, ""));
-    const procedimientos = this.state.procedimientos;
+enviarPago = () => {
+    const { id_factura_pago, precio_estatus_pago, tipo_pago, monto_pago, codigo_tarjeta, monto_efectivo, monto_tarjeta } = this.state;
+    
+    let monto = 0;
+    let concepto_pago = '';
+    let tipo_de_pago = '';
 
+    switch (tipo_pago) {
+        case '1': // EFECTIVO
+            monto = parseFloat(monto_pago.toString().replace(/[^0-9.-]+/g, ""));
+            if (!monto || monto <= 0) {
+                Alertify.error("Por favor ingrese un monto válido");
+                return;
+            }
+            concepto_pago = 'efectivo';
+            tipo_de_pago = 'ef';
+            break;
+
+        case '2': // TARJETA
+            monto = parseFloat(monto_pago.toString().replace(/[^0-9.-]+/g, ""));
+            if (!monto || monto <= 0) {
+                Alertify.error("Por favor ingrese un monto válido");
+                return;
+            }
+            if (!codigo_tarjeta || codigo_tarjeta.trim() === '') {
+                Alertify.error("Por favor ingrese el código de la tarjeta");
+                return;
+            }
+            concepto_pago = `tarjeta - Código: ${codigo_tarjeta}`;
+            tipo_de_pago = 'tj';
+            break;
+
+        case '3': // TRANSFERENCIA
+            monto = parseFloat(monto_pago.toString().replace(/[^0-9.-]+/g, ""));
+            if (!monto || monto <= 0) {
+                Alertify.error("Por favor ingrese un monto válido");
+                return;
+            }
+            concepto_pago = 'transferencia';
+            tipo_de_pago = 'ts';
+            break;
+
+        case '4': // CHEQUE
+            monto = parseFloat(monto_pago.toString().replace(/[^0-9.-]+/g, ""));
+            if (!monto || monto <= 0) {
+                Alertify.error("Por favor ingrese un monto válido");
+                return;
+            }
+            concepto_pago = 'cheque';
+            tipo_de_pago = 'ch';
+            break;
+
+        case '5': // PAGO MIXTO
+            const efectivo = parseFloat(monto_efectivo.toString().replace(/[^0-9.-]+/g, ""));
+            const tarjeta = parseFloat(monto_tarjeta.toString().replace(/[^0-9.-]+/g, ""));
+            
+            if (!efectivo || efectivo < 0) {
+                Alertify.error("Por favor ingrese un monto válido en efectivo");
+                return;
+            }
+            if (!tarjeta || tarjeta < 0) {
+                Alertify.error("Por favor ingrese un monto válido en tarjeta");
+                return;
+            }
+            
+            monto = efectivo + tarjeta;
+            if (monto <= 0) {
+                Alertify.error("El monto total debe ser mayor a cero");
+                return;
+            }
+
+            const formatoPeso = new Intl.NumberFormat('es-DO', {
+                style: 'currency',
+                currency: 'DOP',
+                minimumFractionDigits: 2
+            });
+
+            concepto_pago = `Pago Mixto / ${formatoPeso.format(efectivo)} en efectivo / ${formatoPeso.format(tarjeta)} en tarjeta`;
+            tipo_de_pago = 'mxt';
+            break;
+
+        default:
+            Alertify.error("Método de pago no reconocido");
+            return;
+    }
 
     const usuarioId = localStorage.getItem("id_usuario");
+    const procedimientos = this.state.procedimientos;
+
     Axios.post(`${Url_base.url_base}/api/pagar_recibo`, {
-                id_factura,
-                monto,
-                tipo_de_pago:tipo_de_pago,
-                estado_actual: precio_estatus,
-                concepto_pago:concepto_pago,
-                total: this.state.monto_total,
-                procedimientos,
-                usuario_id: usuarioId
-            })
-            .then(data => {
-                // Reproducir sonido de caja registradora
-                this.reproducirSonidoCajaRegistradora();
-                Alertify.success("Pago realizado con éxito");
-                this.setState({
-                    mensaje: "Payment success",
-                    factura: {
-                        precio_estatus: this.state.factura.precio_estatus - monto
-                    }
-                });
-                this.cargar_recibos(this.props.match.params.id_factura);
-            })
-            .catch(error => {
-                console.error(error.response?.data || error);
-                Alertify.error("No se pudo procesar el pago correctamente");
-                this.setState({ mensaje: error.message || error.toString() });
-            });
-        };
-
-
-   Alertify.prompt(
-    "Pagando factura",
-    `
-    <select id='seleccionar_pago'>
-        <option value='1'>EFECTIVO</option>
-        <option value='2'>TARJETA</option>
-        <option value='3'>TRANSFERENCIA</option>
-        <option value='4'>CHEQUE</option>
-        <option value='5'>PAGO MIXTO</option>
-    </select>
-    <p>Seleccione el tipo de pago</p>
-    `,
-    "$RD 00.00",
-    async (event, value) => {
-        const option = document.getElementById("seleccionar_pago").value;
-
-        switch (option) {
-            case '1': // EFECTIVO
-                enviarPago(value, 'efectivo', 'ef');
-                break;
-
-            case '2': { // TARJETA
-                const codigo_tarjeta = prompt("Digite el código de la tarjeta", "xxxx-xxxx-xxxx");
-                const cantidad_tarjeta = prompt("Ingrese la cantidad que se pagó con tarjeta", "$RD 0.00");
-                Alertify.message("Código: " + codigo_tarjeta);
-                enviarPago(cantidad_tarjeta,"tarjeta" ,'tj');
-                break;
-            }
-
-            case '3': // TRANSFERENCIA
-                enviarPago(value, 'transferencia', 'ts');
-                break;
-
-            case '4': // CHEQUE
-                enviarPago(value, 'cheque', 'ch');
-                break;
-
-            case '5': { // PAGO MIXTO
-                const monto_efectivo = prompt("Ingrese el monto pagado en efectivo", "$RD 0.00");
-                const monto_tarjeta = prompt("Ingrese el monto pagado con tarjeta", "$RD 0.00");
-
-                const efectivo = parseFloat(monto_efectivo.replace(/[^0-9.-]+/g, ""));
-                const tarjeta = parseFloat(monto_tarjeta.replace(/[^0-9.-]+/g, ""));
-
-                const monto_total = efectivo + tarjeta;
-
-                if (monto_total > 0) {
-
-                    const formatoPeso = new Intl.NumberFormat('es-DO', {
-                        style: 'currency',
-                        currency: 'DOP',
-                        minimumFractionDigits: 2
-                    });
-
-                    const descripcion_extra = `Pago Mixto / ${formatoPeso.format(efectivo)} en efectivo / en tarjeta ${formatoPeso.format(tarjeta)}`;
-                    enviarPago(monto_total, descripcion_extra,'mxt') ;
-                }
-                break;
-            }
-
-            default:
-                Alertify.error("Método de pago no reconocido");
-                break;
-        }
-    },
-    () => {
-        Alertify.message("Pago cancelado");
-    }
-).set('type', 'text');
-
+        id_factura: id_factura_pago,
+        monto,
+        tipo_de_pago: tipo_de_pago,
+        estado_actual: precio_estatus_pago,
+        concepto_pago: concepto_pago,
+        total: this.state.monto_total,
+        procedimientos,
+        usuario_id: usuarioId
+    })
+    .then(data => {
+        // Reproducir sonido de caja registradora
+        this.reproducirSonidoCajaRegistradora();
+        Alertify.success("Pago realizado con éxito");
+        this.setState({
+            mensaje: "Payment success",
+            factura: {
+                precio_estatus: this.state.factura.precio_estatus - monto
+            },
+            modal_pago_visible: false
+        });
+        this.cargar_recibos(this.props.match.params.id_factura);
+        this.cargar_factura(this.props.match.params.id_factura);
+    })
+    .catch(error => {
+        console.error(error.response?.data || error);
+        Alertify.error("No se pudo procesar el pago correctamente");
+        this.setState({ mensaje: error.message || error.toString() });
+    });
 };
 
 
@@ -513,99 +568,653 @@ procesar_pago = (id_factura, precio_estatus) => {
                     />);
             }
 
-        return (<div className="col-md-10 mac-style-container">
-                <h4>
-                    Factura y sus detalles
-
-                    <Link to={`/ver_facturas/${this.props.match.params.id}`}>   
-                        <button className="btn btn-primary" onClick={this.retroceder} style={{ float: 'right' }}>
-                            Retroceder
+        return (
+            <>
+                <style>{`
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(20px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                `}</style>
+                <div className="col-md-10" style={{ margin: '0 auto', padding: '20px' }}>
+                    {/* Header */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '25px',
+                    padding: '15px 20px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                }}>
+                    <h4 style={{ margin: 0, fontWeight: 700 }}>
+                        <i className="fas fa-file-invoice-dollar me-2"></i>Factura y sus detalles
+                    </h4>
+                    <Link to={`/ver_facturas/${this.props.match.params.id}`}>
+                        <button 
+                            className="btn"
+                            onClick={this.retroceder}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.2)',
+                                border: '2px solid rgba(255, 255, 255, 0.3)',
+                                color: 'white',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                fontWeight: 600,
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                            }}
+                        >
+                            <i className="fas fa-arrow-left me-2"></i>Retroceder
                         </button>
                     </Link>
-                  
-                </h4>
-                <h4>
-                    Estado actual <p className="mac-style-highlight" id="estado_actual">$RD {this.state.factura.precio_estatus}</p>
-                </h4>
-                <hr />
-                <h5>
+                </div>
+
+                {/* Estado Actual */}
+                <div style={{
+                    marginBottom: '25px',
+                    padding: '20px',
+                    background: this.state.factura.precio_estatus > 0 
+                        ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)'
+                        : 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                    borderRadius: '12px',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}>
+                    <h4 style={{ margin: 0, marginBottom: '10px', fontWeight: 600 }}>
+                        Estado actual
+                    </h4>
+                    <p id="estado_actual" style={{ margin: 0, fontSize: '32px', fontWeight: 700 }}>
+                        RD$ {new Intl.NumberFormat().format(this.state.factura.precio_estatus || 0)}
+                    </p>
+                </div>
+
+                <hr style={{ margin: '25px 0', borderColor: '#e0e0e0' }} />
+
+                {/* Información Paciente y Doctor */}
+                <h5 style={{ marginBottom: '20px', fontWeight: 600, color: '#2d2d2f' }}>
                     Paciente: ({this.state.paciente.nombre} {this.state.paciente.apellido}) &nbsp;&nbsp;&nbsp;&nbsp;
-                    Doctor: ({this.state.factura.nombre} {this.state.factura.apellido})
+                    Doctor: ({this.state.factura.nombre || 'N/A'} {this.state.factura.apellido || ''})
                 </h5>
 
-                <table className="table">
-                    <thead>
-                    <tr>
-                        <th>Procedimiento</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {this.state.procedimientos.map((data) => (
-                        <tr key={data.nombre}>
-                        <td>{data.nombre}</td>
-                        <td>{data.cantidad}</td>
-                        <td>$RD {new Intl.NumberFormat().format(data.total)}</td>
-                        </tr>
-                    ))}
-                    <tr>
-                        <td colSpan="2"><strong>Total</strong></td>
-                        <td><strong>$RD {new Intl.NumberFormat().format(this.state.monto_total)}</strong></td>
-                    </tr>
-                    </tbody>
-                </table>
+                {/* Tabla de Procedimientos */}
+                <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '12px' }}>
+                    <div className="card-body p-0">
+                        <table className="table table-hover mb-0" style={{ margin: 0 }}>
+                            <thead style={{ background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
+                                <tr>
+                                    <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Procedimiento</th>
+                                    <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6', textAlign: 'center' }}>Cantidad</th>
+                                    <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6', textAlign: 'right' }}>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {this.state.procedimientos.map((data, index) => (
+                                    <tr 
+                                        key={data.nombre || index}
+                                        style={{
+                                            transition: 'all 0.2s ease',
+                                            borderBottom: '1px solid #f0f0f0'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'transparent';
+                                        }}
+                                    >
+                                        <td style={{ padding: '15px', color: '#2d2d2f' }}>{data.nombre}</td>
+                                        <td style={{ padding: '15px', textAlign: 'center', color: '#495057' }}>{data.cantidad}</td>
+                                        <td style={{ padding: '15px', textAlign: 'right', fontWeight: 600, color: '#28a745' }}>
+                                            RD$ {new Intl.NumberFormat().format(data.total)}
+                                        </td>
+                                    </tr>
+                                ))}
+                                <tr style={{ background: 'rgba(102, 126, 234, 0.05)' }}>
+                                    <td colSpan="2" style={{ padding: '15px', fontWeight: 700, fontSize: '16px' }}><strong>Total</strong></td>
+                                    <td style={{ padding: '15px', textAlign: 'right', fontWeight: 700, fontSize: '18px', color: '#667eea' }}>
+                                        <strong>RD$ {new Intl.NumberFormat().format(this.state.monto_total)}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                <div className="my-3">
-                    <button className="btn btn-success" onClick={() => this.procesar_pago(this.props.match.params.id_factura, this.state.factura.precio_estatus)}>Pagar</button>&nbsp;
-                    <button className="btn btn-primary" onClick={() => this.descontar(this.props.match.params.id_factura)}>Descontar</button>&nbsp;
-                    
+                {/* Botones de Acción */}
+                <div style={{ marginBottom: '25px' }}>
+                    <button 
+                        className="btn"
+                        onClick={() => this.procesar_pago(this.props.match.params.id_factura, this.state.factura.precio_estatus)}
+                        disabled={this.state.factura.precio_estatus <= 0}
+                        style={{
+                            background: this.state.factura.precio_estatus <= 0 
+                                ? 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)'
+                                : 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 600,
+                            marginRight: '10px',
+                            opacity: this.state.factura.precio_estatus <= 0 ? 0.5 : 1,
+                            cursor: this.state.factura.precio_estatus <= 0 ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (this.state.factura.precio_estatus > 0) {
+                                e.target.style.transform = 'translateY(-2px)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    >
+                        <i className="fas fa-money-bill-wave me-2"></i>Pagar
+                    </button>
+                    <button 
+                        className="btn"
+                        onClick={() => this.descontar(this.props.match.params.id_factura)}
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 600,
+                            marginRight: '10px',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    >
+                        <i className="fas fa-percent me-2"></i>Descontar
+                    </button>
                     <Link to={`/editar_factura/${this.props.match.params.id}/${this.props.match.params.id_factura}`}>
-                        <button className="btn btn-dark" >Editar</button>&nbsp;
+                        <button 
+                            className="btn"
+                            style={{
+                                background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '10px 20px',
+                                fontWeight: 600,
+                                marginRight: '10px',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.transform = 'translateY(-2px)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(45, 45, 47, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = 'none';
+                            }}
+                        >
+                            <i className="fas fa-edit me-2"></i>Editar
+                        </button>
                     </Link>
-                    
-                    <button className="btn btn-dark" onClick={() => this.cargar_descuentos_de_facutra(this.props.match.params.id_factura)}>Ver descuentos</button>
+                    <button 
+                        className="btn"
+                        onClick={() => this.cargar_descuentos_de_facutra(this.props.match.params.id_factura)}
+                        style={{
+                            background: 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 600,
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(255, 193, 7, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                        }}
+                    >
+                        <i className="fas fa-tags me-2"></i>Ver descuentos ({this.state.descuentos_aplicados})
+                    </button>
                 </div>
 
-                <hr /><br />
-                <h2>Pagos Realizados</h2>
-                <div className="mac-style-count">
-                    Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})
+                <hr style={{ margin: '25px 0', borderColor: '#e0e0e0' }} />
+
+                {/* Información de Descuentos */}
+                <div style={{
+                    marginBottom: '20px',
+                    padding: '12px 16px',
+                    background: 'rgba(102, 126, 234, 0.1)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(102, 126, 234, 0.2)'
+                }}>
+                    <strong style={{ color: '#667eea' }}>
+                        Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})
+                    </strong>
                 </div>
 
-                <div className="tableflow">
-                    <table className="table boxslider">
-                    <thead>
-                        <tr>
-                        <th>Monto</th>
-                        <th>Concepto de pago</th>
-                        <th>Tipo de pago</th>
-                        <th>Fecha de pago</th>
-                        <th>Imprimir</th>
-                        <th>Eliminar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.state.recibos.map((data) => (
-                        <tr key={data.id} id={data.id}>
-                            <td>$RD {new Intl.NumberFormat().format(data.monto)}</td>
-                            <td>{data.concepto_pago}</td>
-                            <td>{data.tipo_de_pago}</td>
-                            <td>{data.fecha_pago}</td>
-                            <td>
-                                <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}/${this.props.match.params.id}/${this.state.factura.id}`}>
-                                    <button className="btn btn-success">Imprimir</button>
-                                </Link>
-                            </td> 
-    
-                            <td><button className="btn btn" onClick={() => this.eliminar_recibo(data.id, this.props.match.params.id_factura, data.monto)}>Eliminar</button></td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </table>
+                {/* Pagos Realizados */}
+                <h2 style={{ marginBottom: '20px', fontWeight: 700, color: '#2d2d2f' }}>
+                    <i className="fas fa-receipt me-2" style={{ color: '#667eea' }}></i>Pagos Realizados
+                </h2>
+                <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+                    <div className="card-body p-0">
+                        <div className="table-responsive">
+                            <table className="table table-hover mb-0" style={{ margin: 0 }}>
+                                <thead style={{ background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
+                                    <tr>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Monto</th>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Concepto de pago</th>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Tipo de pago</th>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Fecha de pago</th>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6', textAlign: 'center' }}>Imprimir</th>
+                                        <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6', textAlign: 'center' }}>Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {this.state.recibos.map((data, index) => (
+                                        <tr 
+                                            key={data.id} 
+                                            id={data.id}
+                                            style={{
+                                                transition: 'all 0.2s ease',
+                                                borderBottom: '1px solid #f0f0f0'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'transparent';
+                                            }}
+                                        >
+                                            <td style={{ padding: '15px', fontWeight: 600, color: '#28a745' }}>
+                                                RD$ {new Intl.NumberFormat().format(data.monto)}
+                                            </td>
+                                            <td style={{ padding: '15px', color: '#495057' }}>{data.concepto_pago || 'N/A'}</td>
+                                            <td style={{ padding: '15px', color: '#495057' }}>{data.tipo_de_pago || 'N/A'}</td>
+                                            <td style={{ padding: '15px', color: '#6c757d' }}>{data.fecha_pago || 'N/A'}</td>
+                                            <td style={{ padding: '15px', textAlign: 'center' }}>
+                                                <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}/${this.props.match.params.id}/${this.state.factura.id}`}>
+                                                    <button 
+                                                        className="btn btn-sm"
+                                                        style={{
+                                                            background: 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 16px',
+                                                            fontWeight: 600,
+                                                            transition: 'all 0.2s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.target.style.transform = 'translateY(-2px)';
+                                                            e.target.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.target.style.transform = 'translateY(0)';
+                                                            e.target.style.boxShadow = 'none';
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-print me-1"></i>Imprimir
+                                                    </button>
+                                                </Link>
+                                            </td>
+                                            <td style={{ padding: '15px', textAlign: 'center' }}>
+                                                <button 
+                                                    className="btn btn-sm"
+                                                    onClick={() => this.eliminar_recibo(data.id, this.props.match.params.id_factura, data.monto)}
+                                                    style={{
+                                                        background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        padding: '6px 16px',
+                                                        fontWeight: 600,
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.transform = 'translateY(-2px)';
+                                                        e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.transform = 'translateY(0)';
+                                                        e.target.style.boxShadow = 'none';
+                                                    }}
+                                                >
+                                                    <i className="fas fa-trash me-1"></i>Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Modal de Pago */}
+                {this.state.modal_pago_visible && (
+                    <div 
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 9999,
+                            backdropFilter: 'blur(5px)'
+                        }}
+                        onClick={this.cerrarModalPago}
+                    >
+                        <div 
+                            className="card border-0 shadow-lg"
+                            style={{
+                                width: '90%',
+                                maxWidth: '500px',
+                                borderRadius: '16px',
+                                background: 'white',
+                                animation: 'fadeIn 0.3s ease'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div 
+                                className="card-header border-0"
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    borderRadius: '16px 16px 0 0',
+                                    padding: '20px',
+                                    color: 'white'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <h5 className="mb-0" style={{ fontWeight: 700, margin: 0 }}>
+                                        <i className="fas fa-money-bill-wave me-2"></i>Procesar Pago
+                                    </h5>
+                                    <button
+                                        onClick={this.cerrarModalPago}
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.2)',
+                                            border: 'none',
+                                            color: 'white',
+                                            borderRadius: '8px',
+                                            width: '32px',
+                                            height: '32px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            fontSize: '18px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="card-body" style={{ padding: '25px' }}>
+                                {/* Tipo de Pago */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ fontWeight: 600, color: '#495057', marginBottom: '10px', display: 'block' }}>
+                                        <i className="fas fa-credit-card me-2" style={{ color: '#667eea' }}></i>Tipo de Pago
+                                    </label>
+                                    <select
+                                        className="form-control"
+                                        value={this.state.tipo_pago}
+                                        onChange={(e) => this.setState({ tipo_pago: e.target.value, monto_pago: '', codigo_tarjeta: '', monto_efectivo: '', monto_tarjeta: '' })}
+                                        style={{
+                                            padding: '18px 20px',
+                                            borderRadius: '8px',
+                                            border: '2px solid #e0e0e0',
+                                            fontSize: '17px',
+                                            fontWeight: 500,
+                                            minHeight: '64px',
+                                            height: 'auto',
+                                            lineHeight: '1.6',
+                                            transition: 'all 0.2s ease',
+                                            background: 'white'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#667eea';
+                                            e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#e0e0e0';
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    >
+                                        <option value="1">EFECTIVO</option>
+                                        <option value="2">TARJETA</option>
+                                        <option value="3">TRANSFERENCIA</option>
+                                        <option value="4">CHEQUE</option>
+                                        <option value="5">PAGO MIXTO</option>
+                                    </select>
+                                </div>
+
+                                {/* Monto Principal (para todos excepto pago mixto) */}
+                                {this.state.tipo_pago !== '5' && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '10px', display: 'block' }}>
+                                            <i className="fas fa-dollar-sign me-2" style={{ color: '#28a745' }}></i>Monto a Pagar
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="RD$ 0.00"
+                                            value={this.state.monto_pago}
+                                            onChange={(e) => this.setState({ monto_pago: e.target.value })}
+                                            style={{
+                                                padding: '12px 16px',
+                                                borderRadius: '8px',
+                                                border: '2px solid #e0e0e0',
+                                                fontSize: '15px',
+                                                fontWeight: 500,
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Código de Tarjeta (solo para tarjeta) */}
+                                {this.state.tipo_pago === '2' && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '10px', display: 'block' }}>
+                                            <i className="fas fa-hashtag me-2" style={{ color: '#667eea' }}></i>Código de Tarjeta
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="xxxx-xxxx-xxxx"
+                                            value={this.state.codigo_tarjeta}
+                                            onChange={(e) => this.setState({ codigo_tarjeta: e.target.value })}
+                                            style={{
+                                                padding: '12px 16px',
+                                                borderRadius: '8px',
+                                                border: '2px solid #e0e0e0',
+                                                fontSize: '15px',
+                                                fontWeight: 500,
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Montos para Pago Mixto */}
+                                {this.state.tipo_pago === '5' && (
+                                    <>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ fontWeight: 600, color: '#495057', marginBottom: '10px', display: 'block' }}>
+                                                <i className="fas fa-money-bill me-2" style={{ color: '#28a745' }}></i>Monto en Efectivo
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="RD$ 0.00"
+                                                value={this.state.monto_efectivo}
+                                                onChange={(e) => this.setState({ monto_efectivo: e.target.value })}
+                                                style={{
+                                                    padding: '12px 16px',
+                                                    borderRadius: '8px',
+                                                    border: '2px solid #e0e0e0',
+                                                    fontSize: '15px',
+                                                    fontWeight: 500,
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = '#667eea';
+                                                    e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.borderColor = '#e0e0e0';
+                                                    e.target.style.boxShadow = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ fontWeight: 600, color: '#495057', marginBottom: '10px', display: 'block' }}>
+                                                <i className="fas fa-credit-card me-2" style={{ color: '#667eea' }}></i>Monto en Tarjeta
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="RD$ 0.00"
+                                                value={this.state.monto_tarjeta}
+                                                onChange={(e) => this.setState({ monto_tarjeta: e.target.value })}
+                                                style={{
+                                                    padding: '12px 16px',
+                                                    borderRadius: '8px',
+                                                    border: '2px solid #e0e0e0',
+                                                    fontSize: '15px',
+                                                    fontWeight: 500,
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.borderColor = '#667eea';
+                                                    e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.borderColor = '#e0e0e0';
+                                                    e.target.style.boxShadow = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Información del Estado Actual */}
+                                <div style={{
+                                    marginBottom: '20px',
+                                    padding: '15px',
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(102, 126, 234, 0.2)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontWeight: 600, color: '#495057' }}>Estado Actual:</span>
+                                        <span style={{ fontWeight: 700, color: '#667eea', fontSize: '18px' }}>
+                                            RD$ {new Intl.NumberFormat().format(this.state.precio_estatus_pago || 0)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Botones */}
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                    <button
+                                        className="btn"
+                                        onClick={this.cerrarModalPago}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            padding: '12px 24px',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.transform = 'translateY(-2px)';
+                                            e.target.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    >
+                                        <i className="fas fa-times me-2"></i>Cancelar
+                                    </button>
+                                    <button
+                                        className="btn"
+                                        onClick={this.enviarPago}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            padding: '12px 24px',
+                                            fontWeight: 600,
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.transform = 'translateY(-2px)';
+                                            e.target.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    >
+                                        <i className="fas fa-check me-2"></i>Procesar Pago
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 </div>
-                );
+            </>
+        );
     }
 
 
