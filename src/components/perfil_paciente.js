@@ -67,9 +67,9 @@ class PerfilPaciente extends React.Component{
 				// Odontogramas
 				odontogramas: [],
 				tiene_ficha_medica:false,
-				nuevoArchivo: null,
+				nuevosArchivos: [],
 				nuevoComentario: '',
-				previewArchivo: null,
+				previewArchivos: [],
 				dragActive: false,
 				subiendoArchivo: false,
 				vistaDocumentos: 'tabla', // 'tabla' o 'tarjetas'
@@ -395,15 +395,25 @@ class PerfilPaciente extends React.Component{
 		}
 
 		consultar_deuda_paciente(id_paciente){
+			if (!id_paciente) {
+				console.error('ID de paciente no válido');
+				return;
+			}
 			
-			
-					Axios.get(`${Verficar.url_base}/api/consultar_deuda/${id_paciente}`).then(data=>{
-							this.setState({deuda_total:data.data.deuda_total});
-					}).catch(error=>{
+			Axios.get(`${Verficar.url_base}/api/consultar_deuda/${id_paciente}`)
+				.then(response => {
+					const deuda = response.data?.deuda_total || 0;
+					this.setState({ deuda_total: parseFloat(deuda) || 0 });
+				})
+				.catch(error => {
+					console.error('Error al cargar la deuda:', error);
+					// Si hay un error, establecer deuda en 0 en lugar de reintentar infinitamente
+					this.setState({ deuda_total: 0 });
+					// Solo mostrar error si no es un error de red común
+					if (error.response && error.response.status !== 404) {
 						Alertify.error("No se pudo cargar la deuda del paciente");
-						Alertify.message("Reconectando...");
-						this.consultar_deuda_paciente(id_paciente);
-					})
+					}
+				});
 	    }
 	eliminar_paciente(id_paciente){
 		// Obtener la clave secreta de la configuración
@@ -488,68 +498,98 @@ class PerfilPaciente extends React.Component{
 
 			}
 
-			subirDocumento = () => {
-				if (!this.state.nuevoArchivo) {
-					Alertify.warning("Por favor seleccione un archivo");
+			subirDocumento = async () => {
+				if (!this.state.nuevosArchivos || this.state.nuevosArchivos.length === 0) {
+					Alertify.warning("Por favor seleccione al menos un archivo");
 					return;
 				}
 
-				// Validar tamaño (10MB máximo)
-				if (this.state.nuevoArchivo.size > 10 * 1024 * 1024) {
-					Alertify.error("El archivo es demasiado grande. Máximo 10MB");
-					return;
+				// Validar tamaño de todos los archivos (10MB máximo cada uno)
+				for (const file of this.state.nuevosArchivos) {
+					if (file.size > 10 * 1024 * 1024) {
+						Alertify.error(`El archivo "${file.name}" es demasiado grande. Máximo 10MB por archivo`);
+						return;
+					}
 				}
 
 				this.setState({ subiendoArchivo: true });
 
-				const formData = new FormData();
-				formData.append("image", this.state.nuevoArchivo);
-				formData.append("usuario_id", this.props.match.params.id);
-				formData.append("comentarios", this.state.nuevoComentario || "Sin comentarios");
+				// Subir archivos uno por uno
+				let subidos = 0;
+				let errores = 0;
 
-				Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
-					headers: { 'Content-Type': 'multipart/form-data' }
-				})
-					.then(() => {
-					Alertify.success("Archivo subido con éxito");
-					this.setState({ 
-						nuevoArchivo: null, 
-						nuevoComentario: "",
-						previewArchivo: null,
-						subiendoArchivo: false
-					});
-					// Limpiar input file
-					const fileInput = document.getElementById('fileInput');
-					if (fileInput) fileInput.value = '';
-					this.cargar_documentos(); // refrescar lista
-					})
-					.catch((error) => {
-					Alertify.error("Error al subir el archivo");
-					this.setState({ subiendoArchivo: false });
-					console.error(error);
-					});
+				for (const file of this.state.nuevosArchivos) {
+					try {
+						const formData = new FormData();
+						formData.append("image", file);
+						formData.append("usuario_id", this.props.match.params.id);
+						formData.append("comentarios", this.state.nuevoComentario || "Sin comentarios");
+
+						await Axios.post(`${Verficar.url_base}/api/subir_radiografia`, formData, {
+							headers: { 'Content-Type': 'multipart/form-data' }
+						});
+						subidos++;
+					} catch (error) {
+						errores++;
+						console.error(`Error al subir ${file.name}:`, error);
+					}
+				}
+
+				// Mostrar resultado
+				if (subidos > 0 && errores === 0) {
+					Alertify.success(`${subidos} archivo${subidos > 1 ? 's' : ''} subido${subidos > 1 ? 's' : ''} con éxito`);
+				} else if (subidos > 0 && errores > 0) {
+					Alertify.warning(`${subidos} archivo${subidos > 1 ? 's' : ''} subido${subidos > 1 ? 's' : ''}, ${errores} error${errores > 1 ? 'es' : ''}`);
+				} else {
+					Alertify.error("Error al subir los archivos");
+				}
+
+				this.setState({ 
+					nuevosArchivos: [], 
+					nuevoComentario: "",
+					previewArchivos: [],
+					subiendoArchivo: false
+				});
+				
+				// Limpiar input file
+				const fileInput = document.getElementById('fileInput');
+				if (fileInput) fileInput.value = '';
+				this.cargar_documentos(); // refrescar lista
 			};
 
 			handleFileSelect = (e) => {
-				const file = e.target.files[0];
-				if (file) {
-					// Validar tamaño
+				const files = Array.from(e.target.files || []);
+				if (files.length === 0) return;
+
+				// Validar tamaño de todos los archivos
+				const archivosValidos = [];
+				const previews = [];
+
+				files.forEach((file) => {
 					if (file.size > 10 * 1024 * 1024) {
-						Alertify.error("El archivo es demasiado grande. Máximo 10MB");
+						Alertify.error(`El archivo "${file.name}" es demasiado grande. Máximo 10MB`);
 						return;
 					}
+					archivosValidos.push(file);
 					
-					this.setState({ nuevoArchivo: file });
-					
-					// Crear preview
+					// Crear preview para imágenes
 					if (file.type.startsWith('image/')) {
 						const reader = new FileReader();
 						reader.onloadend = () => {
-							this.setState({ previewArchivo: reader.result });
+							previews.push({ file: file.name, preview: reader.result });
+							if (previews.length === archivosValidos.filter(f => f.type.startsWith('image/')).length) {
+								this.setState({ previewArchivos: previews });
+							}
 						};
 						reader.readAsDataURL(file);
-					} else {
-						this.setState({ previewArchivo: null });
+					}
+				});
+
+				if (archivosValidos.length > 0) {
+					this.setState({ nuevosArchivos: archivosValidos });
+					// Si no hay imágenes, limpiar previews
+					if (archivosValidos.filter(f => f.type.startsWith('image/')).length === 0) {
+						this.setState({ previewArchivos: [] });
 					}
 				}
 			};
@@ -571,25 +611,38 @@ class PerfilPaciente extends React.Component{
 				e.stopPropagation();
 				this.setState({ dragActive: false });
 
-				const file = e.dataTransfer.files[0];
-				if (file) {
-					// Validar tamaño
+				const files = Array.from(e.dataTransfer.files || []);
+				if (files.length === 0) return;
+
+				// Validar tamaño de todos los archivos
+				const archivosValidos = [];
+				const previews = [];
+
+				files.forEach((file) => {
 					if (file.size > 10 * 1024 * 1024) {
-						Alertify.error("El archivo es demasiado grande. Máximo 10MB");
+						Alertify.error(`El archivo "${file.name}" es demasiado grande. Máximo 10MB`);
 						return;
 					}
+					archivosValidos.push(file);
 					
-					this.setState({ nuevoArchivo: file });
-					
-					// Crear preview
+					// Crear preview para imágenes
 					if (file.type.startsWith('image/')) {
 						const reader = new FileReader();
 						reader.onloadend = () => {
-							this.setState({ previewArchivo: reader.result });
+							previews.push({ file: file.name, preview: reader.result });
+							if (previews.length === archivosValidos.filter(f => f.type.startsWith('image/')).length) {
+								this.setState({ previewArchivos: previews });
+							}
 						};
 						reader.readAsDataURL(file);
-					} else {
-						this.setState({ previewArchivo: null });
+					}
+				});
+
+				if (archivosValidos.length > 0) {
+					this.setState({ nuevosArchivos: archivosValidos });
+					// Si no hay imágenes, limpiar previews
+					if (archivosValidos.filter(f => f.type.startsWith('image/')).length === 0) {
+						this.setState({ previewArchivos: [] });
 					}
 				}
 			};
@@ -711,79 +764,111 @@ class PerfilPaciente extends React.Component{
 						<input type="hidden" id="paciente_id" value={this.props.id_paciente} />
 
 						{/* Header principal */}
-						<div className="card border-0 shadow-lg mb-4" style={{ 
-							borderRadius: '16px',
+						<div className="card border-0 shadow-lg mb-3" style={{ 
+							borderRadius: '12px',
 							background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
 							overflow: 'hidden',
 							animation: 'fadeIn 0.5s ease'
 						}}>
-							<div className="card-body text-white p-4">
-								<div className="d-flex justify-content-between align-items-start flex-wrap mb-3">
-									<div className="d-flex align-items-center flex-wrap">
+							<div className="card-body text-white p-3">
+								<div className="d-flex justify-content-between align-items-center flex-wrap">
+									<div className="d-flex align-items-center">
 										<img
 											id="foto_paciente"
 											src={Verficar.url_base + "/storage/" + this.state.paciente.foto_paciente}
 											alt="Foto Paciente"
 											style={{
-												width: '120px',
-												height: '120px',
+												width: '70px',
+												height: '70px',
 												objectFit: 'cover',
 												borderRadius: '50%',
-												border: '4px solid rgba(255,255,255,0.3)',
-												boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-												marginRight: '25px',
-												marginBottom: '15px'
+												border: '3px solid rgba(255,255,255,0.3)',
+												boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+												marginRight: '15px'
 											}}
 										/>
 										<div>
-											<h2 className="mb-2" style={{ fontWeight: 700, fontSize: '36px' }}>
+											<h2 className="mb-0" style={{ fontWeight: 700, fontSize: '24px' }}>
 												{this.state.paciente.nombre} {this.state.paciente.apellido}
 											</h2>
 										</div>
 									</div>
-									<button 
-										className="btn"
-										onClick={this.detras}
-										style={{
-											background: 'rgba(255,255,255,0.2)',
-											border: '2px solid rgba(255,255,255,0.3)',
-											color: 'white',
-											borderRadius: '12px',
-											padding: '10px 20px',
-											fontWeight: 600,
-											fontSize: '14px',
-											transition: 'all 0.3s ease',
-											backdropFilter: 'blur(10px)',
-											marginTop: '10px'
-										}}
-										onMouseEnter={(e) => {
-											e.target.style.background = 'rgba(255,255,255,0.3)';
-											e.target.style.transform = 'translateY(-2px)';
-										}}
-										onMouseLeave={(e) => {
-											e.target.style.background = 'rgba(255,255,255,0.2)';
-											e.target.style.transform = 'translateY(0)';
-										}}
-									>
-										<i className="fas fa-arrow-left me-2"></i>{Verficar.lenguaje.perfil_paciente.atras}
-									</button>
+									<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+										<button 
+											className="btn"
+											onClick={() => this.eliminar_paciente(this.state.paciente.id)}
+											style={{
+												background: 'rgba(220, 53, 69, 0.3)',
+												border: '2px solid rgba(220, 53, 69, 0.5)',
+												color: 'white',
+												borderRadius: '6px',
+												padding: '5px 10px',
+												fontWeight: 600,
+												fontSize: '11px',
+												transition: 'all 0.3s ease',
+												backdropFilter: 'blur(10px)',
+												display: 'flex',
+												alignItems: 'center',
+												justifyContent: 'center',
+												minWidth: 'auto'
+											}}
+											onMouseEnter={(e) => {
+												e.target.style.background = 'rgba(220, 53, 69, 0.5)';
+												e.target.style.transform = 'translateY(-2px)';
+												e.target.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.4)';
+											}}
+											onMouseLeave={(e) => {
+												e.target.style.background = 'rgba(220, 53, 69, 0.3)';
+												e.target.style.transform = 'translateY(0)';
+												e.target.style.boxShadow = 'none';
+											}}
+											title="Eliminar paciente"
+										>
+											<i className="fas fa-trash-alt"></i>
+										</button>
+										<button 
+											className="btn"
+											onClick={this.detras}
+											style={{
+												background: 'rgba(255,255,255,0.2)',
+												border: '2px solid rgba(255,255,255,0.3)',
+												color: 'white',
+												borderRadius: '8px',
+												padding: '6px 14px',
+												fontWeight: 600,
+												fontSize: '13px',
+												transition: 'all 0.3s ease',
+												backdropFilter: 'blur(10px)'
+											}}
+											onMouseEnter={(e) => {
+												e.target.style.background = 'rgba(255,255,255,0.3)';
+												e.target.style.transform = 'translateY(-2px)';
+											}}
+											onMouseLeave={(e) => {
+												e.target.style.background = 'rgba(255,255,255,0.2)';
+												e.target.style.transform = 'translateY(0)';
+											}}
+										>
+											<i className="fas fa-arrow-left me-2"></i>{Verficar.lenguaje.perfil_paciente.atras}
+										</button>
+									</div>
 								</div>
 								
 								{/* Datos del paciente separados */}
-								<div className="row g-3 mt-2">
+								<div className="row g-2 mt-2">
 									<div className="col-12 col-md-6 col-lg-3">
 										<div style={{
 											background: 'rgba(255,255,255,0.15)',
 											backdropFilter: 'blur(10px)',
-											borderRadius: '12px',
-											padding: '15px',
+											borderRadius: '10px',
+											padding: '10px 12px',
 											border: '1px solid rgba(255,255,255,0.2)'
 										}}>
-											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+											<div style={{ fontSize: '11px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
 												<i className="fas fa-id-card me-2"></i>
 												{Verficar.lenguaje.paciente_admin.cedula}
 											</div>
-											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+											<div style={{ fontSize: '15px', fontWeight: 600 }}>
 												{this.state.paciente.cedula || 'N/A'}
 											</div>
 										</div>
@@ -792,15 +877,15 @@ class PerfilPaciente extends React.Component{
 										<div style={{
 											background: 'rgba(255,255,255,0.15)',
 											backdropFilter: 'blur(10px)',
-											borderRadius: '12px',
-											padding: '15px',
+											borderRadius: '10px',
+											padding: '10px 12px',
 											border: '1px solid rgba(255,255,255,0.2)'
 										}}>
-											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+											<div style={{ fontSize: '11px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
 												<i className="fas fa-birthday-cake me-2"></i>
 												Edad
 											</div>
-											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+											<div style={{ fontSize: '15px', fontWeight: 600 }}>
 												{this.calcularEdad(this.state.paciente.fecha_nacimiento)} años
 											</div>
 										</div>
@@ -809,15 +894,15 @@ class PerfilPaciente extends React.Component{
 										<div style={{
 											background: 'rgba(255,255,255,0.15)',
 											backdropFilter: 'blur(10px)',
-											borderRadius: '12px',
-											padding: '15px',
+											borderRadius: '10px',
+											padding: '10px 12px',
 											border: '1px solid rgba(255,255,255,0.2)'
 										}}>
-											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+											<div style={{ fontSize: '11px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
 												<i className="fas fa-phone me-2"></i>
 												{Verficar.lenguaje.paciente_admin.telefono}
 											</div>
-											<div style={{ fontSize: '18px', fontWeight: 600 }}>
+											<div style={{ fontSize: '15px', fontWeight: 600 }}>
 												{this.state.paciente.telefono || 'N/A'}
 											</div>
 										</div>
@@ -826,19 +911,25 @@ class PerfilPaciente extends React.Component{
 										<div style={{
 											background: this.state.deuda_total > 0 ? 'rgba(220, 53, 69, 0.3)' : 'rgba(40, 167, 69, 0.3)',
 											backdropFilter: 'blur(10px)',
-											borderRadius: '12px',
-											padding: '15px',
+											borderRadius: '10px',
+											padding: '10px 12px',
 											border: '1px solid rgba(255,255,255,0.2)'
 										}}>
-											<div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+											<div style={{ fontSize: '11px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
 												<i className={this.state.deuda_total > 0 ? "fas fa-exclamation-triangle me-2" : "fas fa-check-circle me-2"}></i>
 												Estado de Deuda
 											</div>
-											<div style={{ fontSize: '18px', fontWeight: 600 }}>
-												{this.state.deuda_total > 0 ? (
-													<>${new Intl.NumberFormat().format(this.state.deuda_total)}</>
+											<div style={{ fontSize: '15px', fontWeight: 600 }}>
+											{this.state.deuda_total > 0 ? (
+												<>{
+													Number(this.state.deuda_total || 0).toLocaleString('es-DO', {
+													style: 'currency',
+													currency: 'DOP',
+													minimumFractionDigits: 2
+													})
+												}</>
 												) : (
-													<>Sin deuda</>
+												<>Sin deuda</>
 												)}
 											</div>
 										</div>
@@ -881,8 +972,8 @@ class PerfilPaciente extends React.Component{
 									<i className="fas fa-th-large me-2" style={{ color: '#1c1c1e' }}></i>
 									Acciones Rápidas
 								</h5>
-								<div className="row">
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+								<div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => {
 												this.cargarFacturas();
@@ -915,7 +1006,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => this.setState({ modal_ficha_medica_visible: true })}
 											style={{
@@ -945,7 +1036,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => {
 												this.cargarNotas();
@@ -978,7 +1069,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={this.cargar_documentos}
 											style={{
@@ -1008,7 +1099,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => this.setState({ modal_presupuestos_visible: true })}
 											style={{
@@ -1038,7 +1129,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => {
 												this.cargarOdontogramas();
@@ -1071,7 +1162,7 @@ class PerfilPaciente extends React.Component{
 											</h6>
 										</div>
 									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
+									<div style={{ flex: '1 1 auto', minWidth: '120px' }}>
 										<div 
 											onClick={() => this.setState({ modal_recetas_visible: true })}
 											style={{
@@ -1098,34 +1189,6 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-prescription" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												Recetas
-											</h6>
-										</div>
-									</div>
-									<div className="col-6 col-md-4 col-lg-3 mb-3">
-										<div 
-											onClick={() => this.eliminar_paciente(this.state.paciente.id)}
-											style={{
-												background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
-												border: '2px solid transparent',
-												borderRadius: '16px',
-												padding: '20px',
-												textAlign: 'center',
-												cursor: 'pointer',
-												transition: 'all 0.3s ease',
-												boxShadow: '0 2px 8px rgba(220, 53, 69, 0.3)'
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.transform = 'translateY(-5px)';
-												e.currentTarget.style.boxShadow = '0 6px 16px rgba(220, 53, 69, 0.4)';
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.transform = 'translateY(0)';
-												e.currentTarget.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.3)';
-											}}
-										>
-											<i className="fas fa-trash-alt" style={{ fontSize: '32px', color: 'white', marginBottom: '10px' }}></i>
-											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: 'white' }}>
-												{Verficar.lenguaje.perfil_paciente.eliminar}
 											</h6>
 										</div>
 									</div>
@@ -1271,7 +1334,17 @@ class PerfilPaciente extends React.Component{
 													fontSize: '14px',
 													boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
 												}}>
-													${new Intl.NumberFormat().format(this.state.deuda_total || 0)}
+														{this.state.deuda_total > 0 ? (
+												<>{
+													Number(this.state.deuda_total || 0).toLocaleString('es-DO', {
+													style: 'currency',
+													currency: 'DOP',
+													minimumFractionDigits: 2
+													})
+												}</>
+												) : (
+												<>Sin deuda</>
+												)}
 												</span>
 											</td>
 										</tr>
@@ -1751,10 +1824,10 @@ class PerfilPaciente extends React.Component{
 					className="modal d-block"
 					style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
 					<div
-					className="modal-dialog modal-xxl modal-dialog-centered"
-					style={{ maxWidth: "95%", width: "95%" }}
+					className="modal-dialog modal-xl modal-dialog-centered"
+					style={{ maxWidth: '95%' }}
 					>
-					<div className="modal-content mac-box">
+					<div className="modal-content">
 						<div className="modal-header border-0 d-flex justify-content-between align-items-center" style={{ padding: '15px 20px' }}>
 						<h4 className="modal-title flex items-center gap-2 mb-0">
 							<i className="fa-solid fa-folder"></i>
@@ -1771,11 +1844,11 @@ class PerfilPaciente extends React.Component{
 									fontWeight: '600'
 								}}
 								onClick={() => {
-									// Si hay un archivo seleccionado, subirlo directamente
-									if (this.state.nuevoArchivo) {
+									// Si hay archivos seleccionados, subirlos directamente
+									if (this.state.nuevosArchivos && this.state.nuevosArchivos.length > 0) {
 										this.subirDocumento();
 									} else {
-										// Si no hay archivo, abrir el selector
+										// Si no hay archivos, abrir el selector
 										const fileInput = document.getElementById('fileInput');
 										if (fileInput) {
 											fileInput.click();
@@ -1783,7 +1856,7 @@ class PerfilPaciente extends React.Component{
 									}
 								}}
 								disabled={this.state.subiendoArchivo}
-								title={this.state.nuevoArchivo ? "Subir documento seleccionado" : "Seleccionar archivo para subir"}
+								title={this.state.nuevosArchivos && this.state.nuevosArchivos.length > 0 ? `Subir ${this.state.nuevosArchivos.length} archivo(s) seleccionado(s)` : "Seleccionar archivos para subir"}
 							>
 								{this.state.subiendoArchivo ? (
 									<>
@@ -1793,7 +1866,9 @@ class PerfilPaciente extends React.Component{
 								) : (
 									<>
 										<i className="fas fa-upload me-1"></i>
-										{this.state.nuevoArchivo ? 'Subir' : 'Subir Documento'}
+										{this.state.nuevosArchivos && this.state.nuevosArchivos.length > 0 
+											? `Subir ${this.state.nuevosArchivos.length} archivo(s)` 
+											: 'Subir Documentos'}
 									</>
 								)}
 							</button>
@@ -1804,7 +1879,7 @@ class PerfilPaciente extends React.Component{
 						</div>
 						</div>
 
-						<div className="modal-body bg-gray-50 rounded-xl p-3" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+						<div className="modal-body bg-gray-50 rounded-xl p-3" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
 						{/* Selector de vista */}
 						{this.state.documentos.length > 0 && (
 							<div className="d-flex justify-content-end mb-3">
@@ -2053,7 +2128,7 @@ class PerfilPaciente extends React.Component{
 						<hr className="my-2" />
 						<h6 className="text-lg font-semibold mb-2" style={{ fontSize: '16px' }}>
 							<i className="fas fa-cloud-upload-alt me-2"></i>
-							Agregar nuevo documento
+							Agregar nuevo(s) documento(s)
 						</h6>
 
 						<div className="bg-white p-3 rounded-2xl shadow-sm">
@@ -2075,33 +2150,45 @@ class PerfilPaciente extends React.Component{
 									}
 								}}
 							>
-								{this.state.previewArchivo ? (
+								{this.state.nuevosArchivos && this.state.nuevosArchivos.length > 0 ? (
 									<div className="w-100">
-										<img 
-											src={this.state.previewArchivo} 
-											alt="Preview" 
-											className="img-thumbnail mb-2"
-											style={{ maxHeight: '150px', maxWidth: '100%' }}
-										/>
-										<p className="text-muted mb-0" style={{ fontSize: '13px' }}>
-											<i className="fas fa-check-circle text-success me-2"></i>
-											{this.state.nuevoArchivo?.name}
+										<div className="row g-2">
+											{this.state.nuevosArchivos.map((file, index) => {
+												const preview = this.state.previewArchivos.find(p => p.file === file.name);
+												return (
+													<div key={index} className="col-6 col-md-4">
+														<div className="border rounded p-2 bg-light">
+															{preview && preview.preview ? (
+																<img 
+																	src={preview.preview} 
+																	alt="Preview" 
+																	className="img-thumbnail mb-1"
+																	style={{ maxHeight: '80px', maxWidth: '100%', width: '100%', objectFit: 'cover' }}
+																/>
+															) : (
+																<div className="text-center mb-1">
+																	<i className={`fas fa-file fa-2x ${
+																		file.type.startsWith('image/') ? 'text-success' :
+																		file.type === 'application/pdf' ? 'text-danger' :
+																		'text-primary'
+																	}`}></i>
+																</div>
+															)}
+															<p className="mb-0 text-truncate" style={{ fontSize: '11px', fontWeight: '600' }} title={file.name}>
+																{file.name}
+															</p>
+															<small className="text-muted" style={{ fontSize: '10px' }}>
+																{(file.size / 1024 / 1024).toFixed(2)} MB
+															</small>
+														</div>
+													</div>
+												);
+											})}
+										</div>
+										<p className="text-center mt-2 mb-0" style={{ fontSize: '12px', color: '#28a745' }}>
+											<i className="fas fa-check-circle me-1"></i>
+											{this.state.nuevosArchivos.length} archivo{this.state.nuevosArchivos.length > 1 ? 's' : ''} seleccionado{this.state.nuevosArchivos.length > 1 ? 's' : ''}
 										</p>
-										<small className="text-muted" style={{ fontSize: '12px' }}>
-											{(this.state.nuevoArchivo?.size / 1024 / 1024).toFixed(2)} MB
-										</small>
-									</div>
-								) : this.state.nuevoArchivo ? (
-									<div>
-										<i className={`fas fa-file fa-3x mb-2 ${
-											this.state.nuevoArchivo.type.startsWith('image/') ? 'text-success' :
-											this.state.nuevoArchivo.type === 'application/pdf' ? 'text-danger' :
-											'text-primary'
-										}`}></i>
-										<p className="mb-1 fw-bold" style={{ fontSize: '13px' }}>{this.state.nuevoArchivo.name}</p>
-										<small className="text-muted" style={{ fontSize: '12px' }}>
-											{(this.state.nuevoArchivo.size / 1024 / 1024).toFixed(2)} MB
-										</small>
 									</div>
 								) : (
 									<div>
@@ -2109,7 +2196,7 @@ class PerfilPaciente extends React.Component{
 										<p className="mb-1 fw-bold" style={{ fontSize: '14px' }}>Arrastra y suelta archivos aquí</p>
 										<p className="text-muted mb-0" style={{ fontSize: '13px' }}>o haz clic para seleccionar</p>
 										<small className="text-muted d-block mt-1" style={{ fontSize: '11px' }}>
-											Formatos: JPG, PNG, PDF, DOC, DOCX (Máx. 10MB)
+											Formatos: JPG, PNG, PDF, DOC, DOCX (Máx. 10MB por archivo)
 										</small>
 									</div>
 								)}
@@ -2118,12 +2205,13 @@ class PerfilPaciente extends React.Component{
 									id="fileInput"
 									className="d-none"
 									accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.stl,.obj,.fbx,.glb,.gltf"
+									multiple
 									onChange={this.handleFileSelect}
 								/>
 							</div>
 
-							{/* Botón para seleccionar archivo si no hay preview */}
-							{!this.state.nuevoArchivo && (
+							{/* Botón para seleccionar archivos si no hay archivos seleccionados */}
+							{(!this.state.nuevosArchivos || this.state.nuevosArchivos.length === 0) && (
 								<button
 									type="button"
 									className="btn btn-outline-primary w-100 mb-2"
@@ -2136,23 +2224,23 @@ class PerfilPaciente extends React.Component{
 									}}
 								>
 									<i className="fas fa-folder-open me-2"></i>
-									Seleccionar archivo
+									Seleccionar archivos
 								</button>
 							)}
 
-							{/* Botón para cambiar archivo si ya hay uno seleccionado */}
-							{this.state.nuevoArchivo && (
+							{/* Botón para cambiar archivos si ya hay archivos seleccionados */}
+							{this.state.nuevosArchivos && this.state.nuevosArchivos.length > 0 && (
 								<button
 									type="button"
 									className="btn btn-outline-secondary w-100 mb-2"
 									onClick={() => {
-										this.setState({ nuevoArchivo: null, previewArchivo: null });
+										this.setState({ nuevosArchivos: [], previewArchivos: [] });
 										const fileInput = document.getElementById('fileInput');
 										if (fileInput) fileInput.value = '';
 									}}
 								>
 									<i className="fas fa-times me-2"></i>
-									Cambiar archivo
+									Limpiar archivos seleccionados
 								</button>
 							)}
 

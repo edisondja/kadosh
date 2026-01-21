@@ -14,7 +14,15 @@ class  AgregarFactura extends React.Component{
 
     constructor(props){
         super(props);
-        this.state= {procedimientos:[],total:0,lista_procedimiento:[],doctores:[],factura:'',boton_estado:true};
+        this.state= {
+            procedimientos:[],
+            total:0,
+            lista_procedimiento:[],
+            doctores:[],
+            factura:'',
+            boton_estado:true,
+            paciente: { nombre: '', apellido: '' }
+        };
         this.removeTodo = this.removeTodo.bind(this);
 
     }
@@ -77,11 +85,9 @@ class  AgregarFactura extends React.Component{
 
 
     componentDidMount(){
-
-
-
         cargar_doctores.cargar_procedimientos(this);
         cargar_doctores.cargar_doctores(this);
+        cargar_doctores.cargar_paciente(this, this.props.match.params.id);
     }
 
     agregarProcedimiento=(id,nombre,precio)=>{
@@ -261,7 +267,10 @@ class  AgregarFactura extends React.Component{
                                             Creación de Factura
                                         </h2>
                                         <p className="mb-0" style={{ opacity: 0.9, fontSize: '15px' }}>
-                                            Agregue procedimientos y genere la factura
+                                            {this.state.paciente.nombre && this.state.paciente.apellido 
+                                                ? `Factura para: ${this.state.paciente.nombre} ${this.state.paciente.apellido}`
+                                                : 'Agregue procedimientos y genere la factura'
+                                            }
                                         </p>
                                     </div>
                                 </div>
