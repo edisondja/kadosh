@@ -140,7 +140,7 @@ class ExportarImportar extends React.Component {
         return (
             <div className="container-fluid mt-4">
                 <div className="row">
-                    <div className="col-md-10">
+                    <div className="col-md-10" style={{ display: 'flex', flexDirection: 'column' }}>
                         <h3 className="mb-4 text-primary">
                             <i className="fas fa-exchange-alt me-2"></i>Exportar / Importar Datos
                         </h3>
@@ -172,9 +172,9 @@ class ExportarImportar extends React.Component {
                             </div>
                         </div>
 
-                        <div className="row">
+                        <div className="row" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px' }}>
                     {/* Sección de Exportación */}
-                    <div className="col-md-6 mb-4">
+                    <div className="col-md-6 mb-4" style={{ flex: '1', minWidth: 0 }}>
                         <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px' }}>
                             <div className="card-header bg-primary text-white" style={{ borderRadius: '16px 16px 0 0' }}>
                                 <h5 className="mb-0">
@@ -182,7 +182,7 @@ class ExportarImportar extends React.Component {
                                 </h5>
                             </div>
                             <div className="card-body p-4">
-                                <p className="text-muted mb-4">
+                                <p className="text-muted mb-4" style={{ fontSize: '14px' }}>
                                     Exporte todos los {tipo} del sistema a un archivo JSON que puede ser importado más tarde.
                                 </p>
                                 <button
@@ -208,7 +208,7 @@ class ExportarImportar extends React.Component {
                     </div>
 
                     {/* Sección de Importación */}
-                    <div className="col-md-6 mb-4">
+                    <div className="col-md-6 mb-4" style={{ flex: '1', minWidth: 0 }}>
                         <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px' }}>
                             <div className="card-header bg-success text-white" style={{ borderRadius: '16px 16px 0 0' }}>
                                 <h5 className="mb-0">
@@ -216,23 +216,24 @@ class ExportarImportar extends React.Component {
                                 </h5>
                             </div>
                             <div className="card-body p-4">
-                                <p className="text-muted mb-3">
+                                <p className="text-muted mb-3" style={{ fontSize: '14px' }}>
                                     Importe {tipo} desde un archivo JSON previamente exportado.
                                 </p>
                                 
                                 <div className="mb-3">
-                                    <label className="form-label fw-bold">Seleccionar Archivo JSON</label>
+                                    <label className="form-label fw-bold" style={{ fontSize: '14px' }}>Seleccionar Archivo JSON</label>
                                     <input
                                         type="file"
                                         id="archivoImportar"
                                         className="form-control"
                                         accept=".json,application/json"
                                         onChange={this.manejarSeleccionArchivo}
+                                        style={{ fontSize: '14px' }}
                                     />
                                 </div>
 
                                 {datosImportados && (
-                                    <div className="alert alert-info mb-3">
+                                    <div className="alert alert-info mb-3" style={{ fontSize: '13px', padding: '10px' }}>
                                         <i className="fas fa-info-circle me-2"></i>
                                         <strong>{datosImportados.length}</strong> registros listos para importar
                                     </div>

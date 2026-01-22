@@ -150,115 +150,408 @@ class ActualizarPaciente extends React.Component{
             if(this.state.estado=='pacientes'){ 
                 return <Citas/>;
             }
-            return(<div className="col-md-8"><br/><br/><hr/><h5 style={{color:'#0350cb'}}>Actualizar Paciente</h5>
-                    <div><button className="btn-primary boton_paciente" onClick={this.ver_pacientes} >Retroceder</button><br/><br/>
+            
+            const inputStyle = {
+                borderRadius: '12px',
+                border: '2px solid #e0e0e0',
+                padding: '14px 16px',
+                fontSize: '15px',
+                transition: 'all 0.2s ease',
+                background: '#ffffff',
+                width: '100%',
+                outline: 'none'
+            };
 
-                        <table className='table'>
-                            <tr>
-                                <td><img src={Core.url_base+'/storage/'+this.state.paciente.foto_paciente} id="imagen_paciente" style={{heigth:'150px',width:'150px'}} className="rounded"/><hr/></td>
-                                <td><p style={{color:'#0350cb'}}>Cambiar foto de perfil&nbsp;</p><hr/><input type='file' onChange={this.cambiar_foto} id="foto_perfil" /> </td>
-                                <td>Ingresado por {this.state.paciente.doctor.nombre}  {this.state.paciente.doctor.apellido}</td>
-                            </tr>
-                        </table>
-                        <strong>Nombre</strong><br/>
+            return (
+                <div className="col-md-10" style={{ margin: '0 auto', padding: '20px', minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
+                        {/* Header */}
+                        <div className="card border-0 shadow-lg mb-4" style={{ 
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            overflow: 'hidden',
+                            animation: 'fadeIn 0.5s ease'
+                        }}>
+                            <div className="card-body text-white p-4">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <div className="d-flex align-items-center">
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '15px',
+                                            background: 'rgba(255,255,255,0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: '20px',
+                                            fontSize: '28px'
+                                        }}>
+                                            <i className="fas fa-user-edit"></i>
+                                        </div>
+                                        <div>
+                                            <h2 className="mb-0" style={{ fontWeight: 700, fontSize: '28px' }}>
+                                                Actualizar Paciente
+                                            </h2>
+                                            <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px', marginTop: '5px' }}>
+                                                Modifica la información del paciente
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        className="btn"
+                                        onClick={this.ver_pacientes}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.2)',
+                                            border: '2px solid rgba(255,255,255,0.3)',
+                                            color: 'white',
+                                            borderRadius: '12px',
+                                            padding: '10px 20px',
+                                            fontWeight: 600,
+                                            fontSize: '14px',
+                                            transition: 'all 0.3s ease',
+                                            backdropFilter: 'blur(10px)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.background = 'rgba(255,255,255,0.3)';
+                                            e.target.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.background = 'rgba(255,255,255,0.2)';
+                                            e.target.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <i className="fas fa-arrow-left me-2"></i>Retroceder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-                        <input type='text' value={this.state.paciente.nombre} onChange={this.actualizar_paciente} id="nombre" className="form-control"/><br/>
+                        {/* Foto de perfil */}
+                        <div className="card border-0 shadow-sm mb-4" style={{ 
+                            borderRadius: '16px',
+                            background: '#ffffff',
+                            overflow: 'hidden',
+                            animation: 'slideUp 0.6s ease'
+                        }}>
+                            <div className="card-body p-4">
+                                <div className="row align-items-center">
+                                    <div className="col-md-4 text-center mb-3 mb-md-0">
+                                        <img 
+                                            src={Core.url_base+'/storage/'+this.state.paciente.foto_paciente} 
+                                            id="imagen_paciente" 
+                                            style={{
+                                                height: '150px',
+                                                width: '150px',
+                                                objectFit: 'cover',
+                                                borderRadius: '50%',
+                                                border: '4px solid #e0e0e0',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                            }} 
+                                            className="rounded"
+                                            alt="Foto paciente"
+                                        />
+                                    </div>
+                                    <div className="col-md-8">
+                                        <h5 style={{ fontWeight: 600, color: '#2d2d2f', marginBottom: '15px' }}>
+                                            <i className="fas fa-image me-2" style={{ color: '#667eea' }}></i>
+                                            Foto de Perfil
+                                        </h5>
+                                        <label 
+                                            className="btn btn-outline-primary"
+                                            style={{
+                                                borderRadius: '10px',
+                                                padding: '10px 20px',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.transform = 'translateY(-2px)';
+                                                e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.transform = 'translateY(0)';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            <i className="fas fa-camera me-2"></i>
+                                            Cambiar Foto
+                                            <input 
+                                                type='file' 
+                                                onChange={this.cambiar_foto} 
+                                                id="foto_perfil"
+                                                style={{ display: 'none' }}
+                                                accept="image/*"
+                                            />
+                                        </label>
+                                        {this.state.paciente.doctor && (
+                                            <p className="mt-3 mb-0" style={{ color: '#6c757d', fontSize: '14px' }}>
+                                                <i className="fas fa-user-md me-2"></i>
+                                                Ingresado por: <strong>{this.state.paciente.doctor.nombre} {this.state.paciente.doctor.apellido}</strong>
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                        <strong>Apellido</strong><br/>
+                        {/* Formulario */}
+                        <div className="card border-0 shadow-sm mb-4" style={{ 
+                            borderRadius: '16px',
+                            background: '#ffffff',
+                            overflow: 'hidden',
+                            animation: 'slideUp 0.7s ease'
+                        }}>
+                            <div className="card-body p-4">
+                                <h5 className="mb-4" style={{ fontWeight: 600, color: '#2d2d2f' }}>
+                                    <i className="fas fa-user-edit me-2" style={{ color: '#667eea' }}></i>
+                                    Información Personal
+                                </h5>
+                                
+                                <div className="row g-3">
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Nombre
+                                        </label>
+                                        <input 
+                                            type='text' 
+                                            value={this.state.paciente.nombre || ''} 
+                                            onChange={this.actualizar_paciente} 
+                                            id="nombre" 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <input type='text' value={this.state.paciente.apellido} onChange={this.actualizar_paciente} id="apellido" className="form-control"/><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Apellido
+                                        </label>
+                                        <input 
+                                            type='text' 
+                                            value={this.state.paciente.apellido || ''} 
+                                            onChange={this.actualizar_paciente} 
+                                            id="apellido" 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <strong>Nombre del tutor</strong><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            DNI / Cédula
+                                        </label>
+                                        <input 
+                                            type='text' 
+                                            id="cedula" 
+                                            value={this.state.paciente.cedula || ''} 
+                                            onChange={this.actualizar_paciente} 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <input type='text' id="nombre_tutor" value={this.state.paciente.nombre_tutor} onChange={this.actualizar_paciente} className="form-control"/><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Nombre del Tutor
+                                        </label>
+                                        <input 
+                                            type='text' 
+                                            id="nombre_tutor" 
+                                            value={this.state.paciente.nombre_tutor || ''} 
+                                            onChange={this.actualizar_paciente} 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <strong>DNI</strong><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Sexo
+                                        </label>
+                                        <select 
+                                            id="sexo" 
+                                            defaultValue={this.state.paciente.sexo || 'd'}
+                                            style={{
+                                                ...inputStyle,
+                                                appearance: 'none',
+                                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'right 16px center',
+                                                paddingRight: '40px'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            <option value="h">Hombre</option>
+                                            <option value="m">Mujer</option>
+                                            <option value="hm">Hombre moderno</option>
+                                            <option value="mm">Mujer moderna</option>
+                                            <option value="d">Desconocido</option>
+                                        </select>
+                                    </div>
 
-                        <input type='text' id="cedula" value={this.state.paciente.cedula} onChange={this.actualizar_paciente} className="form-control"/><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Fecha de Nacimiento
+                                        </label>
+                                        <input 
+                                            type='date' 
+                                            id="fecha_nacimiento" 
+                                            onChange={this.actualizar_paciente} 
+                                            value={this.state.paciente.fecha_nacimiento || ''} 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <strong>Sexo</strong><br/>
-                            <select 
-                                id="sexo" 
-                                className="form-control"
-                                style={{
-                                    borderRadius: '12px',
-                                    border: '2px solid #e0e0e0',
-                                    padding: '14px 16px',
-                                    fontSize: '15px',
-                                    minHeight: '50px',
-                                    height: 'auto',
-                                    lineHeight: '1.5',
-                                    transition: 'all 0.2s ease',
-                                    appearance: 'none',
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'right 16px center',
-                                    paddingRight: '40px'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.borderColor = '#1c1c1e';
-                                    e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.borderColor = '#e0e0e0';
-                                    e.target.style.boxShadow = 'none';
-                                }}
-                            >
-                                <option value="h">Hombre</option>
-                                <option value="m">Mujer</option>
-                                <option value="hm">Hombre moderno</option>
-                                <option value="mm">Mujer moderna</option>
-                                <option value="d">Desconocido</option>
-                            </select><br/>
-                        <strong>FECHA DE NACIMIENTO</strong><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Teléfono
+                                        </label>
+                                        <input 
+                                            type='tel' 
+                                            id="telefono" 
+                                            onChange={this.actualizar_paciente} 
+                                            value={this.state.paciente.telefono || ''} 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <input type='date' id="fecha_nacimiento" onChange={this.actualizar_paciente} value={this.state.paciente.fecha_nacimiento} className="form-control"/><br/>
+                                    <div className="col-md-6">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Correo Electrónico
+                                        </label>
+                                        <input 
+                                            type='email' 
+                                            id="correo" 
+                                            onChange={this.actualizar_paciente} 
+                                            value={this.state.paciente.correo_electronico || ''} 
+                                            style={inputStyle}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        />
+                                    </div>
 
-                        <strong>NUMERO DE TELEFONO</strong><br/>
+                                    <div className="col-md-12">
+                                        <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px' }}>
+                                            Doctor Asignado
+                                        </label>
+                                        <select 
+                                            id="doctores_select" 
+                                            defaultValue={this.state.paciente.id_doctor || ''}
+                                            style={{
+                                                ...inputStyle,
+                                                appearance: 'none',
+                                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'right 16px center',
+                                                paddingRight: '40px'
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.borderColor = '#e0e0e0';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            {this.state.doctores.map((data) => (
+                                                <option key={data.id} value={data.id}>
+                                                    {data.nombre} {data.apellido}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
 
-                        <input type='tel'  id="telefono" onChange={this.actualizar_paciente} value={this.state.paciente.telefono} className="form-control" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" /><br/>
-                        
-                        
-                        <strong>Correo electronico</strong><br/>
-                        <input type='email'  id="correo" onChange={this.actualizar_paciente} value={this.state.paciente.correo_electronico} className="form-control"/><br/>
-
-                        <strong>Ingresado por doctor</strong><br/>
-                        <select 
-                            id="doctores_select" 
-                            className="form-control"
-                            style={{
-                                borderRadius: '12px',
-                                border: '2px solid #e0e0e0',
-                                padding: '14px 16px',
-                                fontSize: '15px',
-                                minHeight: '50px',
-                                height: 'auto',
-                                lineHeight: '1.5',
-                                transition: 'all 0.2s ease',
-                                appearance: 'none',
-                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 16px center',
-                                paddingRight: '40px',
-                                whiteSpace: 'normal',
-                                wordWrap: 'break-word'
-                            }}
-                            onFocus={(e) => {
-                                e.target.style.borderColor = '#1c1c1e';
-                                e.target.style.boxShadow = '0 0 0 3px rgba(28, 28, 30, 0.1)';
-                            }}
-                            onBlur={(e) => {
-                                e.target.style.borderColor = '#e0e0e0';
-                                e.target.style.boxShadow = 'none';
-                            }}
-                        >
-                            {this.state.doctores.map((data=>(
-                                        <option key={data.id} value={data.id}>{data.nombre} {data.apellido}</option>
-                            )))}
-                        </select><br/>
-                        <button className="btn btn-primary" onClick={this.actualizar}>Actualizar</button>
-                    </div>
-                </div>); 
+                                <div className="mt-4 pt-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+                                    <button 
+                                        className="btn"
+                                        onClick={this.actualizar}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '12px',
+                                            padding: '12px 30px',
+                                            fontWeight: 600,
+                                            fontSize: '16px',
+                                            transition: 'all 0.3s ease',
+                                            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.transform = 'translateY(-2px)';
+                                            e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                                        }}
+                                    >
+                                        <i className="fas fa-save me-2"></i>
+                                        Actualizar Paciente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            ); 
         }
 
 

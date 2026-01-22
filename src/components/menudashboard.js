@@ -49,6 +49,7 @@ import Especialidades from './especialidades';
 import ExportarImportar from './exportar_importar';
 import Presupuestos from './presupuestos';
 import AdministrarTenants from './administrar_tenants';
+import AsignarGananciasRecibos from './asignar_ganancias_recibos';
 
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
@@ -58,7 +59,8 @@ class MenuDashboard extends React.Component {
       notificaciones: [], 
       notificado: false,
       alertasPagos: [],
-      alertaPagoMostrada: false
+      alertaPagoMostrada: false,
+      busquedaMenu: ''
     };
     this.estilos = { listStyleType: "none" };
   }
@@ -171,7 +173,72 @@ class MenuDashboard extends React.Component {
 
     let Menu;
 
+    // Función helper para crear un elemento de menú
+    const crearItemMenu = (ruta, icono, texto, id = null) => {
+      const linkProps = { to: ruta };
+      if (id) linkProps.id = id;
+      return (
+        <li key={ruta}>
+          <Link {...linkProps}>
+            <i className={icono}></i>&nbsp;{texto}
+          </Link>
+        </li>
+      );
+    };
+
+    // Función para filtrar opciones del menú
+    const filtrarOpciones = (texto, opciones) => {
+      if (!texto || texto.trim() === '') return opciones;
+      const busqueda = texto.toLowerCase().trim();
+      return opciones.filter(opcion => 
+        opcion.texto.toLowerCase().includes(busqueda)
+      );
+    };
+
     if (localStorage.getItem("roll") === "Administrador") {
+      // Definir todas las opciones del menú como objetos con datos
+      const opcionesGestion = [
+        { ruta: "/paciente", icono: "fas fa-user-plus", texto: FuncionesExtras.lenguaje.agregar_paciente },
+        { ruta: "/doctor", icono: "fas fa-user-md", texto: FuncionesExtras.lenguaje.agregar_doctor },
+        { ruta: "/asignar_ganancias_recibos", icono: "fas fa-money-bill-wave", texto: "Asignar Ganancias por Recibo" },
+        { ruta: "/procedimiento", icono: "fas fa-stethoscope", texto: FuncionesExtras.lenguaje.agregar_procedimiento },
+        { ruta: "/agregar_usuario", icono: "fas fa-user-cog", texto: FuncionesExtras.lenguaje.agregar_usuario },
+        { ruta: "/especialidades", icono: "fas fa-user-md", texto: "Especialidades" }
+      ];
+
+      const opcionesCitas = [
+        { ruta: "/notificaciones", icono: "fas fa-bell", texto: FuncionesExtras.lenguaje.notifiaciones },
+        { ruta: "/agregar_cita", icono: "fas fa-calendar-check", texto: FuncionesExtras.lenguaje.administracion_citas }
+      ];
+
+      const opcionesFinanzas = [
+        { ruta: "/contabilidad", icono: "fas fa-calculator", texto: FuncionesExtras.lenguaje.contabilidad },
+        { ruta: "/nomina", icono: "fas fa-money-check-alt", texto: "Nómina" },
+        { ruta: "/punto_venta", icono: "fas fa-cash-register", texto: "Punto de Venta" },
+        { ruta: "/salarios_doctores", icono: "fas fa-hand-holding-usd", texto: "Salarios Doctores" },
+        { ruta: "/historial_pagos", icono: "fas fa-credit-card", texto: "Historial de Pagos" }
+      ];
+
+      const opcionesReportes = [
+        { ruta: "/reportes", icono: "fas fa-file-alt", texto: FuncionesExtras.lenguaje.generar_reportes },
+        { ruta: "/auditoria", icono: "fas fa-history", texto: "Auditoría" }
+      ];
+
+      const opcionesSistema = [
+        { ruta: "/configuracion", icono: "fas fa-cog", texto: "Configuración" },
+        { ruta: "/exportar_importar", icono: "fas fa-exchange-alt", texto: "Exportar/Importar" },
+        { ruta: "/administrar_tenants", icono: "fas fa-building", texto: "Administrar Tenants" },
+        { ruta: "/cerrar_sesion", icono: "fas fa-sign-out-alt", texto: FuncionesExtras.lenguaje.cerrar_sesion, id: "cerrar_sesion" }
+      ];
+
+      // Filtrar opciones si hay búsqueda
+      const busqueda = this.state.busquedaMenu;
+      const gestionFiltrado = filtrarOpciones(busqueda, opcionesGestion);
+      const citasFiltrado = filtrarOpciones(busqueda, opcionesCitas);
+      const finanzasFiltrado = filtrarOpciones(busqueda, opcionesFinanzas);
+      const reportesFiltrado = filtrarOpciones(busqueda, opcionesReportes);
+      const sistemaFiltrado = filtrarOpciones(busqueda, opcionesSistema);
+
       Menu = (
         <div style={{ padding: '0 10px' }}>
           <style>{`
@@ -222,109 +289,200 @@ class MenuDashboard extends React.Component {
               color: white !important;
             }
           `}</style>
-          {/* Gestión */}
-          <div style={{ marginBottom: '24px' }}>
-            <h6 style={{
-              color: '#6c757d',
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '12px',
-              paddingLeft: '12px',
-              marginTop: 0
+          
+          {/* Buscador del menú */}
+          <div style={{
+            marginBottom: '20px',
+            padding: '0 5px'
+          }}>
+            <div style={{
+              position: 'relative',
+              width: '100%'
             }}>
-              Gestión
-            </h6>
-            <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
-              <li><Link to="/paciente"><i className="fas fa-user-plus"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_paciente}</Link></li>
-              <li><Link to="/doctor"><i className="fas fa-user-md"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_doctor}</Link></li>
-              <li><Link to="/procedimiento"><i className="fas fa-stethoscope"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_procedimiento}</Link></li>
-              <li><Link to="/agregar_usuario"><i className="fas fa-user-cog"></i>&nbsp;{FuncionesExtras.lenguaje.agregar_usuario}</Link></li>
-              <li><Link to="/especialidades"><i className="fas fa-user-md"></i>&nbsp;Especialidades</Link></li>
-            </ul>
+              <input
+                type="text"
+                placeholder="Buscar en el menú..."
+                value={this.state.busquedaMenu}
+                onChange={(e) => this.setState({ busquedaMenu: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px 12px 40px',
+                  borderRadius: '12px',
+                  border: '2px solid #e0e0e0',
+                  fontSize: '14px',
+                  background: '#ffffff',
+                  transition: 'all 0.2s ease',
+                  outline: 'none',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#667eea';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e0e0e0';
+                  e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                }}
+              />
+              <i className="fas fa-search" style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#6c757d',
+                fontSize: '14px'
+              }}></i>
+              {this.state.busquedaMenu && (
+                <button
+                  onClick={() => this.setState({ busquedaMenu: '' })}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#6c757d',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#f3f4f6';
+                    e.target.style.color = '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'transparent';
+                    e.target.style.color = '#6c757d';
+                  }}
+                >
+                  <i className="fas fa-times" style={{ fontSize: '12px' }}></i>
+                </button>
+              )}
+            </div>
           </div>
+          {/* Gestión */}
+          {(!busqueda || gestionFiltrado.length > 0) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h6 style={{
+                color: '#6c757d',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+                paddingLeft: '12px',
+                marginTop: 0
+              }}>
+                Gestión
+              </h6>
+              <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
+                {gestionFiltrado.map(opcion => crearItemMenu(opcion.ruta, opcion.icono, opcion.texto, opcion.id))}
+              </ul>
+            </div>
+          )}
 
           {/* Citas y Notificaciones */}
-          <div style={{ marginBottom: '24px' }}>
-            <h6 style={{
-              color: '#6c757d',
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '12px',
-              paddingLeft: '12px'
-            }}>
-              Citas y Notificaciones
-            </h6>
-            <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
-              <li><Link to="/notificaciones"><i className="fas fa-bell"></i>&nbsp;{FuncionesExtras.lenguaje.notifiaciones}</Link></li>
-              <li><Link to="/agregar_cita"><i className="fas fa-calendar-check"></i>&nbsp;{FuncionesExtras.lenguaje.administracion_citas}</Link></li>
-            </ul>
-          </div>
+          {(!busqueda || citasFiltrado.length > 0) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h6 style={{
+                color: '#6c757d',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+                paddingLeft: '12px'
+              }}>
+                Citas y Notificaciones
+              </h6>
+              <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
+                {citasFiltrado.map(opcion => crearItemMenu(opcion.ruta, opcion.icono, opcion.texto, opcion.id))}
+              </ul>
+            </div>
+          )}
 
           {/* Finanzas */}
-          <div style={{ marginBottom: '24px' }}>
-            <h6 style={{
-              color: '#6c757d',
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '12px',
-              paddingLeft: '12px'
-            }}>
-              Finanzas
-            </h6>
-            <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
-              <li><Link to="/contabilidad"><i className="fas fa-calculator"></i>&nbsp;{FuncionesExtras.lenguaje.contabilidad}</Link></li>
-              <li><Link to="/nomina"><i className="fas fa-money-check-alt"></i>&nbsp;Nómina</Link></li>
-              <li><Link to="/punto_venta"><i className="fas fa-cash-register"></i>&nbsp;Punto de Venta</Link></li>
-              <li><Link to="/salarios_doctores"><i className="fas fa-hand-holding-usd"></i>&nbsp;Salarios Doctores</Link></li>
-              <li><Link to="/historial_pagos"><i className="fas fa-credit-card"></i>&nbsp;Historial de Pagos</Link></li>
-            </ul>
-          </div>
+          {(!busqueda || finanzasFiltrado.length > 0) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h6 style={{
+                color: '#6c757d',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+                paddingLeft: '12px'
+              }}>
+                Finanzas
+              </h6>
+              <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
+                {finanzasFiltrado.map(opcion => crearItemMenu(opcion.ruta, opcion.icono, opcion.texto, opcion.id))}
+              </ul>
+            </div>
+          )}
 
           {/* Reportes y Auditoría */}
-          <div style={{ marginBottom: '24px' }}>
-            <h6 style={{
-              color: '#6c757d',
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '12px',
-              paddingLeft: '12px'
-            }}>
-              Reportes
-            </h6>
-            <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
-              <li><Link to="/reportes"><i className="fas fa-file-alt"></i>&nbsp;{FuncionesExtras.lenguaje.generar_reportes}</Link></li>
-              <li><Link to="/auditoria"><i className="fas fa-history"></i>&nbsp;Auditoría</Link></li>
-            </ul>
-          </div>
+          {(!busqueda || reportesFiltrado.length > 0) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h6 style={{
+                color: '#6c757d',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+                paddingLeft: '12px'
+              }}>
+                Reportes
+              </h6>
+              <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
+                {reportesFiltrado.map(opcion => crearItemMenu(opcion.ruta, opcion.icono, opcion.texto, opcion.id))}
+              </ul>
+            </div>
+          )}
 
           {/* Sistema */}
-          <div style={{ marginBottom: '24px' }}>
-            <h6 style={{
-              color: '#6c757d',
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '12px',
-              paddingLeft: '12px'
+          {(!busqueda || sistemaFiltrado.length > 0) && (
+            <div style={{ marginBottom: '24px' }}>
+              <h6 style={{
+                color: '#6c757d',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+                paddingLeft: '12px'
+              }}>
+                Sistema
+              </h6>
+              <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
+                {sistemaFiltrado.map(opcion => crearItemMenu(opcion.ruta, opcion.icono, opcion.texto, opcion.id))}
+              </ul>
+            </div>
+          )}
+
+          {/* Mensaje cuando no hay resultados */}
+          {busqueda && gestionFiltrado.length === 0 && citasFiltrado.length === 0 && 
+           finanzasFiltrado.length === 0 && reportesFiltrado.length === 0 && 
+           sistemaFiltrado.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: '#6b7280'
             }}>
-              Sistema
-            </h6>
-            <ul className="menu-modern" style={{ padding: 0, margin: 0 }}>
-              <li><Link to="/configuracion"><i className="fas fa-cog"></i>&nbsp;Configuración</Link></li>
-              <li><Link to="/exportar_importar"><i className="fas fa-exchange-alt"></i>&nbsp;Exportar/Importar</Link></li>
-              <li><Link to="/administrar_tenants"><i className="fas fa-building"></i>&nbsp;Administrar Tenants</Link></li>
-              <li><Link to="/cerrar_sesion" id="cerrar_sesion"><i className="fas fa-sign-out-alt"></i>&nbsp;{FuncionesExtras.lenguaje.cerrar_sesion}</Link></li>
-            </ul>
-          </div>
+              <i className="fas fa-search" style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.5, display: 'block' }}></i>
+              <div style={{ fontSize: '14px' }}>
+                No se encontraron resultados para "{busqueda}"
+              </div>
+            </div>
+          )}
         </div>
       );
     } else if (localStorage.getItem("roll") === "Contable") {
@@ -522,6 +680,7 @@ class MenuDashboard extends React.Component {
               <Route path="/citas" component={Citas} />
               <Route path="/paciente" component={Paciente} />
               <Route path="/doctor" component={Doctor} />
+              <Route path="/asignar_ganancias_recibos" component={AsignarGananciasRecibos} />
               <Route path="/procedimiento" component={ProcedimientoForm} />
               <Route path="/notificaciones" component={Notificaciones} />
               <Route path="/reportes" component={Reporte} />

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback} from "react";
 import { Link ,useParams} from 'react-router-dom';
-import Odontograma from '../odontograma.png';
+import Odontograma from '../odontograma.jpeg';
 import Core  from './funciones_extras';
 import Axios from "axios";
 import Alertify from "alertifyjs";
@@ -50,92 +50,219 @@ const OdontogramaCompletoHibrido = () => {
   const [doctorIdValido, setDoctorIdValido] = useState(null);
   const [piezaAnimada, setPiezaAnimada] = useState(null); // Para animar la pieza clickeada
   const [piezaConImpacto, setPiezaConImpacto] = useState(null); // Para animación de impacto al agregar procedimiento/color
+  const [imagenOdontograma, setImagenOdontograma] = useState(null); // Para almacenar la imagen cargada
+  const [historialSuperior, setHistorialSuperior] = useState([]); // Historial de estados del canvas superior
+  const [historialInferior, setHistorialInferior] = useState([]); // Historial de estados del canvas inferior
 
-  // === Lógica del CANVAS PRINCIPAL ===
-  const canvasRef = useRef(null);
-  const isDrawing = useRef(false);
+  // === Lógica de los CANVAS ===
+  const canvasSuperiorRef = useRef(null);
+  const canvasInferiorRef = useRef(null);
+  const isDrawingSuperior = useRef(false);
+  const isDrawingInferior = useRef(false);
   const presupuestoScrollRef = useRef(null);
 
-  useEffect(() => {
 
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+  // Función helper para obtener coordenadas correctas del canvas
+  const getCanvasCoordinates = useCallback((canvas, event) => {
+    if (!canvas) return { x: 0, y: 0 };
     
-    // Si hay un dibujo guardado, cárgalo
-    if (dibujoGuardado) {
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      img.src = dibujoGuardado;
-    } else {
-      // Si no hay, limpia y dibuja las líneas de la boca
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Dibuja aquí la forma base de la arcada o una cuadrícula ligera si lo deseas
-      // Ejemplo:
-      ctx.strokeStyle = '#ddd';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(canvas.width * 0.1, canvas.height * 0.5);
-      ctx.bezierCurveTo(canvas.width * 0.3, canvas.height * 0.1, 
-                         canvas.width * 0.7, canvas.height * 0.1, 
-                         canvas.width * 0.9, canvas.height * 0.5);
-      ctx.moveTo(canvas.width * 0.1, canvas.height * 0.5);
-      ctx.bezierCurveTo(canvas.width * 0.3, canvas.height * 0.9, 
-                         canvas.width * 0.7, canvas.height * 0.9, 
-                         canvas.width * 0.9, canvas.height * 0.5);
-      ctx.stroke();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    let clientX, clientY;
+    
+    // Manejar eventos táctiles
+    if (event.touches && event.touches.length > 0) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } 
+    // Manejar eventos de mouse
+    else if (event.clientX !== undefined && event.clientY !== undefined) {
+      clientX = event.clientX;
+      clientY = event.clientY;
     }
-  }, [dibujoGuardado]); // Se ejecuta al inicio o cuando carga un dibujo guardado
-
-  const startDrawing = useCallback(({ nativeEvent }) => {
-    const { offsetX, offsetY } = nativeEvent;
-    const ctx = canvasRef.current.getContext('2d');
-    ctx.beginPath();
-    ctx.moveTo(offsetX, offsetY);
-    isDrawing.current = true;
+    // Fallback a offsetX/offsetY si están disponibles
+    else if (event.offsetX !== undefined && event.offsetY !== undefined) {
+      return {
+        x: event.offsetX * scaleX,
+        y: event.offsetY * scaleY
+      };
+    } else {
+      return { x: 0, y: 0 };
+    }
+    
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
   }, []);
 
-  const draw = useCallback(({ nativeEvent }) => {
-    if (!isDrawing.current) return;
-    const { offsetX, offsetY } = nativeEvent;
-    const ctx = canvasRef.current.getContext('2d');
+  // Guardar estado del canvas antes de dibujar
+  const guardarEstadoCanvas = useCallback((canvas, esSuperior) => {
+    if (!canvas) return;
+    const estado = canvas.toDataURL('image/png');
+    if (esSuperior) {
+      setHistorialSuperior(prev => [...prev, estado]);
+    } else {
+      setHistorialInferior(prev => [...prev, estado]);
+    }
+  }, []);
+
+  // Función para deshacer el último trazo
+  const deshacerUltimoTrazo = useCallback((esSuperior) => {
+    const canvas = esSuperior ? canvasSuperiorRef.current : canvasInferiorRef.current;
+    const historial = esSuperior ? historialSuperior : historialInferior;
+    
+    if (!canvas || historial.length === 0) return;
+    
+    const ctx = canvas.getContext('2d');
+    const estadoAnterior = historial[historial.length - 1];
+    
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      
+      // Remover el último estado del historial
+      if (esSuperior) {
+        setHistorialSuperior(prev => prev.slice(0, -1));
+      } else {
+        setHistorialInferior(prev => prev.slice(0, -1));
+      }
+    };
+    img.src = estadoAnterior;
+  }, [historialSuperior, historialInferior]);
+
+  // Función para deshacer en el canvas activo (el último que se dibujó)
+  const deshacer = useCallback(() => {
+    // Intentar deshacer en ambos canvas, empezando por el que tenga historial
+    if (historialSuperior.length > 0) {
+      deshacerUltimoTrazo(true);
+    } else if (historialInferior.length > 0) {
+      deshacerUltimoTrazo(false);
+    }
+  }, [historialSuperior, historialInferior, deshacerUltimoTrazo]);
+
+  // Funciones para dibujar en canvas superior
+  const startDrawingSuperior = useCallback((e) => {
+    e.preventDefault();
+    const canvas = canvasSuperiorRef.current;
+    if (!canvas) return;
+    
+    // Guardar estado antes de empezar a dibujar
+    guardarEstadoCanvas(canvas, true);
+    
+    const event = e.nativeEvent || e;
+    const coords = getCanvasCoordinates(canvas, event);
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    isDrawingSuperior.current = true;
+  }, [getCanvasCoordinates, guardarEstadoCanvas]);
+
+  const drawSuperior = useCallback((e) => {
+    if (!isDrawingSuperior.current) return;
+    e.preventDefault();
+    const canvas = canvasSuperiorRef.current;
+    if (!canvas) return;
+    
+    const event = e.nativeEvent || e;
+    const coords = getCanvasCoordinates(canvas, event);
+    const ctx = canvas.getContext('2d');
     ctx.strokeStyle = colorDibujo;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    ctx.lineTo(offsetX, offsetY);
+    ctx.lineTo(coords.x, coords.y);
     ctx.stroke();
-  }, [colorDibujo]);
+  }, [colorDibujo, getCanvasCoordinates]);
+
+  const endDrawingSuperior = useCallback((e) => {
+    if (e) e.preventDefault();
+    isDrawingSuperior.current = false;
+  }, []);
+
+  // Funciones para dibujar en canvas inferior
+  const startDrawingInferior = useCallback((e) => {
+    e.preventDefault();
+    const canvas = canvasInferiorRef.current;
+    if (!canvas) return;
+    
+    // Guardar estado antes de empezar a dibujar
+    guardarEstadoCanvas(canvas, false);
+    
+    const event = e.nativeEvent || e;
+    const coords = getCanvasCoordinates(canvas, event);
+    const ctx = canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    isDrawingInferior.current = true;
+  }, [getCanvasCoordinates, guardarEstadoCanvas]);
+
+  const drawInferior = useCallback((e) => {
+    if (!isDrawingInferior.current) return;
+    e.preventDefault();
+    const canvas = canvasInferiorRef.current;
+    if (!canvas) return;
+    
+    const event = e.nativeEvent || e;
+    const coords = getCanvasCoordinates(canvas, event);
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = colorDibujo;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+  }, [colorDibujo, getCanvasCoordinates]);
+
+  const endDrawingInferior = useCallback((e) => {
+    if (e) e.preventDefault();
+    isDrawingInferior.current = false;
+  }, []);
 
   
   const GuargarOdontograma = useCallback(() => {
-    // Convertir el canvas actual a Data URL
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      Alertify.error("Error: No se puede acceder al canvas.");
+    // Combinar ambos canvas (superior e inferior) en uno solo
+    const canvasSuperior = canvasSuperiorRef.current;
+    const canvasInferior = canvasInferiorRef.current;
+    
+    if (!canvasSuperior || !canvasInferior) {
+      Alertify.error("Error: No se puede acceder a los canvas.");
       return;
     }
 
-    // Redimensionar el canvas si es muy grande para reducir el tamaño
+    // Crear un canvas combinado
+    const combinedWidth = Math.max(canvasSuperior.width, canvasInferior.width);
+    const combinedHeight = canvasSuperior.height + canvasInferior.height;
+    
+    // Redimensionar si es muy grande
     const maxWidth = 1200;
     const maxHeight = 800;
-    let width = canvas.width;
-    let height = canvas.height;
+    let finalWidth = combinedWidth;
+    let finalHeight = combinedHeight;
     
-    if (width > maxWidth || height > maxHeight) {
-      const ratio = Math.min(maxWidth / width, maxHeight / height);
-      width = width * ratio;
-      height = height * ratio;
+    if (finalWidth > maxWidth || finalHeight > maxHeight) {
+      const ratio = Math.min(maxWidth / finalWidth, maxHeight / finalHeight);
+      finalWidth = finalWidth * ratio;
+      finalHeight = finalHeight * ratio;
     }
 
-    // Crear un canvas temporal con el tamaño reducido
+    // Crear canvas temporal para la imagen combinada
     const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = width;
-    tempCanvas.height = height;
+    tempCanvas.width = finalWidth;
+    tempCanvas.height = finalHeight;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(canvas, 0, 0, width, height);
+    
+    // Dibujar canvas superior escalado
+    const superiorHeight = (canvasSuperior.height / combinedHeight) * finalHeight;
+    tempCtx.drawImage(canvasSuperior, 0, 0, finalWidth, superiorHeight);
+    
+    // Dibujar canvas inferior escalado
+    const inferiorHeight = (canvasInferior.height / combinedHeight) * finalHeight;
+    tempCtx.drawImage(canvasInferior, 0, superiorHeight, finalWidth, inferiorHeight);
 
-    // Convertir el canvas a JPEG con calidad reducida para reducir el tamaño
+    // Convertir el canvas combinado a JPEG con calidad reducida
     const dibujoActual = tempCanvas.toDataURL('image/jpeg', 0.6);
     
     // Preparar los detalles (procedimientos) en el formato que espera el backend
@@ -293,6 +420,45 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, []);
 
+  // Cargar la imagen del odontograma y dibujarla en los canvas
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setImagenOdontograma(img);
+      
+      // Dibujar mitad superior en canvas superior
+      const canvasSuperior = canvasSuperiorRef.current;
+      if (canvasSuperior) {
+        const ctx = canvasSuperior.getContext('2d');
+        // Establecer el tamaño del canvas igual a la mitad de la imagen
+        canvasSuperior.width = img.width;
+        canvasSuperior.height = img.height / 2;
+        // Dibujar solo la mitad superior de la imagen (sourceY=0, sourceHeight=height/2)
+        ctx.drawImage(
+          img, 
+          0, 0, img.width, img.height / 2,  // Source: desde (0,0) hasta (width, height/2)
+          0, 0, img.width, img.height / 2   // Destination: todo el canvas
+        );
+      }
+      
+      // Dibujar mitad inferior en canvas inferior
+      const canvasInferior = canvasInferiorRef.current;
+      if (canvasInferior) {
+        const ctx = canvasInferior.getContext('2d');
+        // Establecer el tamaño del canvas igual a la mitad de la imagen
+        canvasInferior.width = img.width;
+        canvasInferior.height = img.height / 2;
+        // Dibujar solo la mitad inferior de la imagen (sourceY=height/2, sourceHeight=height/2)
+        ctx.drawImage(
+          img, 
+          0, img.height / 2, img.width, img.height / 2,  // Source: desde (0, height/2) hasta (width, height)
+          0, 0, img.width, img.height / 2                 // Destination: todo el canvas
+        );
+      }
+    };
+    img.src = Odontograma;
+  }, []);
+
   useEffect(() => {
     cargarOpcionesTratamiento();
     cargarPaciente();
@@ -320,6 +486,25 @@ const OdontogramaCompletoHibrido = () => {
     };
   }, [seleccionCara]);
 
+  // Soporte para Ctrl+Z para deshacer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl+Z o Cmd+Z (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (historialSuperior.length > 0 || historialInferior.length > 0) {
+          deshacer();
+        }
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [historialSuperior, historialInferior, deshacer]);
+
   // Preservar la posición del scroll cuando cambia el tipo de odontograma
   const scrollPositionRef = useRef(0);
   
@@ -342,17 +527,39 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, [tipoOdontograma, presupuesto]);
 
-  const endDrawing = useCallback(() => {
-    isDrawing.current = false;
-    // Guardar el estado del canvas para poder cargarlo si se limpia
-    setDibujoGuardado(canvasRef.current.toDataURL());
-  }, []);
 
   const clearCanvas = useCallback(() => {
-    const ctx = canvasRef.current.getContext('2d');
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    // Limpiar canvas superior
+    if (canvasSuperiorRef.current) {
+      const ctx = canvasSuperiorRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasSuperiorRef.current.width, canvasSuperiorRef.current.height);
+      // Redibujar la imagen base si existe
+      if (imagenOdontograma) {
+        ctx.drawImage(
+          imagenOdontograma, 
+          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2,
+          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2
+        );
+      }
+    }
+    // Limpiar canvas inferior
+    if (canvasInferiorRef.current) {
+      const ctx = canvasInferiorRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasInferiorRef.current.width, canvasInferiorRef.current.height);
+      // Redibujar la imagen base si existe
+      if (imagenOdontograma) {
+        ctx.drawImage(
+          imagenOdontograma, 
+          0, imagenOdontograma.height / 2, imagenOdontograma.width, imagenOdontograma.height / 2,
+          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2
+        );
+      }
+    }
+    // Limpiar historiales
+    setHistorialSuperior([]);
+    setHistorialInferior([]);
     setDibujoGuardado(""); // Limpiar dibujo guardado
-  }, []);
+  }, [imagenOdontograma]);
 
   // === Lógica del ODONTOGRAMA CARA A CARA ===
   // Función para reproducir sonido de kick suave con bajo al hacer clic en piezas
@@ -767,7 +974,7 @@ const OdontogramaCompletoHibrido = () => {
           }
         }
       `}</style>
-      <div className="container-fluid pt-2">
+      <div className="col-md-10" style={{ padding: '20px', minHeight: '100vh' }}>
       {/* HEADER INFO */}
       <div className="card shadow-sm mb-3 border-left border-primary" style={{ borderLeftWidth: '5px' }}>
         <div className="card-body py-2">
@@ -917,21 +1124,153 @@ const OdontogramaCompletoHibrido = () => {
             </div>
           </div>
 
+          {/* PANEL DE LÁPIZ */}
+          <div className="card shadow-sm p-4 bg-white mb-4">
+            <h6 className="font-weight-bold text-secondary mb-3">
+              <i className="fas fa-pencil-alt me-2"></i>Herramientas de Dibujo
+            </h6>
+            <div className="d-flex justify-content-around align-items-center flex-wrap gap-3">
+                <span className="font-weight-bold small">Color del Lápiz:</span>
+                <button 
+                  className={`btn btn-sm ${colorDibujo === 'red' ? 'btn-danger' : 'btn-outline-danger'}`} 
+                  onClick={() => setColorDibujo("red")}
+                  style={{ minWidth: '60px' }}
+                >
+                  🔴 Rojo
+                </button>
+                <button 
+                  className={`btn btn-sm ${colorDibujo === 'blue' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                  onClick={() => setColorDibujo("blue")}
+                  style={{ minWidth: '60px' }}
+                >
+                  🔵 Azul
+                </button>
+                <button 
+                  className={`btn btn-sm ${colorDibujo === 'green' ? 'btn-success' : 'btn-outline-success'}`} 
+                  onClick={() => setColorDibujo("green")}
+                  style={{ minWidth: '60px' }}
+                >
+                  🟢 Verde
+                </button>
+                <button 
+                  className={`btn btn-sm ${colorDibujo === 'black' ? 'btn-dark' : 'btn-outline-dark'}`} 
+                  onClick={() => setColorDibujo("black")}
+                  style={{ minWidth: '60px' }}
+                >
+                  ⚫ Negro
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={clearCanvas}
+                  style={{ minWidth: '100px' }}
+                >
+                  <i className="fa fa-eraser me-1"></i> Borrar Todo
+                </button>
+                <button 
+                  className="btn btn-sm btn-outline-warning" 
+                  onClick={deshacer}
+                  disabled={historialSuperior.length === 0 && historialInferior.length === 0}
+                  style={{ 
+                    minWidth: '100px',
+                    opacity: (historialSuperior.length === 0 && historialInferior.length === 0) ? 0.5 : 1,
+                    cursor: (historialSuperior.length === 0 && historialInferior.length === 0) ? 'not-allowed' : 'pointer'
+                  }}
+                  title="Deshacer último trazo (Ctrl+Z)"
+                >
+                  <i className="fas fa-undo me-1"></i> Deshacer
+                </button>
+            </div>
+          </div>
+
           {/* ODONTOGRAMA CARA A CARA */}
           <div className="card shadow-sm p-4 bg-white text-center mb-4">
             <h6 className="font-weight-bold text-secondary mb-3">
               {tipoOdontograma === "nino" ? "Marcado de Caras Dentales - Dientes de Leche" : "Marcado de Caras Dentales"}
             </h6>
+            
+            {/* Canvas superior (mitad superior del odontograma) */}
+            {imagenOdontograma && (
+              <div 
+                className="mb-3"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  margin: '0 auto',
+                  overflow: 'auto'
+                }}
+              >
+                <canvas
+                  ref={canvasSuperiorRef}
+                  style={{ 
+                    border: '1px solid #ccc', 
+                    cursor: 'crosshair', 
+                    touchAction: 'none',
+                    maxWidth: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                  onMouseDown={startDrawingSuperior}
+                  onMouseMove={drawSuperior}
+                  onMouseUp={endDrawingSuperior}
+                  onMouseLeave={endDrawingSuperior}
+                  onTouchStart={startDrawingSuperior}
+                  onTouchMove={drawSuperior}
+                  onTouchEnd={endDrawingSuperior}
+                />
+              </div>
+            )}
+            
+            {/* Dientes superiores */}
             <div className="mb-5">
               {(tipoOdontograma === "nino" ? PIEZAS_NINO[0] : PIEZAS_ADULTO[0]).map(n => (
                 <DienteCaraACara key={n} num={n} />
               ))}
             </div>
+            
+            {/* Dientes inferiores */}
             <div className="mt-4">
               {(tipoOdontograma === "nino" ? PIEZAS_NINO[1] : PIEZAS_ADULTO[1]).map(n => (
                 <DienteCaraACara key={n} num={n} />
               ))}
             </div>
+            
+            {/* Canvas inferior (mitad inferior del odontograma) */}
+            {imagenOdontograma && (
+              <div 
+                className="mt-3"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  margin: '0 auto',
+                  overflow: 'auto'
+                }}
+              >
+                <canvas
+                  ref={canvasInferiorRef}
+                  style={{ 
+                    border: '1px solid #ccc', 
+                    cursor: 'crosshair', 
+                    touchAction: 'none',
+                    maxWidth: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                  onMouseDown={startDrawingInferior}
+                  onMouseMove={drawInferior}
+                  onMouseUp={endDrawingInferior}
+                  onMouseLeave={endDrawingInferior}
+                  onTouchStart={startDrawingInferior}
+                  onTouchMove={drawInferior}
+                  onTouchEnd={endDrawingInferior}
+                />
+              </div>
+            )}
           </div>
 
           {/* MODAL DE SELECCIÓN DE PROCEDIMIENTOS */}
@@ -1269,37 +1608,6 @@ const OdontogramaCompletoHibrido = () => {
             </div>
           )}
 
-          {/* ODONTOGRAMA DIBUJABLE (CANVAS GRANDE) */}
-          <div className="card shadow-sm p-4 bg-white mb-3">
-            <h6 className="font-weight-bold text-secondary mb-3">Notas y Marcadores Visuales</h6>
-            <div className="d-flex justify-content-around align-items-center mb-3">
-                <span className="font-weight-bold small mr-2">Color del Lápiz:</span>
-                <button className={`btn btn-sm ${colorDibujo === 'red' ? 'btn-danger' : 'btn-outline-danger'}`} 
-                        onClick={() => setColorDibujo("red")}>🔴</button>
-                <button className={`btn btn-sm ${colorDibujo === 'blue' ? 'btn-primary' : 'btn-outline-primary'}`} 
-                        onClick={() => setColorDibujo("blue")}>🔵</button>
-                <button className={`btn btn-sm ${colorDibujo === 'green' ? 'btn-success' : 'btn-outline-success'}`} 
-                        onClick={() => setColorDibujo("green")}>🟢</button>
-                <button className={`btn btn-sm ${colorDibujo === 'black' ? 'btn-dark' : 'btn-outline-dark'}`} 
-                        onClick={() => setColorDibujo("black")}>⚫</button>
-                <button className="btn btn-sm btn-outline-secondary ml-3" onClick={clearCanvas}>
-                    <i className="fa fa-eraser"></i> Borrar Todo
-                </button>
-            </div>
-            <canvas
-              ref={canvasRef}
-              width={650} // Ancho del canvas
-              height={350} // Alto del canvas
-              style={{ border: '1px solid #ccc', cursor: 'crosshair', touchAction: 'none' }}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={endDrawing}
-              onMouseLeave={endDrawing}
-              onTouchStart={startDrawing}
-              onTouchMove={draw}
-              onTouchEnd={endDrawing}
-            />
-          </div>
         </div>
 
         {/* LISTA DE EVOLUCIÓN (DERECHA) */}

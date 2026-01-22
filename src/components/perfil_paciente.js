@@ -794,6 +794,39 @@ class PerfilPaciente extends React.Component{
 										</div>
 									</div>
 									<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+										<Link to={`/actualizar_paciente/${this.state.paciente.id}/${this.props.match.params.id_doc}`}>
+											<button 
+												className="btn"
+												style={{
+													background: 'rgba(102, 126, 234, 0.3)',
+													border: '2px solid rgba(102, 126, 234, 0.5)',
+													color: 'white',
+													borderRadius: '6px',
+													padding: '5px 10px',
+													fontWeight: 600,
+													fontSize: '11px',
+													transition: 'all 0.3s ease',
+													backdropFilter: 'blur(10px)',
+													display: 'flex',
+													alignItems: 'center',
+													justifyContent: 'center',
+													minWidth: 'auto'
+												}}
+												onMouseEnter={(e) => {
+													e.target.style.background = 'rgba(102, 126, 234, 0.5)';
+													e.target.style.transform = 'translateY(-2px)';
+													e.target.style.boxShadow = '0 4px 8px rgba(102, 126, 234, 0.4)';
+												}}
+												onMouseLeave={(e) => {
+													e.target.style.background = 'rgba(102, 126, 234, 0.3)';
+													e.target.style.transform = 'translateY(0)';
+													e.target.style.boxShadow = 'none';
+												}}
+												title="Editar paciente"
+											>
+												<i className="fas fa-edit"></i>
+											</button>
+										</Link>
 										<button 
 											className="btn"
 											onClick={() => this.eliminar_paciente(this.state.paciente.id)}

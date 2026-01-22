@@ -32,6 +32,7 @@ const Agenda = () => {
   const [editando, setEditando] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
   const [ids_entidades, setIdsEntidades] = useState({ id_paciente: null, id_doctor: null });
+  const [seleccionActiva, setSeleccionActiva] = useState({ start: null, end: null });
 
 
      let  headers_s = {
@@ -42,6 +43,76 @@ const Agenda = () => {
 
 
 const localizer = momentLocalizer(moment)
+
+  // Función para reproducir sonido al guardar/actualizar cita
+  const reproducirSonidoGuardar = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 600;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    } catch (error) {
+      console.log("Error al reproducir sonido:", error);
+    }
+  };
+
+  // Función para reproducir sonido al eliminar cita
+  const reproducirSonidoEliminar = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 400;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log("Error al reproducir sonido:", error);
+    }
+  };
+
+  // Función para reproducir sonido al seleccionar slot
+  const reproducirSonidoSeleccionar = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+      console.log("Error al reproducir sonido:", error);
+    }
+  };
+
   useEffect(() => {
     Axios.get(`${Core.url_base}/api/doctores`)
       .then((data) => setDoctors(data.data))
@@ -61,7 +132,7 @@ const localizer = momentLocalizer(moment)
 
   
       Axios.delete(`${Core.url_base}/api/eliminar_cita/${eventoSeleccionado.id}`, { headers: headers_s }).then((res) => {
-
+        reproducirSonidoEliminar();
         cerrarModal();
          setEventoSeleccionado(null);
         alertify.success('Cita eliminada');
@@ -160,12 +231,14 @@ const localizer = momentLocalizer(moment)
             id: citaGuardada.id, // Es crucial tener el ID para futuras ediciones/eliminaciones
             start: new Date(newEvent.start),
             end: new Date(newEvent.end),
+            motivo: newEvent.title,
             title: newEvent.title + ` - ${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             paciente_nombre: `${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             doctor_nombre: `${doctor.nombre} ${doctor.apellido}`,
           };
 
           setEvents([...events, nuevoEvento]);
+          reproducirSonidoGuardar();
           cerrarModal();
           alertify.success('Cita guardada con éxito.');
         })
@@ -184,12 +257,14 @@ const localizer = momentLocalizer(moment)
             id: citaActualizada.id,
             start: new Date(newEvent.start),
             end: new Date(newEvent.end),
+            motivo: newEvent.title,
             title: newEvent.title + ` - ${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             paciente_nombre: `${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido}`,
             doctor_nombre: `${doctor.nombre} ${doctor.apellido}`,
           };
 
           setEvents(events.map((e) => (e.id === citaActualizada.id ? eventoActualizado : e)));
+          reproducirSonidoGuardar();
           cerrarModal();
           alertify.success('Cita actualizada con éxito.');
         })
@@ -206,6 +281,7 @@ const localizer = momentLocalizer(moment)
     setNewEvent({ title: '', start: '', end: '' });
     setBusqueda('');
     setPacienteSeleccionado(null);
+    setSeleccionActiva({ start: null, end: null });
     // IMPORTANTE: No reseteamos doctorSeleccionado aquí para que la vista del calendario se mantenga.
     setEventoSeleccionado(null);
   };
@@ -236,6 +312,8 @@ const localizer = momentLocalizer(moment)
       return;
     }
 
+    reproducirSonidoSeleccionar();
+
     // Restablecer estados para una nueva cita
     setEditando(false); 
     setEventoSeleccionado(null);
@@ -250,171 +328,799 @@ const localizer = momentLocalizer(moment)
       end: moment(end).format('YYYY-MM-DDTHH:mm'),
     });
     
+    // Limpiar selección activa
+    setSeleccionActiva({ start: null, end: null });
+    
     setModalOpen(true); 
   };
   // FIN NUEVA FUNCIÓN
 
+  // Función para manejar cuando el usuario está seleccionando (arrastrando)
+  const manejarSeleccionando = ({ start, end }) => {
+    if (start && end) {
+      setSeleccionActiva({
+        start: moment(start),
+        end: moment(end)
+      });
+    } else {
+      // Limpiar selección si no hay start o end
+      setSeleccionActiva({ start: null, end: null });
+    }
+  };
+
+  // Función para generar colores aleatorios para las columnas
+  const obtenerColorColumna = (date) => {
+    const fecha = moment(date);
+    const diaSemana = fecha.day(); // 0 = Domingo, 6 = Sábado
+    
+    // Colores pastel aleatorios pero consistentes por día de la semana
+    const colores = [
+      'rgba(255, 182, 193, 0.15)', // Domingo - Rosa pastel
+      'rgba(173, 216, 230, 0.15)', // Lunes - Azul cielo
+      'rgba(144, 238, 144, 0.15)', // Martes - Verde claro
+      'rgba(255, 218, 185, 0.15)', // Miércoles - Melocotón
+      'rgba(221, 160, 221, 0.15)', // Jueves - Ciruela
+      'rgba(176, 224, 230, 0.15)', // Viernes - Turquesa
+      'rgba(255, 228, 196, 0.15)'  // Sábado - Bisque
+    ];
+    
+    return colores[diaSemana];
+  };
+
+  // Componente personalizado para mostrar todas las horas y medias horas en la columna
+  const TimeGutterHeader = ({ value, ...props }) => {
+    return (
+      <div style={{ 
+        padding: '4px 8px', 
+        fontSize: '12px', 
+        fontWeight: 600, 
+        color: '#4b5563',
+        textAlign: 'center'
+      }}>
+        {moment(value).format('HH:mm')}
+      </div>
+    );
+  };
+
+  const TimeSlotContent = ({ value, ...props }) => {
+    // No mostrar nada aquí
+    return null;
+  };
+
+  const TimeSlotWrapper = ({ value, children, ...props }) => {
+    if (!value) return <div {...props}>{children}</div>;
+    
+    const fecha = moment(value);
+    const minutos = fecha.minutes();
+    const esHoraCompleta = minutos === 0;
+    const esMediaHora = minutos === 30;
+    
+    // Verificar si hay un evento en este slot de tiempo
+    const tieneEventoEnSlot = events.some(event => {
+      const eventStart = moment(event.start);
+      const eventEnd = moment(event.end);
+      return fecha.isSameOrAfter(eventStart, 'minute') && fecha.isBefore(eventEnd, 'minute');
+    });
+    
+    // Verificar si se está seleccionando un nuevo evento que incluye este slot
+    let estaEnSeleccion = false;
+    if (seleccionActiva.start && seleccionActiva.end) {
+      estaEnSeleccion = fecha.isSameOrAfter(seleccionActiva.start, 'minute') && fecha.isBefore(seleccionActiva.end, 'minute');
+    }
+    
+    // Solo mostrar la hora si hay un evento en este slot o si está siendo seleccionado
+    const mostrarHora = (esHoraCompleta || esMediaHora) && (tieneEventoEnSlot || estaEnSeleccion);
+    
+    return (
+      <div 
+        {...props} 
+        className={props.className ? `${props.className} time-slot-wrapper` : 'time-slot-wrapper'}
+        style={{ 
+          ...props.style,
+          position: 'relative',
+          minHeight: '60px'
+        }}
+      >
+        {/* Mostrar la hora solo si hay un evento o se está seleccionando */}
+        {mostrarHora && (
+          <div className="time-label" style={{
+            padding: '4px 8px',
+            fontSize: esHoraCompleta ? '12px' : '11px',
+            fontWeight: esHoraCompleta ? 700 : 600,
+            color: esHoraCompleta ? '#4b5563' : '#6b7280',
+            textAlign: 'center',
+            width: '100%',
+            position: 'absolute',
+            top: '4px',
+            left: '0',
+            right: '0',
+            zIndex: 1,
+            pointerEvents: 'none'
+          }}>
+            {fecha.format('HH:mm')}
+          </div>
+        )}
+        {children}
+      </div>
+    );
+  };
+
+
+  const inputStyle = {
+    borderRadius: '12px',
+    border: '2px solid #e0e0e0',
+    padding: '12px 16px',
+    fontSize: '15px',
+    transition: 'all 0.2s ease',
+    background: '#ffffff',
+    width: '100%',
+    outline: 'none'
+  };
 
   return (
-    <div className="col-md-10 p-4">
-      <h2 className="mb-4">Agenda</h2>
-
-      <div className="card shadow-sm p-4 mb-4">
-        <h5 className="mb-3">
-          <strong>Paciente:</strong>{' '}
-          {pacienteSeleccionado ? `${pacienteSeleccionado.nombre} ${pacienteSeleccionado.apellido || ''}` : 'Ninguno'}
-        </h5>
-
-        <div className="row align-items-end">
-          <div className="col-md-8 mb-3">
-            <label>Seleccione el doctor</label>
-            <select
-              className="form-control"
-              value={doctorSeleccionado}
-              onChange={(e) => setDoctorSeleccionado(e.target.value)}>
-              <option value="">Seleccione un doctor</option>
-              {doctors.map((doc) => (
-                <option key={doc.id} value={doc.id}>
-                  {doc.nombre} {doc.apellido}
-                </option>
-              ))}
-            </select>
+    <>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Sombreado para columnas con citas */
+        .rbc-day-slot.has-events {
+          background-color: rgba(102, 126, 234, 0.05) !important;
+        }
+        
+        /* Vista de mes - sombrear celdas con eventos */
+        .rbc-date-cell.has-events {
+          background-color: rgba(102, 126, 234, 0.08) !important;
+        }
+        
+        /* Centrar eventos en las celdas */
+        .rbc-event {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-align: center !important;
+          margin: 0 auto !important;
+        }
+        
+        .rbc-event-content {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 100% !important;
+          text-align: center !important;
+        }
+        
+        /* Asegurar que el contenido del evento esté centrado */
+        .rbc-event-label {
+          display: none !important;
+        }
+        
+        /* Centrar eventos en vista de semana */
+        .rbc-time-content .rbc-event {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-align: center !important;
+        }
+        
+        /* Líneas suaves en las columnas de días */
+        .rbc-day-slot .rbc-time-slot {
+          border-top: 1px solid #e5e7eb !important;
+        }
+        
+        /* Líneas suaves entre días */
+        .rbc-day-slot {
+          border-left: 1px solid #f3f4f6 !important;
+        }
+        
+        /* Estilos para la columna de horas - SOLO AQUÍ mostrar intervalos de media hora */
+        .rbc-time-header-gutter,
+        .rbc-time-gutter {
+          font-size: 13px !important;
+          font-weight: 500 !important;
+          color: #4b5563 !important;
+          width: 80px !important;
+        }
+        
+        /* Marcar intervalos de media hora SOLO en la columna de tiempo */
+        .rbc-time-gutter .rbc-time-slot {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-height: 60px !important;
+          border-top: 1px solid #9ca3af !important;
+          position: relative;
+        }
+        
+        /* Marcar cada hora completa con una línea más gruesa SOLO en la columna de tiempo */
+        .rbc-time-gutter .rbc-time-slot:nth-child(2n) {
+          border-top: 2px solid #6b7280 !important;
+        }
+        
+        /* Estilos para las etiquetas de hora en la columna de tiempo - FORZAR VISIBILIDAD */
+        .rbc-time-gutter .rbc-time-slot .rbc-label {
+          padding: 4px 8px !important;
+          font-size: 12px !important;
+          color: #4b5563 !important;
+          font-weight: 600 !important;
+          display: block !important;
+          text-align: center !important;
+          width: 100% !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        /* Asegurar que TODOS los slots muestren su hora */
+        .rbc-time-gutter .rbc-time-slot {
+          min-height: 60px !important;
+        }
+        
+        /* Forzar que se muestre el contenido en cada slot */
+        .rbc-time-gutter .rbc-time-slot > * {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        /* Asegurar visibilidad de todos los números de hora en cada slot de la columna de tiempo */
+        .rbc-time-gutter .rbc-time-slot:not(:empty) .rbc-label {
+          display: block !important;
+        }
+        
+        /* Mostrar el contenido del slot siempre */
+        .rbc-time-gutter .rbc-time-slot .rbc-label,
+        .rbc-time-gutter .rbc-time-slot > div {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        /* Mostrar la hora SOLO en la columna de tiempo (gutter) */
+        .rbc-time-gutter .time-slot-wrapper .time-label {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        /* OCULTAR la hora en las columnas de días */
+        .rbc-day-slot .time-slot-wrapper .time-label {
+          display: none !important;
+        }
+        
+        /* Marcar cada hora completa en el contenido */
+        .rbc-time-content .rbc-day-slot .rbc-time-slot:nth-child(2n) {
+          border-top: 2px solid #6b7280 !important;
+        }
+      `}</style>
+      <div className="col-md-10" style={{ padding: '20px', minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
+      {/* Header */}
+      <div className="card border-0 shadow-lg mb-4" style={{ 
+        borderRadius: '16px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        overflow: 'hidden',
+        animation: 'fadeIn 0.5s ease'
+      }}>
+        <div className="card-body text-white p-4">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '15px',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '20px',
+                fontSize: '28px'
+              }}>
+                <i className="fas fa-calendar-alt"></i>
+              </div>
+              <div>
+                <h2 className="mb-0" style={{ fontWeight: 700, fontSize: '28px' }}>
+                  Agenda de Citas
+                </h2>
+                <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px', marginTop: '5px' }}>
+                  Gestiona y programa las citas de tus pacientes
+                </p>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div className="col-md-4 mb-3">
-            <button
-              className="btn btn-primary w-100"
-              onClick={() => {
-                // Abre el modal para crear cita manual si hay doctor seleccionado
-                if (doctorSeleccionado) {
+      {/* Panel de control */}
+      <div className="card border-0 shadow-sm mb-4" style={{ 
+        borderRadius: '16px',
+        background: '#ffffff',
+        overflow: 'hidden',
+        animation: 'slideUp 0.6s ease'
+      }}>
+        <div className="card-body p-4">
+          <div className="row align-items-end">
+            <div className="col-md-8 mb-3">
+              <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
+                <i className="fas fa-user-md me-2" style={{ color: '#667eea' }}></i>
+                Seleccione el Doctor
+              </label>
+              <select
+                style={{
+                  ...inputStyle,
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 16px center',
+                  paddingRight: '40px'
+                }}
+                value={doctorSeleccionado}
+                onChange={(e) => setDoctorSeleccionado(e.target.value)}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#667eea';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e0e0e0';
+                  e.target.style.boxShadow = 'none';
+                }}>
+                <option value="">Seleccione un doctor</option>
+                {doctors.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.nombre} {doc.apellido}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <button
+                className="btn w-100"
+                onClick={() => {
+                  if (doctorSeleccionado) {
                     setEditando(false);
                     setEventoSeleccionado(null);
                     setNewEvent({ title: '', start: '', end: '' });
                     setBusqueda('');
                     setPacienteSeleccionado(null);
                     setModalOpen(true);
-                } else {
+                  } else {
                     alertify.error('Por favor, selecciona un doctor primero.');
-                }
-              }}
-              disabled={!doctorSeleccionado}>
-              Agregar Cita
-            </button>
+                  }
+                }}
+                disabled={!doctorSeleccionado}
+                style={{
+                  background: doctorSeleccionado 
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                    : '#e0e0e0',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px 20px',
+                  fontWeight: 600,
+                  fontSize: '15px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: doctorSeleccionado ? '0 4px 12px rgba(102, 126, 234, 0.3)' : 'none',
+                  cursor: doctorSeleccionado ? 'pointer' : 'not-allowed'
+                }}
+                onMouseEnter={(e) => {
+                  if (doctorSeleccionado) {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (doctorSeleccionado) {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                  }
+                }}>
+                <i className="fas fa-plus me-2"></i>
+                Agregar Cita
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-     <Calendar
-      localizer={localizer}
-      events={events}
-      step={30} // Intervalo de 30 minutos
-      timeslots={2} 
-      onSelectEvent={manejarEventoSeleccionado}
-      // PROPIEDADES AÑADIDAS PARA PERMITIR EL SOMBREADO
-      selectable={true} 
-      onSelectSlot={manejarSeleccionSlot}
-      // ------------------------------------------------
-      startAccessor="start"
-      endAccessor="end"
-      style={{ height: '80vh' }}
-      messages={{
-        next: 'Sig.',
-        previous: 'Ant.',
-        today: 'Hoy',
-        month: 'Mes',
-        week: 'Semana',
-        day: 'Día',
-        agenda: 'Agenda',
-        date: 'Fecha',
-        time: 'Hora',
-        event: 'Evento',
-        noEventsInRange: 'No hay eventos.',
-      }}
-      tooltipAccessor={(event) =>
-        `Paciente: ${event.paciente_nombre}\nDoctor: ${event.doctor_nombre}\nMotivo: ${event.title}`
-      }
-      titleAccessor={(event) =>
-        `${event.title}` // Ya incluimos el nombre del paciente en cargarCitasDoctor
-      }
-      min={new Date(0, 0, 0, 8, 0, 0)} // Empieza a mostrar desde las 8:00 AM
-    />
+      {/* Calendario */}
+      <div className="card border-0 shadow-sm" style={{ 
+        borderRadius: '16px',
+        background: '#ffffff',
+        overflow: 'hidden',
+        animation: 'slideUp 0.7s ease'
+      }}>
+        <div className="card-body p-4">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            step={30}
+            timeslots={2} 
+            onSelectEvent={manejarEventoSeleccionado}
+            selectable={true} 
+            onSelectSlot={manejarSeleccionSlot}
+            onSelecting={manejarSeleccionando}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: '75vh' }}
+            slotPropGetter={(date) => {
+              // Verificar si este slot de tiempo específico está ocupado por alguna cita
+              const slotTime = moment(date);
+              const slotEnd = moment(date).add(30, 'minutes'); // Cada slot es de 30 minutos
+              
+              const hasEvent = events.some(event => {
+                const eventStart = moment(event.start);
+                const eventEnd = moment(event.end);
+                
+                // Verificar si el slot se superpone con el evento
+                // El slot está ocupado si:
+                // 1. El inicio del slot está dentro del evento, O
+                // 2. El fin del slot está dentro del evento, O
+                // 3. El slot contiene completamente el evento
+                return (slotTime.isSameOrAfter(eventStart, 'minute') && slotTime.isBefore(eventEnd, 'minute')) ||
+                       (slotEnd.isAfter(eventStart, 'minute') && slotEnd.isSameOrBefore(eventEnd, 'minute')) ||
+                       (slotTime.isBefore(eventStart, 'minute') && slotEnd.isAfter(eventEnd, 'minute'));
+              });
+              
+              return {
+                className: hasEvent ? 'has-events' : '',
+                style: hasEvent ? { 
+                  backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                  borderLeft: '3px solid rgba(102, 126, 234, 0.5)'
+                } : {}
+              };
+            }}
+            messages={{
+              next: 'Sig.',
+              previous: 'Ant.',
+              today: 'Hoy',
+              month: 'Mes',
+              week: 'Semana',
+              day: 'Día',
+              agenda: 'Agenda',
+              date: 'Fecha',
+              time: 'Hora',
+              event: 'Evento',
+              noEventsInRange: 'No hay eventos en este rango.',
+            }}
+            formats={{
+              eventTimeRangeFormat: ({ start, end }, culture, localizer) => {
+                // En la vista de semana, no mostrar el tiempo, solo el título
+                return '';
+              },
+              eventTimeRangeStartFormat: ({ start }, culture, localizer) => {
+                // No mostrar tiempo inicial
+                return '';
+              },
+              eventTimeRangeEndFormat: ({ end }, culture, localizer) => {
+                // No mostrar tiempo final
+                return '';
+              },
+              timeGutterFormat: (date, culture, localizer) => {
+                // Mostrar siempre las horas y medias horas
+                return moment(date).format('HH:mm');
+              },
+              slotGroupHeaderFormat: (date, culture, localizer) => {
+                // Formato para el encabezado de grupo de slots
+                return moment(date).format('HH:mm');
+              }
+            }}
+            tooltipAccessor={(event) =>
+              `Paciente: ${event.paciente_nombre}\nDoctor: ${event.doctor_nombre}\nMotivo: ${event.motivo || event.title}`
+            }
+            titleAccessor={(event) => {
+              // En todas las vistas, mostrar solo el nombre del paciente
+              if (event.paciente_nombre) {
+                return event.paciente_nombre;
+              }
+              // Si no hay paciente_nombre, intentar extraerlo del título
+              if (event.title && event.title.includes(' - ')) {
+                return event.title.split(' - ')[0];
+              }
+              return event.title || 'Sin nombre';
+            }}
+            min={new Date(0, 0, 0, 8, 0, 0)}
+            components={{
+              timeGutterHeader: TimeGutterHeader,
+              timeSlotContent: TimeSlotContent,
+              timeSlotWrapper: TimeSlotWrapper
+            }}
+            dayPropGetter={(date) => {
+              const colorColumna = obtenerColorColumna(date);
+              return {
+                style: {
+                  backgroundColor: colorColumna
+                }
+              };
+            }}
+            eventPropGetter={(event) => ({
+              style: {
+                backgroundColor: '#667eea',
+                borderColor: '#764ba2',
+                borderRadius: '8px',
+                color: 'white',
+                border: 'none',
+                padding: '4px 8px',
+                fontSize: '13px',
+                fontWeight: 500
+              }
+            })}
+          />
+        </div>
+      </div>
 
 
       {modalOpen && (
-        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{editando ? 'Editar Cita' : 'Nueva Cita'}</h5>
-                <button type="button" className="btn-close" onClick={cerrarModal} />
+        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content" style={{ borderRadius: '16px', overflow: 'hidden', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+              <div className="modal-header border-0" style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                padding: '20px 25px'
+              }}>
+                <h5 className="modal-title mb-0" style={{ fontWeight: 600, fontSize: '20px' }}>
+                  <i className="fas fa-calendar-plus me-2"></i>
+                  {editando ? 'Editar Cita' : 'Nueva Cita'}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white" 
+                  onClick={cerrarModal}
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
               </div>
-              <form onSubmit={(e) => handleSubmitEvent(e, editando ? 'actualizar' : 'guardar')} className="p-3">
-                <div className="modal-body">
-                  <label>Buscar paciente</label>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={busqueda}
-                    onChange={handleSearchPaciente}
-                    disabled={editando} 
-                  />
-                  {resultadosPacientes.length > 0 && (
-                    <ul className="list-group">
-                      {resultadosPacientes.map((p) => (
-                        <li
-                          key={p.id}
-                          className="list-group-item list-group-item-action"
-                          onClick={() => seleccionarPaciente(p)}>
-                          {p.nombre} {p.apellido} - {p.cedula}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+              <form onSubmit={(e) => handleSubmitEvent(e, editando ? 'actualizar' : 'guardar')}>
+                <div className="modal-body p-4">
+                  <div className="mb-4">
+                    <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
+                      <i className="fas fa-search me-2" style={{ color: '#667eea' }}></i>
+                      Buscar Paciente
+                    </label>
+                    <input
+                      type="text"
+                      style={inputStyle}
+                      value={busqueda}
+                      onChange={handleSearchPaciente}
+                      disabled={editando}
+                      placeholder="Escribe al menos 3 caracteres para buscar..."
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#667eea';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e0e0e0';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                    {resultadosPacientes.length > 0 && (
+                      <div className="mt-2" style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '12px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        background: '#ffffff'
+                      }}>
+                        {resultadosPacientes.map((p) => (
+                          <div
+                            key={p.id}
+                            onClick={() => seleccionarPaciente(p)}
+                            style={{
+                              padding: '12px 16px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #f0f0f0',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = '#f8f9fa';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = '#ffffff';
+                            }}>
+                            <strong>{p.nombre} {p.apellido}</strong>
+                            <span className="text-muted ms-2" style={{ fontSize: '13px' }}> - {p.cedula}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {pacienteSeleccionado && (
+                      <div className="mt-2 p-3" style={{
+                        background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                        borderRadius: '12px',
+                        border: '2px solid #4caf50'
+                      }}>
+                        <i className="fas fa-check-circle me-2" style={{ color: '#4caf50' }}></i>
+                        <strong>Paciente seleccionado:</strong> {pacienteSeleccionado.nombre} {pacienteSeleccionado.apellido}
+                      </div>
+                    )}
+                  </div>
 
-                  <label>Motivo</label>
-                  <textarea
-                    className="form-control mb-3"
-                    value={newEvent.title}
-                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                    required
-                  />
+                  <div className="mb-4">
+                    <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
+                      <i className="fas fa-comment-alt me-2" style={{ color: '#667eea' }}></i>
+                      Motivo de la Cita
+                    </label>
+                    <textarea
+                      style={{
+                        ...inputStyle,
+                        minHeight: '100px',
+                        resize: 'vertical'
+                      }}
+                      value={newEvent.title}
+                      onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                      placeholder="Describe el motivo de la cita..."
+                      required
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#667eea';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#e0e0e0';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                  </div>
 
-                  <label>Inicio</label>
-                  <input
-                    type="datetime-local"
-                    className="form-control mb-3"
-                    value={newEvent.start}
-                    onChange={(e) => setNewEvent({ ...newEvent, start: e.target.value })}
-                    required
-                  />
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
+                        <i className="fas fa-clock me-2" style={{ color: '#667eea' }}></i>
+                        Fecha y Hora de Inicio
+                      </label>
+                      <input
+                        type="datetime-local"
+                        style={inputStyle}
+                        value={newEvent.start}
+                        onChange={(e) => setNewEvent({ ...newEvent, start: e.target.value })}
+                        required
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e0e0e0';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                    </div>
 
-                  <label>Fin</label>
-                  <input
-                    type="datetime-local"
-                    className="form-control mb-3"
-                    value={newEvent.end}
-                    onChange={(e) => setNewEvent({ ...newEvent, end: e.target.value })}
-                    required
-                  />
+                    <div className="col-md-6 mb-3">
+                      <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
+                        <i className="fas fa-clock me-2" style={{ color: '#667eea' }}></i>
+                        Fecha y Hora de Fin
+                      </label>
+                      <input
+                        type="datetime-local"
+                        style={inputStyle}
+                        value={newEvent.end}
+                        onChange={(e) => setNewEvent({ ...newEvent, end: e.target.value })}
+                        required
+                        onFocus={(e) => {
+                          e.target.style.borderColor = '#667eea';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = '#e0e0e0';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="modal-footer">
-                  {editando && (
-                    <button type="button" className="btn btn-danger" onClick={eliminar_evento}>Eliminar</button>
-                  )}
-
-                  {editando && (
-                    <Link className='btn btn-secondary' to={`/perfil_paciente/${ids_entidades.id_paciente}/${ids_entidades.id_doctor}`}> Ver paciente</Link>
-                  )}
-
-                  <button type="submit" className="btn btn-primary">Guardar</button>
-                  <button type="button" className="btn btn-secondary" onClick={cerrarModal}>Cancelar</button>
+                <div className="modal-footer border-0 p-4" style={{ background: '#f8f9fa' }}>
+                  <div className="w-100 d-flex justify-content-end flex-wrap" style={{ gap: '20px' }}>
+                    {editando && (
+                      <>
+                        <button 
+                          type="button" 
+                          className="btn"
+                          onClick={eliminar_evento}
+                          style={{
+                            background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            padding: '12px 24px',
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease',
+                            whiteSpace: 'nowrap'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}>
+                          <i className="fas fa-trash me-2"></i>Eliminar
+                        </button>
+                        <Link 
+                          className='btn'
+                          to={`/perfil_paciente/${ids_entidades.id_paciente}/${ids_entidades.id_doctor}`}
+                          style={{
+                            background: 'linear-gradient(135deg, #28a745 0%, #218838 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            padding: '12px 24px',
+                            fontWeight: 600,
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            whiteSpace: 'nowrap'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.4)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}>
+                          <i className="fas fa-user me-2"></i>Ver Paciente
+                        </Link>
+                      </>
+                    )}
+                    <button 
+                      type="button" 
+                      className="btn"
+                      onClick={cerrarModal}
+                      style={{
+                        background: '#e0e0e0',
+                        color: '#495057',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '12px 28px',
+                        fontWeight: 600,
+                        transition: 'all 0.3s ease',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = '#d0d0d0';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = '#e0e0e0';
+                      }}>
+                      <i className="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn"
+                      style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '12px 32px',
+                        fontWeight: 600,
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                      }}>
+                      <i className="fas fa-save me-2"></i>
+                      {editando ? 'Actualizar' : 'Guardar'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
