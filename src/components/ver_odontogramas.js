@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useParams } from 'react-router-dom';
-import Odontograma from '../odontograma.png';
 import Core  from './funciones_extras';
 import Alertify from 'alertifyjs';
 import Axios from 'axios';
@@ -154,7 +153,7 @@ const VerOdontogramas = (props) => {
                             }}>
                                 <div className="card-img-top" style={{ 
                                     height: '200px', 
-                                    background: `url(${odontograma.dibujo_odontograma || Odontograma}) center/cover`,
+                                    background: `url(${odontograma.dibujo_odontograma || '/odontograma.png'}) center/cover`,
                                     backgroundColor: '#f8f9fa',
                                     borderBottom: '1px solid #e0e0e0'
                                 }}>

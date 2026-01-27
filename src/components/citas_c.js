@@ -145,7 +145,27 @@ class  Cita extends React.Component{
 		 Axios.get(`${Url.url_base}/api/paciente`)
 		  .then(res => {
 			 // console.log(res.data);
-			 this.setState({clientes:res.data});
+			 // Normalizar datos para que no explote cuando doctor es null
+			 let elementos_nuevos = [];
+
+			 res.data.forEach(paciente => {
+				 if(paciente.doctor == null){
+					 paciente.doctor = {
+						 id: 1,
+						 nombre: "No tiene",
+						 apellido: "doctor registrado",
+						 dni: "000-00000-0",
+						 numero_telefono: "000,000,000",
+						 created_at: "2022-09-06 13:48:48",
+						 updated_at: "2022-09-06 13:48:48",
+					 }
+					 elementos_nuevos.push(paciente);
+				 } else {
+					 elementos_nuevos.push(paciente);
+				 }
+			 });
+			 
+			 this.setState({clientes:elementos_nuevos});
 			// console.log(this.state.clientes);
 
 
@@ -661,7 +681,7 @@ class  Cita extends React.Component{
 										>
 											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.nombre || ''}</td>
 											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.apellido|| ''}</td>
-											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.doctor.nombre|| ''} {data.doctor.apellido|| ''}</td>
+											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{(data.doctor && data.doctor.nombre) ? `${data.doctor.nombre} ${data.doctor.apellido || ''}` : 'No tiene doctor registrado'}</td>
 											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.cedula|| ''}</td>
 											<td style={{ padding: '15px 20px', verticalAlign: 'middle' }}>{data.telefono || ''}</td> 
 											<td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'right' }}>
