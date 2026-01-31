@@ -33,6 +33,9 @@ const Agenda = () => {
   const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
   const [ids_entidades, setIdsEntidades] = useState({ id_paciente: null, id_doctor: null });
   const [seleccionActiva, setSeleccionActiva] = useState({ start: null, end: null });
+  const [mostrarFormNuevoPaciente, setMostrarFormNuevoPaciente] = useState(false);
+  const [datosNuevoPaciente, setDatosNuevoPaciente] = useState({ nombre: '', apellido: '', cedula: '', telefono: '' });
+  const [guardandoPaciente, setGuardandoPaciente] = useState(false);
 
 
      let  headers_s = {
@@ -282,8 +285,49 @@ const localizer = momentLocalizer(moment)
     setBusqueda('');
     setPacienteSeleccionado(null);
     setSeleccionActiva({ start: null, end: null });
+    setMostrarFormNuevoPaciente(false);
+    setDatosNuevoPaciente({ nombre: '', apellido: '', cedula: '', telefono: '' });
     // IMPORTANTE: No reseteamos doctorSeleccionado aquí para que la vista del calendario se mantenga.
     setEventoSeleccionado(null);
+  };
+
+  const guardarNuevoPaciente = (e) => {
+    e.preventDefault();
+    if (!datosNuevoPaciente.nombre.trim() || !datosNuevoPaciente.apellido.trim()) {
+      alertify.error('Nombre y apellido son requeridos.');
+      return;
+    }
+    if (!doctorSeleccionado) {
+      alertify.error('Debe seleccionar un doctor primero.');
+      return;
+    }
+    setGuardandoPaciente(true);
+    const formData = new FormData();
+    formData.append('nombre', datosNuevoPaciente.nombre.trim());
+    formData.append('apellido', datosNuevoPaciente.apellido.trim());
+    formData.append('cedula', datosNuevoPaciente.cedula.trim() || 'Pendiente');
+    formData.append('telefono', datosNuevoPaciente.telefono.trim() || '');
+    formData.append('id_doctor', doctorSeleccionado);
+    formData.append('sexo', 'm');
+    formData.append('fecha_nacimiento', '1990-01-01');
+    formData.append('correo_electronico', '');
+    formData.append('nombre_tutor', '');
+
+    Axios.post(`${Core.url_base}/api/guardar_paciente`, formData)
+      .then((res) => {
+        const pacienteCreado = res.data;
+        setPacienteSeleccionado({ id: pacienteCreado.id, nombre: pacienteCreado.nombre, apellido: pacienteCreado.apellido });
+        setBusqueda(`${pacienteCreado.nombre} ${pacienteCreado.apellido}`);
+        setMostrarFormNuevoPaciente(false);
+        setDatosNuevoPaciente({ nombre: '', apellido: '', cedula: '', telefono: '' });
+        alertify.success('Paciente registrado. Puede completar y guardar la cita.');
+        setGuardandoPaciente(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        alertify.error('Error al registrar el paciente.');
+        setGuardandoPaciente(false);
+      });
   };
 
   const manejarEventoSeleccionado = (evento) => {
@@ -935,6 +979,126 @@ const localizer = momentLocalizer(moment)
                       }}>
                         <i className="fas fa-check-circle me-2" style={{ color: '#4caf50' }}></i>
                         <strong>Paciente seleccionado:</strong> {pacienteSeleccionado.nombre} {pacienteSeleccionado.apellido}
+                      </div>
+                    )}
+
+                    {!editando && (
+                      <div className="mt-3">
+                        {!mostrarFormNuevoPaciente ? (
+                          <button
+                            type="button"
+                            onClick={() => setMostrarFormNuevoPaciente(true)}
+                            style={{
+                              background: 'transparent',
+                              color: '#667eea',
+                              border: '2px dashed #667eea',
+                              borderRadius: '12px',
+                              padding: '10px 20px',
+                              fontWeight: 600,
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              width: '100%',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.background = 'rgba(102, 126, 234, 0.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.background = 'transparent';
+                            }}
+                          >
+                            <i className="fas fa-user-plus me-2"></i>
+                            Agregar paciente nuevo (no registrado)
+                          </button>
+                        ) : (
+                          <div className="p-3" style={{
+                            background: '#f8f9fa',
+                            borderRadius: '12px',
+                            border: '2px solid #e0e0e0'
+                          }}>
+                            <h6 className="mb-3" style={{ fontWeight: 600, color: '#495057' }}>
+                              <i className="fas fa-user-plus me-2" style={{ color: '#667eea' }}></i>
+                              Registro rápido de paciente
+                            </h6>
+                            <form onSubmit={guardarNuevoPaciente}>
+                              <div className="row">
+                                <div className="col-md-6 mb-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Nombre *"
+                                    value={datosNuevoPaciente.nombre}
+                                    onChange={(e) => setDatosNuevoPaciente({ ...datosNuevoPaciente, nombre: e.target.value })}
+                                    style={inputStyle}
+                                    required
+                                  />
+                                </div>
+                                <div className="col-md-6 mb-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Apellido *"
+                                    value={datosNuevoPaciente.apellido}
+                                    onChange={(e) => setDatosNuevoPaciente({ ...datosNuevoPaciente, apellido: e.target.value })}
+                                    style={inputStyle}
+                                    required
+                                  />
+                                </div>
+                                <div className="col-md-6 mb-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Cédula (opcional)"
+                                    value={datosNuevoPaciente.cedula}
+                                    onChange={(e) => setDatosNuevoPaciente({ ...datosNuevoPaciente, cedula: e.target.value })}
+                                    style={inputStyle}
+                                  />
+                                </div>
+                                <div className="col-md-6 mb-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Teléfono (opcional)"
+                                    value={datosNuevoPaciente.telefono}
+                                    onChange={(e) => setDatosNuevoPaciente({ ...datosNuevoPaciente, telefono: e.target.value })}
+                                    style={inputStyle}
+                                  />
+                                </div>
+                              </div>
+                              <div className="d-flex gap-2 mt-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setMostrarFormNuevoPaciente(false);
+                                    setDatosNuevoPaciente({ nombre: '', apellido: '', cedula: '', telefono: '' });
+                                  }}
+                                  style={{
+                                    background: '#e0e0e0',
+                                    color: '#495057',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '10px 20px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Cancelar
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={guardandoPaciente}
+                                  style={{
+                                    background: 'linear-gradient(135deg, #51d18a 0%, #3db870 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '10px 20px',
+                                    fontWeight: 600,
+                                    cursor: guardandoPaciente ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  {guardandoPaciente ? <><i className="fas fa-spinner fa-spin me-2"></i>Guardando...</> : <><i className="fas fa-save me-2"></i>Registrar y usar</>}
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

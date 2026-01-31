@@ -329,6 +329,13 @@ class VisualizarPresupuesto extends React.Component {
                                         {/* Header */}
                                         <div style={{ padding: "20px 32px", borderBottom: "1px solid #e8ecf1" }}>
                                                 <img src={Core.Config.app_logo} width="120" style={{ display: "block", margin: "0 auto 16px" }} alt="Logo" />
+                                                {(Core.Config.name_company || Core.Config.app_phone) && (
+                                                        <div style={{ textAlign: "center", fontSize: "14px", color: "#475569", marginBottom: "12px" }}>
+                                                                {Core.Config.name_company && <strong>{Core.Config.name_company}</strong>}
+                                                                {Core.Config.name_company && Core.Config.app_phone && <span> • </span>}
+                                                                {Core.Config.app_phone && <span><i className="fas fa-phone" style={{ fontSize: "12px", marginRight: "10px" }}></i>{Core.Config.app_phone}</span>}
+                                                        </div>
+                                                )}
                                                 <div style={{ textAlign: "right", fontSize: "13px", color: "#64748b" }}>
                                                         <strong>Fecha:</strong> {
                                                                 this.state.presupuesto.created_at 
