@@ -210,10 +210,18 @@ class VisualizarPresupuesto extends React.Component {
                         <style>
                         body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 24px; background: #fff; }
                         table { width: 100%; border-collapse: collapse; margin-top: 15px; border-radius: 8px; overflow: hidden; }
-                        th, td { padding: 12px; text-align: center; }
-                        th { background-color: #0e2b52; color: white; font-weight: 600; }
-                        td { border-bottom: 1px solid #e2e8f0; }
-                        .presupuesto-aviso { margin-top: 20px; padding: 14px 20px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; text-align: center; font-weight: bold; color: #92400e; font-size: 15px; }
+                        th, td { padding: 12px; text-align: center; color: #000; }
+                        th { background-color: #e5e7eb !important; color: #000 !important; font-weight: 600; border: 1px solid #d1d5db; }
+                        td { border-bottom: 1px solid #e2e8f0; color: #000; }
+                        tr.presupuesto-total-row { background-color: #e5e7eb !important; color: #000 !important; border: 1px solid #d1d5db; }
+                        tr.presupuesto-total-row td { color: #000 !important; }
+                        .presupuesto-aviso, .presupuesto-aviso-imprimir { margin-top: 20px !important; padding: 14px 20px !important; background: #fef3c7 !important; border: 2px solid #f59e0b !important; border-radius: 12px; text-align: center; font-weight: bold; color: #92400e !important; font-size: 15px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; display: block !important; }
+                        @media print {
+                          th { background-color: #e5e7eb !important; color: #000 !important; }
+                          tr.presupuesto-total-row { background-color: #e5e7eb !important; color: #000 !important; }
+                          tr.presupuesto-total-row td { color: #000 !important; }
+                          .presupuesto-aviso-imprimir, .presupuesto-aviso { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #fef3c7 !important; }
+                        }
                         </style>
                 </head>
                 <body onload="window.print(); setTimeout(() => window.close(), 100);">
@@ -312,13 +320,14 @@ class VisualizarPresupuesto extends React.Component {
                         `}</style>
                         <div className='col-md-9 col-lg-8 presupuesto-container-arriba' style={{
                                 margin: "auto",
-                                marginTop: "-25px",
+                                marginTop: "15px",
                                 padding: "0",
                                 paddingTop: "5px",
                                 fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
                                 maxWidth: "800px",
                                 alignSelf: "flex-start"
                         }}>
+                                <hr style={{ margin: "0 0 20px 0", border: "none", borderTop: "1px solid #e2e8f0" }} />
                                 <div id="presupuesto" style={{
                                         background: "#fff",
                                         borderRadius: "16px",
@@ -327,27 +336,47 @@ class VisualizarPresupuesto extends React.Component {
                                         border: "1px solid #e8ecf1"
                                 }}>
                                         {/* Header */}
-                                        <div style={{ padding: "20px 32px", borderBottom: "1px solid #e8ecf1" }}>
-                                                <img src={Core.Config.app_logo} width="120" style={{ display: "block", margin: "0 auto 16px" }} alt="Logo" />
-                                                {(Core.Config.name_company || Core.Config.app_phone) && (
-                                                        <div style={{ textAlign: "center", fontSize: "14px", color: "#475569", marginBottom: "12px" }}>
-                                                                {Core.Config.name_company && <strong>{Core.Config.name_company}</strong>}
-                                                                {Core.Config.name_company && Core.Config.app_phone && <span> • </span>}
-                                                                {Core.Config.app_phone && <span><i className="fas fa-phone" style={{ fontSize: "12px", marginRight: "10px" }}></i>{Core.Config.app_phone}</span>}
+                                        <div style={{ padding: "20px 32px", borderBottom: "1px solid #e8ecf1", display: "flex", alignItems: "flex-start", gap: "20px" }}>
+                                                <img src={Core.Config.app_logo} width="70" style={{ flexShrink: 0 }} alt="Logo" />
+                                                <div style={{ flex: 1 }}>
+                                                        {Core.Config.name_company && (
+                                                                <div style={{ 
+                                                                        fontSize: "19px", 
+                                                                        fontWeight: "700", 
+                                                                        color: "#0e2b52", 
+                                                                        marginBottom: "10px", 
+                                                                        textAlign: "center",
+                                                                        letterSpacing: "0.8px",
+                                                                        fontFamily: "'Segoe UI', Georgia, serif",
+                                                                        paddingBottom: "8px",
+                                                                        borderBottom: "2px solid rgba(14, 43, 82, 0.3)"
+                                                                }}>
+                                                                        {Core.Config.name_company}
+                                                                </div>
+                                                        )}
+                                                        <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+                                                                <div style={{ fontSize: "13px", color: "#475569", display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                                                        <span>
+                                                                                <strong>Fecha:</strong> {
+                                                                                        this.state.presupuesto.created_at 
+                                                                                                ? new Date(this.state.presupuesto.created_at).toLocaleDateString('es-ES', { 
+                                                                                                        year: 'numeric', 
+                                                                                                        month: 'long', 
+                                                                                                        day: 'numeric',
+                                                                                                        hour: '2-digit',
+                                                                                                        minute: '2-digit'
+                                                                                                })
+                                                                                                : (this.state.presupuesto.fecha || 'N/A')
+                                                                                }
+                                                                        </span>
+                                                                        {Core.Config.app_phone && (
+                                                                                <span>
+                                                                                        <i className="fas fa-phone" style={{ marginRight: "6px", color: "#64748b" }}></i>
+                                                                                        {Core.Config.app_phone}
+                                                                                </span>
+                                                                        )}
+                                                                </div>
                                                         </div>
-                                                )}
-                                                <div style={{ textAlign: "right", fontSize: "13px", color: "#64748b" }}>
-                                                        <strong>Fecha:</strong> {
-                                                                this.state.presupuesto.created_at 
-                                                                        ? new Date(this.state.presupuesto.created_at).toLocaleDateString('es-ES', { 
-                                                                                year: 'numeric', 
-                                                                                month: 'long', 
-                                                                                day: 'numeric',
-                                                                                hour: '2-digit',
-                                                                                minute: '2-digit'
-                                                                        })
-                                                                        : (this.state.presupuesto.fecha || 'N/A')
-                                                        }
                                                 </div>
                                         </div>
 
@@ -355,10 +384,10 @@ class VisualizarPresupuesto extends React.Component {
                                         <div style={{
                                                 textAlign: "center",
                                                 fontWeight: "700",
-                                                fontSize: "18px",
+                                                fontSize: "15px",
                                                 background: "linear-gradient(135deg, #0e2b52 0%, #1e3a5f 100%)",
                                                 color: "#fff",
-                                                padding: "16px 24px",
+                                                padding: "8px 24px",
                                                 letterSpacing: "0.5px"
                                         }}>
                                                 PLAN DE TRATAMIENTO / PRESUPUESTO
@@ -386,38 +415,40 @@ class VisualizarPresupuesto extends React.Component {
                                                 }}>
                                                         <thead>
                                                                 <tr>
-                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#0e2b52", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>PROCEDIMIENTO</th>
-                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#0e2b52", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>CANTIDAD</th>
-                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#0e2b52", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>PRECIO</th>
-                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#0e2b52", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>MONTO</th>
-                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#0e2b52", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>TOTAL</th>
+                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#000", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>PROCEDIMIENTO</th>
+                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#000", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>CANTIDAD</th>
+                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#000", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>PRECIO</th>
+                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#000", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>MONTO</th>
+                                                                        <th style={{ padding: "14px 12px", backgroundColor: "#000", color: "#fff", textAlign: "center", fontSize: "12px", fontWeight: "600" }}>TOTAL</th>
                                                                 </tr>
                                                         </thead>
                                                         <tbody>
                                                                 {this.state.presupuesto.procedimientos.map((data, i) => (
                                                                         <tr key={i} style={{ backgroundColor: i % 2 === 0 ? "#fff" : "#f8fafc" }}>
-                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px", color: "#334155" }}>{data.nombre_procedimiento}</td>
-                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px" }}>{data.cantidad}</td>
-                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px" }}>{new Intl.NumberFormat().format((data.total / data.cantidad))}</td>
-                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px" }}>{new Intl.NumberFormat().format(data.total)}</td>
+                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px", color: "#000" }}>{data.nombre_procedimiento}</td>
+                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px", color: "#000" }}>{data.cantidad}</td>
+                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px", color: "#000" }}>{new Intl.NumberFormat().format((data.total / data.cantidad))}</td>
+                                                                                <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0", textAlign: "center", fontSize: "14px", color: "#000" }}>{new Intl.NumberFormat().format(data.total)}</td>
                                                                                 <td style={{ padding: "12px", borderBottom: "1px solid #e2e8f0" }}></td>
                                                                         </tr>
                                                                 ))}
-                                                                <tr style={{ backgroundColor: "#0e2b52", color: "#fff", fontWeight: "700" }}>
+                                                                <tr className="presupuesto-total-row" style={{ backgroundColor: "#000", color: "#fff", fontWeight: "700" }}>
                                                                         <td colSpan="4" style={{ padding: "14px 12px", textAlign: "right", fontSize: "14px" }}>TOTAL RD$</td>
                                                                         <td style={{ padding: "14px 12px", textAlign: "center", fontSize: "15px" }}>{new Intl.NumberFormat().format(this.state.presupuesto.total)}</td>
                                                                 </tr>
                                                         </tbody>
                                                 </table>
 
-                                                {/* Aviso destacado - Presupuesto sujeto a cambios */}
-                                                <div style={{
+                                                {/* Aviso destacado - Presupuesto sujeto a cambios (visible en pantalla e impresión) */}
+                                                <div className="presupuesto-aviso-imprimir" style={{
                                                         marginTop: "20px",
                                                         padding: "14px 20px",
                                                         background: "#fef3c7",
                                                         border: "2px solid #f59e0b",
                                                         borderRadius: "12px",
-                                                        textAlign: "center"
+                                                        textAlign: "center",
+                                                        WebkitPrintColorAdjust: "exact",
+                                                        printColorAdjust: "exact"
                                                 }}>
                                                         <span style={{ fontWeight: "700", fontSize: "15px", color: "#92400e" }}>⚠️ Presupuesto sujeto a cambios</span>
                                                 </div>

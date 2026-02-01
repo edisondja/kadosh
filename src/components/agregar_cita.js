@@ -1061,7 +1061,7 @@ const localizer = momentLocalizer(moment)
                                   />
                                 </div>
                               </div>
-                              <div className="d-flex gap-2 mt-2">
+                              <div className="d-flex mt-2" style={{ gap: '16px' }}>
                                 <button
                                   type="button"
                                   onClick={() => {
