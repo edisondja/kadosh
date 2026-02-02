@@ -1,162 +1,111 @@
-# 🦷 Kadosh - Sistema de Gestión Dental
+<p align="center">
+  <img src="https://img.shields.io/badge/Kadosh-Dental%20Management-0e2b52?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTEyIDJ2MjBNMiAxMmg0TTE4IDEyaDRNMTIgMTB2Nk0xMCAxMnY0TTE0IDEydjQiLz48L3N2Zz4=" alt="Kadosh">
+</p>
 
-<div align="center">
+<h1 align="center">🦷 Kadosh</h1>
+<p align="center">
+  <strong>Sistema Integral de Gestión para Clínicas Dentales</strong>
+</p>
 
-![Kadosh Logo](https://img.shields.io/badge/Kadosh-Dental%20Management-blue?style=for-the-badge&logo=tooth)
-![Version](https://img.shields.io/badge/version-1.0.0-green?style=for-the-badge)
-![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Laravel-10+-FF2D20?style=flat-square&logo=laravel" alt="Laravel">
+  <img src="https://img.shields.io/badge/MySQL-5.7+-4479A1?style=flat-square&logo=mysql" alt="MySQL">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+</p>
 
-**Sistema completo de gestión para clínicas dentales**
-
-[Características](#-características) • [Tecnologías](#-tecnologías) • [Instalación](#-instalación) • [Uso](#-uso) • [Contribuir](#-contribuir)
-
-</div>
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Descripción](#-descripción)
-- [Características](#-características)
-- [Tecnologías](#-tecnologías)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación](#-instalación)
-- [Configuración](#-configuración)
-- [Uso](#-uso)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [API Documentation](#-api-documentation)
-- [Capturas de Pantalla](#-capturas-de-pantalla)
-- [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
-- [Contacto](#-contacto)
+<p align="center">
+  <a href="#-descripción">Descripción</a> •
+  <a href="#-características">Características</a> •
+  <a href="#-instalación">Instalación</a> •
+  <a href="#-manual-de-usuario">Manual</a> •
+  <a href="#-tecnologías">Tecnologías</a> •
+  <a href="#-contribuir">Contribuir</a>
+</p>
 
 ---
 
-## 🎯 Descripción
+## ✨ Descripción
 
-**Kadosh** es un sistema integral de gestión diseñado específicamente para clínicas dentales. Facilita la administración completa de pacientes, citas, procedimientos, facturación, nómina y más, todo desde una interfaz moderna e intuitiva.
+**Kadosh** es un sistema de gestión diseñado específicamente para clínicas dentales. Permite administrar pacientes, citas, procedimientos, facturación, nómina, odontogramas y más, desde una interfaz moderna y responsiva.
 
-### ¿Por qué Kadosh?
-
-- ✅ **Completo**: Cubre todas las necesidades de una clínica dental
-- ✅ **Moderno**: Interfaz intuitiva y responsive
-- ✅ **Seguro**: Sistema de auditoría y validaciones robustas
-- ✅ **Escalable**: Arquitectura preparada para crecer
-- ✅ **Eficiente**: Optimizado para el día a día
+| Aspecto | Descripción |
+|---------|-------------|
+| **Tipo** | Aplicación web full-stack |
+| **Frontend** | React.js (SPA) |
+| **Backend** | Laravel (API REST) |
+| **Base de datos** | MySQL |
+| **Arquitectura** | Multi-tenant (soporta múltiples clínicas) |
 
 ---
 
-## ✨ Características
+## 🚀 Características
 
 ### 👥 Gestión de Pacientes
-- 📝 Registro completo de información del paciente
-- 📋 Historial médico y odontológico
-- 📎 Gestión de archivos adjuntos (imágenes, PDFs)
-- 🔍 Búsqueda avanzada y filtros
-- 📤 Exportar/Importar datos en JSON
+- Registro completo con historial médico y odontológico
+- Búsqueda avanzada y filtros
+- Ficha médica digital
+- Adjuntos (imágenes, PDFs)
+- Exportar/Importar datos en JSON
+- **Registro rápido** desde el módulo de citas
 
-### 🦷 Odontogramas Interactivos
-- 🎨 Odontogramas para adultos y niños (dientes de leche)
-- 🖱️ Interfaz interactiva con feedback visual y sonoro
-- 🎯 Selección precisa de dientes y caras
-- 💾 Guardado de dibujos y procedimientos
-- 🖨️ Impresión de odontogramas con opciones personalizadas
+### 📅 Citas y Agenda
+- Calendario integrado (vista día, semana, mes)
+- Recordatorios automáticos por email
+- Integración con Google Calendar
+- **Dictado por voz** del motivo de la cita
+- Agendar citas con pacientes no registrados
 
-### 💰 Facturación y Pagos
-- 🧾 Generación de facturas y recibos
-- 💳 Múltiples métodos de pago (efectivo, tarjeta, transferencia, cheque, mixto)
-- 📊 Reportes financieros detallados
-- 🔔 Sonido de caja registradora al procesar pagos
-- 📧 Envío de recibos por correo electrónico
+### 🦷 Odontogramas
+- Odontogramas interactivos (adultos y niños)
+- Dibujo de procedimientos por diente/cara
+- Impresión personalizada
+- Historial por paciente
 
-### 📅 Gestión de Citas
-- 📆 Calendario integrado
-- 🔔 Recordatorios automáticos
-- 📱 Integración con Google Calendar
-- 📧 Notificaciones por email
+### 💰 Facturación y Finanzas
+- Facturas y recibos
+- Múltiples métodos de pago (efectivo, tarjeta, transferencia, cheque)
+- Presupuestos con aviso "sujeto a cambios"
+- Envío por WhatsApp, email y PDF
+- Contabilidad integrada
+- Punto de venta (POS)
+- Nómina y salarios de doctores
 
-### 👨‍⚕️ Gestión de Doctores
-- 👤 Perfiles completos de doctores
-- 🎓 Especialidades médicas
-- 💼 Sistema de salarios y comisiones
-- 📈 Reportes de productividad
+### 📋 Presupuestos
+- Creación y visualización de presupuestos
+- Impresión e impresión para WhatsApp
+- PDF por email
+- Logo y datos de la clínica personalizables
 
-### 💼 Nómina y Comisiones
-- 💵 Cálculo automático de comisiones por procedimiento
-- 📋 Gestión de pagos de nómina
-- 📊 Reportes de ganancias por doctor
-- 📅 Períodos de pago configurables
+### 💊 Recetas Médicas
+- Creación de recetas
+- Impresión con logo
+- Envío por correo
 
-### 🏪 Punto de Venta (POS)
-- 🛒 Gestión de inventario de productos
-- 💰 Ventas de productos y servicios
-- 📦 Control de stock
-- 📊 Reportes de ventas
-
-### 📝 Prescripciones
-- 💊 Creación de recetas médicas
-- 🖨️ Impresión de prescripciones con logo de clínica
-- 📧 Envío por correo electrónico
-- 📋 Historial de prescripciones
-
-### 🔍 Auditoría
-- 📊 Registro completo de todas las acciones
-- 👤 Trazabilidad por usuario
-- 🔍 Filtros avanzados por módulo y fecha
-- 📈 Estadísticas de uso
+### 🔐 Auditoría y Seguridad
+- Registro de acciones por usuario
+- Filtros por módulo y fecha
+- Sistema de roles (Administrador, Doctor)
 
 ### ⚙️ Configuración
-- 🏥 Personalización de información de la clínica
-- 🖼️ Logo y favicon personalizables
-- 📄 Configuración de facturación (comprobante/factura)
-- 🔐 Clave secreta para operaciones críticas
-- 📧 Configuración de email
-
-### 💳 Sistema de Pagos Mensuales
-- 📅 Gestión de suscripciones mensuales
-- ⚠️ Alertas de vencimiento (3 días de gracia)
-- 📊 Historial de pagos
-- 🔔 Notificaciones automáticas
+- Información de la clínica (nombre, dirección, teléfono, RNC)
+- Logo y favicon personalizables
+- Configuración de facturación
+- Pagos mensuales y alertas de vencimiento
+- **Multi-tenant**: administración de múltiples clínicas
 
 ---
 
-## 🛠️ Tecnologías
+## 📦 Instalación
 
-### Frontend
-- **React.js** - Biblioteca de JavaScript para interfaces de usuario
-- **React Router** - Enrutamiento de aplicaciones
-- **Axios** - Cliente HTTP
-- **Alertify.js** - Notificaciones elegantes
-- **Bootstrap** - Framework CSS
-- **Canvas API** - Para odontogramas interactivos
+### Requisitos previos
 
-### Backend
-- **Laravel** - Framework PHP
-- **MySQL** - Base de datos relacional
-- **Eloquent ORM** - ORM para Laravel
-- **Dompdf** - Generación de PDFs
-- **Laravel Mail** - Sistema de correo
-
-### Integraciones
-- **Google Calendar API** - Sincronización de citas
-- **SMTP** - Envío de correos electrónicos
-
----
-
-## 📦 Requisitos Previos
-
-Antes de comenzar, asegúrate de tener instalado:
-
-- **PHP** >= 7.4
-- **Composer** >= 2.0
-- **Node.js** >= 14.x
-- **npm** >= 6.x
-- **MySQL** >= 5.7
-- **Apache/Nginx** (recomendado)
-
----
-
-## 🚀 Instalación
+| Requisito | Versión |
+|-----------|---------|
+| PHP | >= 7.4 |
+| Composer | >= 2.0 |
+| Node.js | >= 14.x |
+| MySQL | >= 5.7 |
 
 ### 1. Clonar el repositorio
 
@@ -165,60 +114,43 @@ git clone https://github.com/edisondja/kadosh.git
 cd kadosh
 ```
 
-### 2. Instalar dependencias del Backend
+### 2. Backend (Laravel)
 
 ```bash
 cd kadoshbackend
 composer install
+cp .env.example .env
+php artisan key:generate
 ```
 
-### 3. Configurar el Backend
+Configurar base de datos en `.env`:
 
-```bash
-# Copiar archivo de configuración
-cp .env.example .env
-
-# Generar clave de aplicación
-php artisan key:generate
-
-# Configurar base de datos en .env
+```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=3306
 DB_DATABASE=kadosh
 DB_USERNAME=tu_usuario
 DB_PASSWORD=tu_contraseña
 ```
 
-### 4. Ejecutar migraciones
-
 ```bash
 php artisan migrate
-php artisan db:seed  # Opcional: datos de ejemplo
-```
-
-### 5. Configurar almacenamiento
-
-```bash
 php artisan storage:link
 ```
 
-### 6. Instalar dependencias del Frontend
+### 3. Frontend (React)
 
 ```bash
 cd ../kadosh
 npm install
 ```
 
-### 7. Configurar variables de entorno del Frontend
-
-Edita `src/components/funciones_extras.js` y configura la URL base de tu API:
+Configurar la URL de la API en `src/components/funciones_extras.js` o `config_site.json`:
 
 ```javascript
-const url_base = "http://localhost:8000";
+// Para desarrollo local
+api_url: "http://localhost:8000"
 ```
-
-### 8. Compilar el Frontend
 
 ```bash
 # Desarrollo
@@ -228,185 +160,82 @@ npm start
 npm run build
 ```
 
----
+### 4. Iniciar el servidor Laravel
 
-## ⚙️ Configuración
-
-### Configuración Inicial
-
-1. **Accede al sistema** con las credenciales de administrador
-2. **Ve a Configuración** en el menú
-3. **Completa la información de la clínica**:
-   - Nombre de la clínica
-   - Dirección
-   - Teléfono
-   - RNC
-   - Email
-   - Logo
-   - Tipo de numeración de factura
-   - Clave secreta para eliminaciones
-
-### Integración con Google Calendar
-
-1. Obtén las credenciales de Google Calendar API
-2. Configura las variables en `.env`:
-   ```
-   GOOGLE_CALENDAR_CLIENT_ID=tu_client_id
-   GOOGLE_CALENDAR_CLIENT_SECRET=tu_client_secret
-   GOOGLE_CALENDAR_REDIRECT_URI=tu_redirect_uri
-   ```
-3. Activa la integración en Configuración
+```bash
+cd kadoshbackend
+php artisan serve
+```
 
 ---
 
-## 📖 Uso
+## 📖 Manual de Usuario
 
-### Iniciar Sesión
-
-1. Accede a la aplicación
-2. Ingresa tus credenciales de usuario
-3. Selecciona tu rol (Administrador, Doctor, etc.)
-
-### Crear un Paciente
-
-1. Ve a **Pacientes** → **Nuevo Paciente**
-2. Completa el formulario con la información del paciente
-3. Guarda los datos
-
-### Crear un Odontograma
-
-1. Accede al perfil del paciente
-2. Haz clic en **Crear Odontograma**
-3. Selecciona el tipo (Adulto o Niño)
-4. Haz clic en los dientes para agregar procedimientos
-5. Selecciona el tratamiento deseado
-6. Guarda el odontograma
-
-### Procesar un Pago
-
-1. Ve a la factura del paciente
-2. Haz clic en **Pagar**
-3. Selecciona el tipo de pago
-4. Ingresa el monto
-5. Confirma el pago (se reproducirá el sonido de caja registradora)
+Para instrucciones detalladas de uso (cómo agregar pacientes, citas, facturar, etc.), consulta el **[Manual de Usuario](./docs/MANUAL_USUARIO.md)**.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🛠 Tecnologías
+
+| Capa | Tecnología |
+|------|------------|
+| **Frontend** | React, React Router, Axios, Bootstrap, Chart.js, jsPDF, html2canvas, Konva |
+| **Backend** | Laravel, Eloquent ORM, Dompdf |
+| **Base de datos** | MySQL |
+| **Integraciones** | Google Calendar, SMTP |
+
+---
+
+## 📁 Estructura del proyecto
 
 ```
 kadosh/
-├── kadosh/                    # Frontend (React)
+├── kadosh/                 # Frontend React
 │   ├── public/
 │   ├── src/
-│   │   ├── components/        # Componentes React
-│   │   ├── css/             # Estilos
-│   │   └── assets/          # Recursos
-│   ├── package.json
-│   └── README.md
+│   │   ├── components/     # Componentes de la aplicación
+│   │   └── css/
+│   └── package.json
 │
-└── kadoshbackend/            # Backend (Laravel)
-    ├── app/
-    │   ├── Http/
-    │   │   └── Controllers/  # Controladores
-    │   ├── Models/          # Modelos Eloquent
-    │   └── Helpers/         # Helpers
-    ├── database/
-    │   ├── migrations/      # Migraciones
-    │   └── seeds/          # Seeders
-    ├── routes/
-    │   └── api.php         # Rutas API
-    ├── config/             # Configuración
-    └── composer.json
+├── kadoshbackend/          # Backend Laravel
+│   ├── app/
+│   │   ├── Http/Controllers/
+│   │   └── ...
+│   ├── database/migrations/
+│   ├── routes/api.php
+│   └── composer.json
+│
+└── docs/
+    └── MANUAL_USUARIO.md   # Manual de usuario
 ```
-
----
-
-## 📡 API Documentation
-
-### Endpoints Principales
-
-#### Pacientes
-- `GET /api/pacientes` - Listar pacientes
-- `POST /api/paciente` - Crear paciente
-- `GET /api/paciente/{id}` - Obtener paciente
-- `PUT /api/paciente/{id}` - Actualizar paciente
-- `DELETE /api/paciente/{id}` - Eliminar paciente
-
-#### Odontogramas
-- `POST /api/crear_odontograma` - Crear odontograma
-- `GET /api/listar_odontogramas_paciente/{id}` - Listar odontogramas
-- `GET /api/obtener_odontograma/{id}` - Obtener odontograma
-- `DELETE /api/eliminar_odontograma/{id}` - Eliminar odontograma
-
-#### Facturas
-- `POST /api/crear_factura` - Crear factura
-- `GET /api/facturas_paciente/{id}` - Facturas del paciente
-- `POST /api/pagar_recibo` - Procesar pago
-
-#### Citas
-- `GET /api/citas` - Listar citas
-- `POST /api/crear_cita` - Crear cita
-- `PUT /api/actualizar_cita/{id}` - Actualizar cita
-- `DELETE /api/eliminar_cita/{id}` - Eliminar cita
-
-Para más detalles, consulta la documentación completa de la API.
-
----
-
-## 📸 Capturas de Pantalla
-
-> _Las capturas de pantalla se agregarán próximamente_
 
 ---
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Por favor:
-
-1. 🍴 Haz un Fork del proyecto
-2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
-5. 🔀 Abre un Pull Request
-
-### Guía de Contribución
-
-- Sigue las convenciones de código existentes
-- Añade comentarios donde sea necesario
-- Actualiza la documentación si es necesario
-- Prueba tus cambios antes de hacer commit
+1. Haz un **fork** del proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit (`git commit -m 'Añade nueva funcionalidad'`)
+4. Push (`git push origin feature/nueva-funcionalidad`)
+5. Abre un **Pull Request**
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT.
 
 ---
 
-## 👤 Contacto
+## 👤 Autor
 
 **Edison De Jesus Abreu**
 
-- 👤 GitHub: [@edisondja](https://github.com/edisondja)
-- 📧 Email: edisondja@gmail.com
-- 🌐 Proyecto: [Kadosh](https://github.com/edisondja/kadosh)
+- GitHub: [@edisondja](https://github.com/edisondja)
+- Email: edisondja@gmail.com
 
 ---
 
-## 🙏 Agradecimientos
-
-- A todos los contribuidores que han ayudado a mejorar este proyecto
-- A la comunidad de desarrolladores de código abierto
-- A todas las clínicas dentales que confían en Kadosh
-
----
-
-<div align="center">
-
-**Hecho con ❤️ por [Edison De Jesus Abreu](https://github.com/edisondja)**
-
-⭐ Si te gusta este proyecto, ¡dale una estrella!
-
-</div>
+<p align="center">
+  Hecho con ❤️ para clínicas dentales · <strong>Kadosh</strong>
+</p>
