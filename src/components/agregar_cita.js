@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import Axios from 'axios';
 import moment from 'moment';
@@ -36,6 +36,8 @@ const Agenda = () => {
   const [mostrarFormNuevoPaciente, setMostrarFormNuevoPaciente] = useState(false);
   const [datosNuevoPaciente, setDatosNuevoPaciente] = useState({ nombre: '', apellido: '', cedula: '', telefono: '' });
   const [guardandoPaciente, setGuardandoPaciente] = useState(false);
+  const [dictandoMotivo, setDictandoMotivo] = useState(false);
+  const recognitionRef = useRef(null);
 
 
      let  headers_s = {
@@ -279,6 +281,10 @@ const localizer = momentLocalizer(moment)
   };
 
   const cerrarModal = () => {
+    if (recognitionRef.current && dictandoMotivo) {
+      try { recognitionRef.current.stop(); } catch (e) {}
+      setDictandoMotivo(false);
+    }
     setModalOpen(false);
     setEditando(false);
     setNewEvent({ title: '', start: '', end: '' });
@@ -287,8 +293,56 @@ const localizer = momentLocalizer(moment)
     setSeleccionActiva({ start: null, end: null });
     setMostrarFormNuevoPaciente(false);
     setDatosNuevoPaciente({ nombre: '', apellido: '', cedula: '', telefono: '' });
-    // IMPORTANTE: No reseteamos doctorSeleccionado aquí para que la vista del calendario se mantenga.
     setEventoSeleccionado(null);
+  };
+
+  const toggleDictarMotivo = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alertify.error('Tu navegador no soporta dictado por voz. Usa Chrome o Edge.');
+      return;
+    }
+    if (dictandoMotivo) {
+      try {
+        if (recognitionRef.current) recognitionRef.current.stop();
+      } catch (e) {}
+      setDictandoMotivo(false);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
+    recognitionRef.current = recognition;
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          transcript += event.results[i][0].transcript;
+        }
+      }
+      if (transcript) {
+        setNewEvent(prev => ({
+          ...prev,
+          title: prev.title ? prev.title.trim() + ' ' + transcript.trim() : transcript.trim()
+        }));
+      }
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== 'no-speech') {
+        alertify.error('Error en reconocimiento de voz: ' + event.error);
+      }
+      setDictandoMotivo(false);
+    };
+    recognition.onend = () => setDictandoMotivo(false);
+    try {
+      recognition.start();
+      setDictandoMotivo(true);
+      alertify.success('Dictando... Habla el motivo de la cita. Haz clic de nuevo para detener.');
+    } catch (e) {
+      alertify.error('No se pudo iniciar el micrófono. Verifica los permisos.');
+      setDictandoMotivo(false);
+    }
   };
 
   const guardarNuevoPaciente = (e) => {
@@ -511,6 +565,10 @@ const localizer = momentLocalizer(moment)
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(220,53,69,0.5); }
+          50% { opacity: 0.85; box-shadow: 0 0 20px rgba(220,53,69,0.8); }
         }
         
         /* Sombreado para columnas con citas */
@@ -1104,10 +1162,37 @@ const localizer = momentLocalizer(moment)
                   </div>
 
                   <div className="mb-4">
-                    <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
-                      <i className="fas fa-comment-alt me-2" style={{ color: '#667eea' }}></i>
-                      Motivo de la Cita
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label style={{ fontWeight: 600, color: '#495057', fontSize: '14px', margin: 0 }}>
+                        <i className="fas fa-comment-alt me-2" style={{ color: '#667eea' }}></i>
+                        Motivo de la Cita
+                      </label>
+                      <button
+                        type="button"
+                        onClick={toggleDictarMotivo}
+                        title={dictandoMotivo ? 'Detener dictado' : 'Dictar por voz'}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: dictandoMotivo 
+                            ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' 
+                            : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          boxShadow: dictandoMotivo ? '0 0 12px rgba(220,53,69,0.5)' : '0 2px 8px rgba(102, 126, 234, 0.3)',
+                          animation: dictandoMotivo ? 'pulse 1.5s infinite' : 'none'
+                        }}
+                      >
+                        <i className={`fas ${dictandoMotivo ? 'fa-stop' : 'fa-microphone'}`}></i>
+                        {dictandoMotivo ? 'Detener' : 'Dictar'}
+                      </button>
+                    </div>
                     <textarea
                       style={{
                         ...inputStyle,
@@ -1116,7 +1201,7 @@ const localizer = momentLocalizer(moment)
                       }}
                       value={newEvent.title}
                       onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                      placeholder="Describe el motivo de la cita..."
+                      placeholder="Describe el motivo de la cita... o usa el botón Dictar para hablar."
                       required
                       onFocus={(e) => {
                         e.target.style.borderColor = '#667eea';
