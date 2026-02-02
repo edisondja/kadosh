@@ -64,6 +64,10 @@ class PerfilPaciente extends React.Component{
 				
 				// Facturas
 				facturas: [],
+				// Presupuestos
+				presupuestos: [],
+				// Recetas
+				recetas: [],
 				// Odontogramas
 				odontogramas: [],
 				tiene_ficha_medica:false,
@@ -236,10 +240,12 @@ class PerfilPaciente extends React.Component{
 			this.consultarPaciente(id);
 			this.cargar_citas_paciente(id);
 			this.cargar_doctor(id_doc);
-			//this.setState({doctor:});
-			//alert(this.props.IdDoctor);
 			this.consultar_deuda_paciente(id);
-			//this.cargar_notas();
+			this.cargarNotas();
+			this.cargarFacturas();
+			this.cargarPresupuestos();
+			this.cargarRecetas();
+			this.cargarDocumentos();
 
 			if(this.state.tiene_ficha_medica){
 				this.setState({ desactivar_campos_ficha: true });
@@ -317,6 +323,28 @@ class PerfilPaciente extends React.Component{
 				.catch((error) => {
 					alertify.error('No se pudieron cargar las facturas');
 					console.error(error);
+				});
+		}
+
+		cargarPresupuestos = () => {
+			Axios.get(`${Verficar.url_base}/api/cargar_presupuestos/${this.props.match.params.id}`)
+				.then((res) => {
+					this.setState({ presupuestos: res.data || [] });
+				})
+				.catch((error) => {
+					console.error(error);
+					this.setState({ presupuestos: [] });
+				});
+		}
+
+		cargarRecetas = () => {
+			Axios.get(`${Verficar.url_base}/api/listar_recetas_paciente/${this.props.match.params.id}`)
+				.then((res) => {
+					this.setState({ recetas: res.data || [] });
+				})
+				.catch((error) => {
+					console.error(error);
+					this.setState({ recetas: [] });
 				});
 		}
 
@@ -671,19 +699,20 @@ class PerfilPaciente extends React.Component{
 			};
 
 
-			cargar_documentos = () => {
-
-				this.setState({ modal_documento_visible: true });
-
+			cargarDocumentos = () => {
 				Axios.get(`${Verficar.url_base}/api/cargar_documentos/${this.props.match.params.id}`)
 					.then((res) => {
-					this.setState({
-						documentos: res.data,
-					});
+						this.setState({ documentos: res.data || [] });
 					})
 					.catch((err) => {
-					console.error(err);
+						console.error(err);
+						this.setState({ documentos: [] });
 					});
+			};
+
+			cargar_documentos = () => {
+				this.setState({ modal_documento_visible: true });
+				this.cargarDocumentos();
 			};
 
 		eliminar_cita = (id) => {
@@ -1036,6 +1065,19 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												{Verficar.lenguaje.perfil_paciente.factura}
+												<span style={{
+													marginLeft: '6px',
+													background: (this.state.facturas && this.state.facturas.length > 0) 
+														? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+														: '#e5e7eb',
+													color: (this.state.facturas && this.state.facturas.length > 0) ? 'white' : '#6b7280',
+													fontSize: '11px',
+													padding: '2px 8px',
+													borderRadius: '10px',
+													fontWeight: 700
+												}}>
+													{this.state.facturas ? this.state.facturas.length : 0}
+												</span>
 											</h6>
 										</div>
 									</div>
@@ -1099,6 +1141,19 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-sticky-note" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												{Verficar.lenguaje.perfil_paciente.notas}
+												<span style={{
+													marginLeft: '6px',
+													background: (this.state.notasPaciente && this.state.notasPaciente.length > 0) 
+														? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+														: '#e5e7eb',
+													color: (this.state.notasPaciente && this.state.notasPaciente.length > 0) ? 'white' : '#6b7280',
+													fontSize: '11px',
+													padding: '2px 8px',
+													borderRadius: '10px',
+													fontWeight: 700
+												}}>
+													{this.state.notasPaciente ? this.state.notasPaciente.length : 0}
+												</span>
 											</h6>
 										</div>
 									</div>
@@ -1129,6 +1184,19 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-folder-open" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												{Verficar.lenguaje.perfil_paciente.documentos}
+												<span style={{
+													marginLeft: '6px',
+													background: (this.state.documentos && this.state.documentos.length > 0) 
+														? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+														: '#e5e7eb',
+													color: (this.state.documentos && this.state.documentos.length > 0) ? 'white' : '#6b7280',
+													fontSize: '11px',
+													padding: '2px 8px',
+													borderRadius: '10px',
+													fontWeight: 700
+												}}>
+													{this.state.documentos ? this.state.documentos.length : 0}
+												</span>
 											</h6>
 										</div>
 									</div>
@@ -1159,6 +1227,19 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-file-invoice-dollar" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												Presupuestos
+												<span style={{
+													marginLeft: '6px',
+													background: (this.state.presupuestos && this.state.presupuestos.length > 0) 
+														? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+														: '#e5e7eb',
+													color: (this.state.presupuestos && this.state.presupuestos.length > 0) ? 'white' : '#6b7280',
+													fontSize: '11px',
+													padding: '2px 8px',
+													borderRadius: '10px',
+													fontWeight: 700
+												}}>
+													{this.state.presupuestos ? this.state.presupuestos.length : 0}
+												</span>
 											</h6>
 										</div>
 									</div>
@@ -1222,6 +1303,19 @@ class PerfilPaciente extends React.Component{
 											<i className="fas fa-prescription" style={{ fontSize: '32px', color: '#667eea', marginBottom: '10px' }}></i>
 											<h6 className="mb-0" style={{ fontWeight: 600, fontSize: '13px', color: '#2d2d2f' }}>
 												Recetas
+												<span style={{
+													marginLeft: '6px',
+													background: (this.state.recetas && this.state.recetas.length > 0) 
+														? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+														: '#e5e7eb',
+													color: (this.state.recetas && this.state.recetas.length > 0) ? 'white' : '#6b7280',
+													fontSize: '11px',
+													padding: '2px 8px',
+													borderRadius: '10px',
+													fontWeight: 700
+												}}>
+													{this.state.recetas ? this.state.recetas.length : 0}
+												</span>
 											</h6>
 										</div>
 									</div>
@@ -2995,7 +3089,7 @@ class PerfilPaciente extends React.Component{
 									</h5>
 									<button 
 										className="btn-close" 
-										onClick={() => this.setState({ modal_recetas_visible: false })}
+										onClick={() => { this.cargarRecetas(); this.setState({ modal_recetas_visible: false }); }}
 									></button>
 								</div>
 								<div className="modal-body" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -3007,7 +3101,7 @@ class PerfilPaciente extends React.Component{
 								<div className="modal-footer">
 									<button 
 										className="btn btn-secondary" 
-										onClick={() => this.setState({ modal_recetas_visible: false })}
+										onClick={() => { this.cargarRecetas(); this.setState({ modal_recetas_visible: false }); }}
 									>
 										Cerrar
 									</button>
@@ -3037,7 +3131,7 @@ class PerfilPaciente extends React.Component{
 								</div>
 								<div className="modal-body" style={{ maxHeight: '80vh', overflowY: 'auto', padding: 0, backgroundColor: '#f5f5f7' }}>
 									<div style={{ padding: '20px' }}>
-										<VerPresupuesto match={{ params: { id: this.props.match.params.id, id_doc: this.props.match.params.id_doc } }} enModal={true} onCerrar={() => this.setState({ modal_presupuestos_visible: false })} />
+										<VerPresupuesto match={{ params: { id: this.props.match.params.id, id_doc: this.props.match.params.id_doc } }} enModal={true} onCerrar={() => { this.cargarPresupuestos(); this.setState({ modal_presupuestos_visible: false }); }} />
 									</div>
 								</div>
 								<div className="modal-footer" style={{ border: 'none' }}>

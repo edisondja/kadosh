@@ -50,6 +50,7 @@ import ExportarImportar from './exportar_importar';
 import Presupuestos from './presupuestos';
 import AdministrarTenants from './administrar_tenants';
 import AsignarGananciasRecibos from './asignar_ganancias_recibos';
+import ManualUsuario from './manual_usuario';
 
 import Axios from 'axios';
 class MenuDashboard extends React.Component {
@@ -225,6 +226,7 @@ class MenuDashboard extends React.Component {
       ];
 
       const opcionesSistema = [
+        { ruta: "/manual_usuario", icono: "fas fa-book", texto: "Manual de Usuario" },
         { ruta: "/configuracion", icono: "fas fa-cog", texto: "Configuración" },
         { ruta: "/exportar_importar", icono: "fas fa-exchange-alt", texto: "Exportar/Importar" },
         { ruta: "/administrar_tenants", icono: "fas fa-building", texto: "Administrar Tenants" },
@@ -488,6 +490,7 @@ class MenuDashboard extends React.Component {
     } else if (localStorage.getItem("roll") === "Contable") {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
           <li><Link to="/contabilidad"><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</Link></li>
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
@@ -495,6 +498,7 @@ class MenuDashboard extends React.Component {
     } else if (localStorage.getItem("roll") === "Secretaria") {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
           <li><Link to="/notificaciones" id="notificaiones"><img src={NotificacionImg} className="img_estilo" />&nbsp;Notificaciones</Link></li>
           <li><Link to="/paciente" id="agregar_paciente"><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar Paciente</Link></li>
           <li><Link to="/citas_pendiente" id="cargar_citas"><img src={CitasImg} className="img_estilo" />&nbsp;Citas Pendiente</Link></li>
@@ -504,6 +508,7 @@ class MenuDashboard extends React.Component {
     } else {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
       );
@@ -713,6 +718,7 @@ class MenuDashboard extends React.Component {
               <Route path="/agregar_cita/" component={AgregarCita} />
               <Route path="/auditoria" component={Auditoria} />
               <Route path="/administrar_tenants" component={AdministrarTenants} />
+              <Route path="/manual_usuario" component={ManualUsuario} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";

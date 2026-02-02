@@ -1,4 +1,4 @@
-# 📘 Manual de Usuario - Kadosh
+# 📘 Manual de Usuario - Odontoed
 
 **Sistema de Gestión para Clínicas Dentales**
 
@@ -326,8 +326,8 @@ El menú está organizado en secciones:
 
 ## Soporte
 
-Para soporte técnico o consultas sobre Kadosh, contacta al administrador del sistema o al desarrollador.
+Para soporte técnico o consultas sobre Odontoed, contacta al administrador del sistema o al desarrollador.
 
 ---
 
-*Manual de Usuario - Kadosh · Sistema de Gestión Dental*
+*Manual de Usuario - Odontoed · Sistema de Gestión Dental*

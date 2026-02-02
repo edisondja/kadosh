@@ -465,7 +465,7 @@ const localizer = momentLocalizer(moment)
     return colores[diaSemana];
   };
 
-  // Componente personalizado para mostrar todas las horas y medias horas en la columna
+  // Componente personalizado para el encabezado de la columna de hora
   const TimeGutterHeader = ({ value, ...props }) => {
     return (
       <div style={{ 
@@ -475,7 +475,7 @@ const localizer = momentLocalizer(moment)
         color: '#4b5563',
         textAlign: 'center'
       }}>
-        {moment(value).format('HH:mm')}
+        HORA
       </div>
     );
   };
@@ -487,28 +487,6 @@ const localizer = momentLocalizer(moment)
 
   const TimeSlotWrapper = ({ value, children, ...props }) => {
     if (!value) return <div {...props}>{children}</div>;
-    
-    const fecha = moment(value);
-    const minutos = fecha.minutes();
-    const esHoraCompleta = minutos === 0;
-    const esMediaHora = minutos === 30;
-    
-    // Verificar si hay un evento en este slot de tiempo
-    const tieneEventoEnSlot = events.some(event => {
-      const eventStart = moment(event.start);
-      const eventEnd = moment(event.end);
-      return fecha.isSameOrAfter(eventStart, 'minute') && fecha.isBefore(eventEnd, 'minute');
-    });
-    
-    // Verificar si se está seleccionando un nuevo evento que incluye este slot
-    let estaEnSeleccion = false;
-    if (seleccionActiva.start && seleccionActiva.end) {
-      estaEnSeleccion = fecha.isSameOrAfter(seleccionActiva.start, 'minute') && fecha.isBefore(seleccionActiva.end, 'minute');
-    }
-    
-    // Solo mostrar la hora si hay un evento en este slot o si está siendo seleccionado
-    const mostrarHora = (esHoraCompleta || esMediaHora) && (tieneEventoEnSlot || estaEnSeleccion);
-    
     return (
       <div 
         {...props} 
@@ -519,25 +497,6 @@ const localizer = momentLocalizer(moment)
           minHeight: '60px'
         }}
       >
-        {/* Mostrar la hora solo si hay un evento o se está seleccionando */}
-        {mostrarHora && (
-          <div className="time-label" style={{
-            padding: '4px 8px',
-            fontSize: esHoraCompleta ? '12px' : '11px',
-            fontWeight: esHoraCompleta ? 700 : 600,
-            color: esHoraCompleta ? '#4b5563' : '#6b7280',
-            textAlign: 'center',
-            width: '100%',
-            position: 'absolute',
-            top: '4px',
-            left: '0',
-            right: '0',
-            zIndex: 1,
-            pointerEvents: 'none'
-          }}>
-            {fecha.format('HH:mm')}
-          </div>
-        )}
         {children}
       </div>
     );
@@ -699,6 +658,14 @@ const localizer = momentLocalizer(moment)
         .rbc-time-content .rbc-day-slot .rbc-time-slot:nth-child(2n) {
           border-top: 2px solid #6b7280 !important;
         }
+        
+        /* Ocultar la primera fila "all day" que muestra hora militar (00:00) */
+        .rbc-time-view .rbc-allday-cell {
+          display: none !important;
+        }
+        .rbc-time-view .rbc-allday-events {
+          display: none !important;
+        }
       `}</style>
       <div className="col-md-10" style={{ padding: '20px', minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
       {/* Header */}
@@ -708,27 +675,27 @@ const localizer = momentLocalizer(moment)
         overflow: 'hidden',
         animation: 'fadeIn 0.5s ease'
       }}>
-        <div className="card-body text-white p-4">
+        <div className="card-body text-white py-2 px-3">
           <div className="d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center">
               <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '15px',
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
                 background: 'rgba(255,255,255,0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginRight: '20px',
-                fontSize: '28px'
+                marginRight: '14px',
+                fontSize: '20px'
               }}>
                 <i className="fas fa-calendar-alt"></i>
               </div>
               <div>
-                <h2 className="mb-0" style={{ fontWeight: 700, fontSize: '28px' }}>
+                <h2 className="mb-0" style={{ fontWeight: 700, fontSize: '22px', lineHeight: 1.2 }}>
                   Agenda de Citas
                 </h2>
-                <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px', marginTop: '5px' }}>
+                <p className="mb-0" style={{ opacity: 0.9, fontSize: '13px', marginTop: '2px' }}>
                   Gestiona y programa las citas de tus pacientes
                 </p>
               </div>
@@ -841,7 +808,7 @@ const localizer = momentLocalizer(moment)
             localizer={localizer}
             events={events}
             step={30}
-            timeslots={2} 
+            timeslots={1} 
             onSelectEvent={manejarEventoSeleccionado}
             selectable={true} 
             onSelectSlot={manejarSeleccionSlot}
@@ -926,6 +893,7 @@ const localizer = momentLocalizer(moment)
               return event.title || 'Sin nombre';
             }}
             min={new Date(0, 0, 0, 8, 0, 0)}
+            max={new Date(0, 0, 0, 21, 0, 0)}
             components={{
               timeGutterHeader: TimeGutterHeader,
               timeSlotContent: TimeSlotContent,
@@ -1224,7 +1192,12 @@ const localizer = momentLocalizer(moment)
                         type="datetime-local"
                         style={inputStyle}
                         value={newEvent.start}
-                        onChange={(e) => setNewEvent({ ...newEvent, start: e.target.value })}
+                        onChange={(e) => {
+                          const nuevoStart = e.target.value;
+                          const duracionMin = newEvent.start && newEvent.end ? moment(newEvent.end).diff(moment(newEvent.start), 'minutes') : 30;
+                          const nuevoEnd = nuevoStart ? moment(nuevoStart).add(duracionMin, 'minutes').format('YYYY-MM-DDTHH:mm') : newEvent.end;
+                          setNewEvent({ ...newEvent, start: nuevoStart, end: nuevoEnd });
+                        }}
                         required
                         onFocus={(e) => {
                           e.target.style.borderColor = '#667eea';
@@ -1239,15 +1212,17 @@ const localizer = momentLocalizer(moment)
 
                     <div className="col-md-6 mb-3">
                       <label style={{ fontWeight: 600, color: '#495057', marginBottom: '8px', fontSize: '14px', display: 'block' }}>
-                        <i className="fas fa-clock me-2" style={{ color: '#667eea' }}></i>
-                        Fecha y Hora de Fin
+                        <i className="fas fa-hourglass-half me-2" style={{ color: '#667eea' }}></i>
+                        Duración
                       </label>
-                      <input
-                        type="datetime-local"
+                      <select
                         style={inputStyle}
-                        value={newEvent.end}
-                        onChange={(e) => setNewEvent({ ...newEvent, end: e.target.value })}
-                        required
+                        value={newEvent.start && newEvent.end ? moment(newEvent.end).diff(moment(newEvent.start), 'minutes') : 30}
+                        onChange={(e) => {
+                          const duracionMin = parseInt(e.target.value, 10);
+                          const nuevoEnd = newEvent.start ? moment(newEvent.start).add(duracionMin, 'minutes').format('YYYY-MM-DDTHH:mm') : newEvent.end;
+                          setNewEvent({ ...newEvent, end: nuevoEnd });
+                        }}
                         onFocus={(e) => {
                           e.target.style.borderColor = '#667eea';
                           e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
@@ -1256,7 +1231,26 @@ const localizer = momentLocalizer(moment)
                           e.target.style.borderColor = '#e0e0e0';
                           e.target.style.boxShadow = 'none';
                         }}
-                      />
+                      >
+                        {(() => {
+                          const duracionActual = newEvent.start && newEvent.end ? moment(newEvent.end).diff(moment(newEvent.start), 'minutes') : 30;
+                          const opcionesStandard = [30, 60, 90, 120, 150, 180, 210, 240];
+                          const incluirCustom = duracionActual > 0 && !opcionesStandard.includes(duracionActual);
+                          return (
+                            <>
+                              <option value={30}>30 minutos</option>
+                              <option value={60}>1 hora</option>
+                              <option value={90}>1 hora 30 min</option>
+                              <option value={120}>2 horas</option>
+                              <option value={150}>2 horas 30 min</option>
+                              <option value={180}>3 horas</option>
+                              <option value={210}>3 horas 30 min</option>
+                              <option value={240}>4 horas</option>
+                              {incluirCustom && <option value={duracionActual}>{duracionActual} minutos</option>}
+                            </>
+                          );
+                        })()}
+                      </select>
                     </div>
                   </div>
                 </div>
