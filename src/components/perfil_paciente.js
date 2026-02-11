@@ -76,7 +76,9 @@ class PerfilPaciente extends React.Component{
 				previewArchivos: [],
 				dragActive: false,
 				subiendoArchivo: false,
-				vistaDocumentos: 'tarjetas', // 'tabla' o 'tarjetas' (por defecto tarjetas)
+				vistaDocumentos: 'galeria', // 'tabla' | 'tarjetas' | 'galeria' (galeria = estilo Chrome)
+				filtroDocumentos: '',
+				lightboxDocumentoIndex: null, // índice en la lista filtrada; null = cerrado
 
 				// Ficha médica
 					created_at:'',
@@ -250,6 +252,18 @@ class PerfilPaciente extends React.Component{
 			if(this.state.tiene_ficha_medica){
 				this.setState({ desactivar_campos_ficha: true });
 			}
+		}
+
+		componentDidUpdate(prevProps, prevState) {
+			if (this.state.lightboxDocumentoIndex !== null && prevState.lightboxDocumentoIndex === null) {
+				document.addEventListener('keydown', this.handleLightboxKeydown);
+			} else if (this.state.lightboxDocumentoIndex === null && prevState.lightboxDocumentoIndex !== null) {
+				document.removeEventListener('keydown', this.handleLightboxKeydown);
+			}
+		}
+
+		componentWillUnmount() {
+			document.removeEventListener('keydown', this.handleLightboxKeydown);
 		}
 
 		handleChange = (e) => {
@@ -713,6 +727,38 @@ class PerfilPaciente extends React.Component{
 			cargar_documentos = () => {
 				this.setState({ modal_documento_visible: true });
 				this.cargarDocumentos();
+			};
+
+			getDocumentosFiltrados = () => {
+				const q = (this.state.filtroDocumentos || '').toLowerCase();
+				return (this.state.documentos || []).filter((doc) => {
+					if (!q) return true;
+					const coment = (doc.comentarios || '').toLowerCase();
+					const nombre = (doc.ruta_radiografia || '').toLowerCase();
+					return coment.includes(q) || nombre.includes(q);
+				});
+			};
+
+			handleLightboxKeydown = (e) => {
+				if (this.state.lightboxDocumentoIndex == null) return;
+				const list = this.getDocumentosFiltrados();
+				if (list.length === 0) return;
+				if (e.key === 'Escape') {
+					this.setState({ lightboxDocumentoIndex: null });
+					e.preventDefault();
+				}
+				if (e.key === 'ArrowLeft') {
+					this.setState((prev) => ({
+						lightboxDocumentoIndex: prev.lightboxDocumentoIndex <= 0 ? list.length - 1 : prev.lightboxDocumentoIndex - 1
+					}));
+					e.preventDefault();
+				}
+				if (e.key === 'ArrowRight') {
+					this.setState((prev) => ({
+						lightboxDocumentoIndex: (prev.lightboxDocumentoIndex + 1) % list.length
+					}));
+					e.preventDefault();
+				}
 			};
 
 		eliminar_cita = (id) => {
@@ -2001,26 +2047,49 @@ class PerfilPaciente extends React.Component{
 							</button>
 							<button
 								className="btn-close"
-								onClick={() => this.setState({ modal_documento_visible: false })}
+								onClick={() => this.setState({ modal_documento_visible: false, lightboxDocumentoIndex: null })}
 							></button>
 						</div>
 						</div>
 
 						<div className="modal-body bg-gray-50 rounded-xl p-3" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-						{/* Selector de vista */}
+						{/* Selector de vista + búsqueda para galería */}
 						{this.state.documentos.length > 0 && (
-							<div className="d-flex justify-content-end mb-3">
+							<div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+								{this.state.vistaDocumentos === 'galeria' && (
+									<div className="flex-grow-1" style={{ maxWidth: '400px' }}>
+										<div className="input-group">
+											<span className="input-group-text bg-white border-end-0"><i className="fas fa-search text-muted"></i></span>
+											<input
+												type="text"
+												className="form-control border-start-0"
+												placeholder="Buscar documentos..."
+												value={this.state.filtroDocumentos || ''}
+												onChange={(e) => this.setState({ filtroDocumentos: e.target.value })}
+												style={{ borderRadius: '0 8px 8px 0' }}
+											/>
+										</div>
+									</div>
+								)}
 								<div className="btn-group" role="group">
 									<button
 										type="button"
-										className={`btn btn-sm ${this.state.vistaDocumentos === 'tabla' ? 'btn-primary' : 'btn-outline-primary'}`}
+										className={`btn btn-sm ${this.state.vistaDocumentos === 'galeria' ? 'btn-primary' : 'btn-outline-secondary'}`}
+										onClick={() => this.setState({ vistaDocumentos: 'galeria' })}
+										title="Vista galería (estilo Chrome)"
+									>
+										<i className="fas fa-th-large"></i> Galería
+									</button>
+									<button
+										type="button"
+										className={`btn btn-sm ${this.state.vistaDocumentos === 'tabla' ? 'btn-primary' : 'btn-outline-secondary'}`}
 										onClick={() => this.setState({ vistaDocumentos: 'tabla' })}
 									>
 										<i className="fas fa-list"></i> Tabla
 									</button>
 									<button
 										type="button"
-										className={`btn btn-sm ${this.state.vistaDocumentos === 'tarjetas' ? 'btn-primary' : 'btn-outline-primary'}`}
+										className={`btn btn-sm ${this.state.vistaDocumentos === 'tarjetas' ? 'btn-primary' : 'btn-outline-secondary'}`}
 										onClick={() => this.setState({ vistaDocumentos: 'tarjetas' })}
 									>
 										<i className="fas fa-th"></i> Tarjetas
@@ -2036,6 +2105,202 @@ class PerfilPaciente extends React.Component{
 							<p className="mb-0">No hay documentos registrados aún.</p>
 							<small className="text-muted">Arrastra archivos o haz clic en el área de abajo para agregar documentos</small>
 							</div>
+						) : this.state.vistaDocumentos === 'galeria' ? (
+							/* Galería estilo Google Drive: grid + lightbox con slider anterior/siguiente */
+							(() => {
+								const documentosFiltrados = this.getDocumentosFiltrados();
+								return (
+									<div style={{
+										background: 'linear-gradient(180deg, #f8f9fa 0%, #fff 100%)',
+										borderRadius: '12px',
+										padding: '20px 16px',
+										minHeight: '280px',
+										position: 'relative'
+									}}>
+										<div style={{
+											display: 'grid',
+											gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+											gap: '20px',
+											justifyItems: 'center'
+										}}>
+											{documentosFiltrados.map((doc, index) => {
+												const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+												const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(doc.ruta_radiografia);
+												const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
+												const nombreArchivo = doc.ruta_radiografia.split('/').pop() || doc.ruta_radiografia;
+												const titulo = doc.comentarios || nombreArchivo || 'Documento';
+												return (
+													<div
+														key={doc.id}
+														style={{
+															width: '100%',
+															maxWidth: '180px',
+															background: '#fff',
+															borderRadius: '12px',
+															boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+															overflow: 'hidden',
+															transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+															cursor: 'pointer'
+														}}
+														onMouseEnter={(e) => {
+															e.currentTarget.style.transform = 'translateY(-4px)';
+															e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+														}}
+														onMouseLeave={(e) => {
+															e.currentTarget.style.transform = 'translateY(0)';
+															e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+														}}
+													>
+														<div
+															className="d-block text-decoration-none text-dark"
+															onClick={() => this.setState({ lightboxDocumentoIndex: index })}
+															role="button"
+															tabIndex={0}
+															onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.setState({ lightboxDocumentoIndex: index }); } }}
+														>
+															<div style={{ aspectRatio: '1', overflow: 'hidden', background: '#f1f3f4' }}>
+																{esImagen ? (
+																	<img src={url} alt={titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+																) : esPdf ? (
+																	<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderBottom: '1px solid #eee' }}>
+																		<i className="fas fa-file-pdf fa-3x text-danger"></i>
+																	</div>
+																) : (
+																	<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+																		<i className="fas fa-file-alt fa-3x text-secondary"></i>
+																	</div>
+																)}
+															</div>
+															<div style={{ padding: '12px 10px', textAlign: 'center' }}>
+																<div className="text-truncate" style={{ fontSize: '13px', fontWeight: 600 }} title={titulo}>{titulo}</div>
+																<small className="text-muted" style={{ fontSize: '11px' }}>
+																	{new Date(doc.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
+																</small>
+															</div>
+														</div>
+														<div className="d-flex justify-content-center border-top bg-light" style={{ padding: '6px 8px', gap: '4px' }}>
+															<button type="button" className="btn btn-sm btn-outline-primary py-1 px-2" title="Abrir" onClick={(ev) => { ev.stopPropagation(); this.setState({ lightboxDocumentoIndex: index }); }}><i className="fas fa-expand"></i></button>
+															<a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary py-1 px-2" title="Abrir en nueva pestaña" onClick={(e) => e.stopPropagation()}><i className="fas fa-external-link-alt"></i></a>
+															<button type="button" className="btn btn-sm btn-outline-success py-1 px-2" title="Descargar" onClick={(ev) => { ev.stopPropagation(); this.descargarDocumento(url, nombreArchivo); }}><i className="fas fa-download"></i></button>
+															<button type="button" className="btn btn-sm btn-outline-danger py-1 px-2" title="Eliminar" onClick={(ev) => {
+																ev.stopPropagation();
+																alertify.confirm("Confirmar eliminación", `¿Eliminar "${titulo}"?`, () => { this.eliminarDocumento(doc.id); alertify.success("Documento eliminado"); }, () => {});
+															}}><i className="fas fa-trash"></i></button>
+														</div>
+													</div>
+												);
+											})}
+										</div>
+										{documentosFiltrados.length === 0 && (
+											<div className="text-center py-5 text-muted"><i className="fas fa-search fa-2x mb-2"></i><p className="mb-0">Ningún documento coincide con la búsqueda.</p></div>
+										)}
+
+										{/* Lightbox tipo Google Drive: slider anterior/siguiente */}
+										{this.state.lightboxDocumentoIndex !== null && documentosFiltrados.length > 0 && (() => {
+											const idx = this.state.lightboxDocumentoIndex;
+											const doc = documentosFiltrados[idx];
+											const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+											const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(doc.ruta_radiografia);
+											const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
+											const titulo = doc.comentarios || doc.ruta_radiografia.split('/').pop() || 'Documento';
+											const prevIdx = idx <= 0 ? documentosFiltrados.length - 1 : idx - 1;
+											const nextIdx = (idx + 1) % documentosFiltrados.length;
+											return (
+												<div
+													style={{
+														position: 'fixed',
+														top: 0, left: 0, right: 0, bottom: 0,
+														background: 'rgba(0,0,0,0.92)',
+														zIndex: 9999,
+														display: 'flex',
+														flexDirection: 'column',
+														alignItems: 'center',
+														justifyContent: 'center',
+														padding: '60px 80px 20px'
+													}}
+													onClick={(e) => { if (e.target === e.currentTarget) this.setState({ lightboxDocumentoIndex: null }); }}
+												>
+													<button
+														type="button"
+														onClick={() => this.setState({ lightboxDocumentoIndex: null })}
+														style={{
+															position: 'absolute',
+															top: 16,
+															right: 20,
+															background: 'rgba(255,255,255,0.15)',
+															border: 'none',
+															borderRadius: '50%',
+															width: 44,
+															height: 44,
+															color: '#fff',
+															fontSize: '24px',
+															cursor: 'pointer',
+															zIndex: 10
+														}}
+														title="Cerrar (Esc)"
+													>
+														&times;
+													</button>
+													<div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', maxWidth: '1200px', flex: 1, minHeight: 0 }}>
+														<button
+															type="button"
+															onClick={(e) => { e.stopPropagation(); this.setState({ lightboxDocumentoIndex: prevIdx }); }}
+															style={{
+																flexShrink: 0,
+																width: 48,
+																height: 48,
+																borderRadius: '50%',
+																background: 'rgba(255,255,255,0.2)',
+																border: 'none',
+																color: '#fff',
+																fontSize: '20px',
+																cursor: 'pointer'
+															}}
+															title="Anterior (←)"
+														>
+															<i className="fas fa-chevron-left"></i>
+														</button>
+														<div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, minHeight: 0 }} onClick={(e) => e.stopPropagation()}>
+															{esImagen ? (
+																<img src={url} alt={titulo} style={{ maxWidth: '100%', maxHeight: 'calc(100vh - 140px)', objectFit: 'contain' }} />
+															) : esPdf ? (
+																<iframe src={url} title={titulo} style={{ width: '90vw', height: 'calc(100vh - 160px)', maxWidth: '900px', border: 'none', borderRadius: '8px' }} />
+															) : (
+																<div style={{ color: '#fff', textAlign: 'center' }}>
+																	<i className="fas fa-file-alt fa-4x mb-3"></i>
+																	<p>{titulo}</p>
+																	<a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Abrir archivo</a>
+																</div>
+															)}
+															<div style={{ color: 'rgba(255,255,255,0.9)', marginTop: '12px', fontSize: '14px', textAlign: 'center' }}>
+																{titulo} — {idx + 1} / {documentosFiltrados.length}
+															</div>
+														</div>
+														<button
+															type="button"
+															onClick={(e) => { e.stopPropagation(); this.setState({ lightboxDocumentoIndex: nextIdx }); }}
+															style={{
+																flexShrink: 0,
+																width: 48,
+																height: 48,
+																borderRadius: '50%',
+																background: 'rgba(255,255,255,0.2)',
+																border: 'none',
+																color: '#fff',
+																fontSize: '20px',
+																cursor: 'pointer'
+															}}
+															title="Siguiente (→)"
+														>
+															<i className="fas fa-chevron-right"></i>
+														</button>
+													</div>
+												</div>
+											);
+										})()}
+									</div>
+								);
+							})()
 						) : this.state.vistaDocumentos === 'tabla' ? (
 							<div className="table-responsive">
 								<table className="table table-hover align-middle bg-white rounded">
@@ -2435,7 +2700,7 @@ class PerfilPaciente extends React.Component{
 						<div className="modal-footer border-0">
 						<button
 							className="btn btn-secondary"
-							onClick={() => this.setState({ modal_documento_visible: false })}
+							onClick={() => this.setState({ modal_documento_visible: false, lightboxDocumentoIndex: null })}
 						>
 							Cerrar
 						</button>

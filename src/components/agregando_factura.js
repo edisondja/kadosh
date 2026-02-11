@@ -23,7 +23,8 @@ class  AgregarFactura extends React.Component{
             boton_estado:true,
             paciente: { nombre: '', apellido: '' },
             presupuestosPaciente: [],
-            filtroPresupuesto: ''
+            filtroPresupuesto: '',
+            desglosePresupuestoAbierto: false
         };
         this.removeTodo = this.removeTodo.bind(this);
 
@@ -82,8 +83,18 @@ class  AgregarFactura extends React.Component{
         },()=>{
             console.log(this.state.lista_procedimiento);
         });
-        
     }
+
+    actualizarCantidadProcedimiento = (index, nuevaCantidad) => {
+        const num = Math.max(1, parseInt(nuevaCantidad, 10) || 1);
+        const list = [...this.state.lista_procedimiento];
+        const item = list[index];
+        if (!item) return;
+        const precioUnitario = item.total / (item.cantidad || 1);
+        list[index] = { ...item, cantidad: num, total: precioUnitario * num };
+        const newTotal = list.reduce((s, p) => s + p.total, 0);
+        this.setState({ lista_procedimiento: list, total: newTotal });
+    };
 
 
     componentDidMount(){
@@ -348,68 +359,90 @@ class  AgregarFactura extends React.Component{
                         </div>
                     </div>
 
-                    {/* Cargar desde presupuesto */}
-                    <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-                        <div className="card-header border-0" style={{
-                            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                            padding: '16px 20px'
-                        }}>
-                            <h5 className="mb-0" style={{ fontWeight: 700, fontSize: '16px', color: '#495057' }}>
-                                <i className="fas fa-file-invoice-dollar me-2 text-primary"></i>
-                                Cargar desde presupuesto
-                            </h5>
-                            <p className="mb-0 mt-1 small text-muted">Seleccione un presupuesto del paciente para cargar sus procedimientos como factura.</p>
-                        </div>
-                        <div className="card-body p-3">
-                            <div className="mb-3">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Buscar presupuesto por nombre..."
-                                    value={this.state.filtroPresupuesto}
-                                    onChange={(e) => this.setState({ filtroPresupuesto: e.target.value })}
-                                    style={{ borderRadius: '10px', padding: '10px 14px' }}
-                                />
+                    {/* Cargar desde presupuesto: solo desglosable si el paciente tiene presupuestos */}
+                    {this.state.presupuestosPaciente.length > 0 ? (
+                        <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => this.setState({ desglosePresupuestoAbierto: !this.state.desglosePresupuestoAbierto })}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.setState({ desglosePresupuestoAbierto: !this.state.desglosePresupuestoAbierto }); } }}
+                                className="card-header border-0 d-flex align-items-center justify-content-between"
+                                style={{
+                                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                    padding: '16px 20px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <div>
+                                    <h5 className="mb-0" style={{ fontWeight: 700, fontSize: '16px', color: '#495057' }}>
+                                        <i className="fas fa-file-invoice-dollar me-2 text-primary"></i>
+                                        Cargar desde presupuesto
+                                    </h5>
+                                    <p className="mb-0 mt-1 small text-muted">
+                                        Seleccione un presupuesto para cargar sus procedimientos como factura.
+                                        <span className="d-block mt-1 fw-bold text-primary" style={{ fontSize: '13px' }}>
+                                            {this.state.presupuestosPaciente.length} presupuesto{this.state.presupuestosPaciente.length !== 1 ? 's' : ''} disponible{this.state.presupuestosPaciente.length !== 1 ? 's' : ''}
+                                        </span>
+                                    </p>
+                                </div>
+                                <i className={`fas fa-chevron-${this.state.desglosePresupuestoAbierto ? 'up' : 'down'}`} style={{ fontSize: '18px', color: '#6c757d' }}></i>
                             </div>
-                            {this.state.presupuestosPaciente.length === 0 ? (
-                                <p className="mb-0 text-muted small">No hay presupuestos para este paciente.</p>
-                            ) : (
-                                <div className="table-responsive" style={{ maxHeight: '220px', overflowY: 'auto' }}>
-                                    <table className="table table-sm table-hover mb-0">
-                                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
-                                            <tr>
-                                                <th className="border-0 small font-weight-bold text-muted">Nombre</th>
-                                                <th className="border-0 small font-weight-bold text-muted">Fecha</th>
-                                                <th className="border-0 small font-weight-bold text-muted">Total</th>
-                                                <th className="border-0 small font-weight-bold text-muted text-center">Acción</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {this.state.presupuestosPaciente
-                                                .filter((p) => !this.state.filtroPresupuesto || (p.nombre || '').toLowerCase().includes(this.state.filtroPresupuesto.toLowerCase()))
-                                                .map((p) => (
-                                                    <tr key={p.id}>
-                                                        <td className="align-middle small">{p.nombre || '—'}</td>
-                                                        <td className="align-middle small">{p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
-                                                        <td className="align-middle small font-weight-bold text-success">${new Intl.NumberFormat().format((() => { try { if (p.total != null) return p.total; const f = typeof p.factura === 'string' ? JSON.parse(p.factura) : p.factura; return (f && f.total != null) ? f.total : 0; } catch (e) { return 0; } })())}</td>
-                                                        <td className="align-middle text-center">
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-sm btn-primary"
-                                                                onClick={() => this.cargarPresupuestoComoFactura(p.id)}
-                                                                style={{ borderRadius: '8px', padding: '6px 12px', fontSize: '12px' }}
-                                                            >
-                                                                <i className="fas fa-plus me-1"></i> Cargar como factura
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                        </tbody>
-                                    </table>
+                            {this.state.desglosePresupuestoAbierto && (
+                                <div className="card-body p-3">
+                                    <div className="mb-3">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Buscar presupuesto por nombre..."
+                                            value={this.state.filtroPresupuesto}
+                                            onChange={(e) => this.setState({ filtroPresupuesto: e.target.value })}
+                                            style={{ borderRadius: '10px', padding: '10px 14px' }}
+                                        />
+                                    </div>
+                                    <div className="table-responsive" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                                        <table className="table table-sm table-hover mb-0">
+                                            <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+                                                <tr>
+                                                    <th className="border-0 small font-weight-bold text-muted">Nombre</th>
+                                                    <th className="border-0 small font-weight-bold text-muted">Doctor</th>
+                                                    <th className="border-0 small font-weight-bold text-muted">Fecha</th>
+                                                    <th className="border-0 small font-weight-bold text-muted">Total</th>
+                                                    <th className="border-0 small font-weight-bold text-muted text-center">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {this.state.presupuestosPaciente
+                                                    .filter((p) => !this.state.filtroPresupuesto || (p.nombre || '').toLowerCase().includes(this.state.filtroPresupuesto.toLowerCase()))
+                                                    .map((p) => (
+                                                        <tr key={p.id}>
+                                                            <td className="align-middle small">{p.nombre || '—'}</td>
+                                                            <td className="align-middle small">{p.doctor ? [p.doctor.nombre, p.doctor.apellido].filter(Boolean).join(' ') : '—'}</td>
+                                                            <td className="align-middle small">{p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                                                            <td className="align-middle small font-weight-bold text-success">${new Intl.NumberFormat().format((() => { try { if (p.total != null) return p.total; const f = typeof p.factura === 'string' ? JSON.parse(p.factura) : p.factura; return (f && f.total != null) ? f.total : 0; } catch (e) { return 0; } })())}</td>
+                                                            <td className="align-middle text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-sm btn-primary"
+                                                                    onClick={() => this.cargarPresupuestoComoFactura(p.id)}
+                                                                    style={{ borderRadius: '8px', padding: '6px 12px', fontSize: '12px' }}
+                                                                >
+                                                                    <i className="fas fa-plus me-1"></i> Cargar como factura
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                    </div>
+                    ) : (
+                        <p className="mb-3 text-muted small">
+                            <i className="fas fa-info-circle me-1"></i> Este paciente no tiene presupuestos para cargar.
+                        </p>
+                    )}
 
                     {/* Resumen de factura */}
                     <div className="row g-3 mb-4">
@@ -508,16 +541,21 @@ class  AgregarFactura extends React.Component{
                                                                 {data.nombre_procedimiento}
                                                             </td>
                                                             <td style={{ padding: '15px 20px', color: '#6c757d' }}>
-                                                                <span className="badge" style={{
-                                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                                    color: 'white',
-                                                                    padding: '6px 12px',
-                                                                    borderRadius: '8px',
-                                                                    fontSize: '13px',
-                                                                    fontWeight: 600
-                                                                }}>
-                                                                    {data.cantidad}
-                                                                </span>
+                                                                <input
+                                                                    type="number"
+                                                                    min={1}
+                                                                    value={data.cantidad}
+                                                                    onChange={(e) => this.actualizarCantidadProcedimiento(index, e.target.value)}
+                                                                    style={{
+                                                                        width: '70px',
+                                                                        padding: '6px 10px',
+                                                                        borderRadius: '8px',
+                                                                        border: '2px solid #e0e0e0',
+                                                                        fontSize: '14px',
+                                                                        fontWeight: 600,
+                                                                        textAlign: 'center'
+                                                                    }}
+                                                                />
                                                             </td>
                                                             <td style={{ padding: '15px 20px', fontWeight: 600, color: '#28a745', fontSize: '16px' }}>
                                                                 ${new Intl.NumberFormat().format(data.total)}

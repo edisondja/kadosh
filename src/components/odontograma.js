@@ -50,6 +50,12 @@ const OdontogramaCompletoHibrido = () => {
   const [colorDibujo, setColorDibujo] = useState("red"); // Para el canvas principal
   const [modoBorrador, setModoBorrador] = useState(false); // true = cursor borrador, los trazos que toque se eliminan
   const [modoTornillo, setModoTornillo] = useState(null); // 'rojo' | 'azul' | null - simular implante con tornillos
+  const [modoMoverTornillo, setModoMoverTornillo] = useState(false); // true = seleccionar y arrastrar tornillos
+  const [tornillosSuperior, setTornillosSuperior] = useState([]); // [{ x, y, color, rotacion? }]
+  const [tornillosInferior, setTornillosInferior] = useState([]);
+  const [orientacionTornillo, setOrientacionTornillo] = useState(0); // 0, 90, 180, 270 (grados) para nuevos
+  const [modoRotarTornillo, setModoRotarTornillo] = useState(false); // clic en tornillo = ciclar rotación
+  const [modoRX, setModoRX] = useState(false); // clic en canvas = colocar texto "RX"
   const [dibujoGuardado, setDibujoGuardado] = useState(Odontograma); // Almacena el Data URL del canvas principal
   const [opciones_tratamiento, setOpcionesTratamiento] = useState([]);
   const [filtroProcedimientos, setFiltroProcedimientos] = useState(""); // Filtro de búsqueda
@@ -74,6 +80,9 @@ const OdontogramaCompletoHibrido = () => {
   const presupuestoScrollRef = useRef(null);
   const imgTornilloRojoRef = useRef(null);
   const imgTornilloAzulRef = useRef(null);
+  const canvasSuperiorTornillosRef = useRef(null);
+  const canvasInferiorTornillosRef = useRef(null);
+  const draggingTornilloRef = useRef(null); // { superior: boolean, index: number }
 
 
 
@@ -127,32 +136,48 @@ const OdontogramaCompletoHibrido = () => {
     };
   }, []);
 
-  // Dibujar un tornillo (implante) en el canvas: imagen PNG 50x50 o fallback círculo
-  const dibujarTornillo = useCallback((ctx, x, y, color) => {
+  // Dibujar un tornillo (implante) en el canvas; rotacion en grados (0, 90, 180, 270)
+  const dibujarTornillo = useCallback((ctx, x, y, color, rotacion = 0) => {
     if (!ctx) return;
     const esRojo = color === 'rojo';
     const img = esRojo ? imgTornilloRojoRef.current : imgTornilloAzulRef.current;
     const half = TORNILLO_SIZE / 2;
+    const rad = (rotacion * Math.PI) / 180;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rad);
+    ctx.translate(-half, -half);
     if (img && img.complete && img.naturalWidth) {
-      ctx.drawImage(img, x - half, y - half, TORNILLO_SIZE, TORNILLO_SIZE);
+      ctx.drawImage(img, 0, 0, TORNILLO_SIZE, TORNILLO_SIZE);
+      ctx.restore();
       return;
     }
-    ctx.save();
+    ctx.translate(half, half);
     ctx.fillStyle = esRojo ? '#c00' : '#06c';
     ctx.strokeStyle = esRojo ? '#800' : '#004';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(x - 3, y);
-    ctx.lineTo(x + 3, y);
+    ctx.moveTo(-3, 0);
+    ctx.lineTo(3, 0);
     ctx.stroke();
     ctx.restore();
   }, []);
+
+  // Redibujar la capa de tornillos para superior o inferior
+  const redrawTornillosLayer = useCallback((esSuperior) => {
+    const canvas = esSuperior ? canvasSuperiorTornillosRef.current : canvasInferiorTornillosRef.current;
+    const list = esSuperior ? tornillosSuperior : tornillosInferior;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (list.length) list.forEach((t) => dibujarTornillo(ctx, t.x, t.y, t.color, t.rotacion ?? 0));
+  }, [tornillosSuperior, tornillosInferior, dibujarTornillo]);
 
   // Guardar estado del canvas antes de dibujar (para deshacer último trazo en orden LIFO)
   const guardarEstadoCanvas = useCallback((canvas, esSuperior) => {
@@ -191,9 +216,17 @@ const OdontogramaCompletoHibrido = () => {
     const ctx = canvas.getContext('2d');
 
     if (modoTornillo) {
-      guardarEstadoCanvas(canvas, true);
-      dibujarTornillo(ctx, coords.x, coords.y, modoTornillo);
+      setTornillosSuperior(prev => [...prev, { x: coords.x, y: coords.y, color: modoTornillo, rotacion: orientacionTornillo }]);
       reproducirSonidoTornillo();
+      return;
+    }
+    if (modoRX) {
+      guardarEstadoCanvas(canvas, true);
+      ctx.font = 'bold 28px Arial';
+      ctx.fillStyle = '#dc2626';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('RX', coords.x, coords.y);
       return;
     }
     
@@ -201,7 +234,7 @@ const OdontogramaCompletoHibrido = () => {
     ctx.beginPath();
     ctx.moveTo(coords.x, coords.y);
     isDrawingSuperior.current = true;
-  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, dibujarTornillo]);
+  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, orientacionTornillo, modoRX]);
 
   const drawSuperior = useCallback((e) => {
     if (!isDrawingSuperior.current) return;
@@ -245,9 +278,17 @@ const OdontogramaCompletoHibrido = () => {
     const ctx = canvas.getContext('2d');
 
     if (modoTornillo) {
-      guardarEstadoCanvas(canvas, false);
-      dibujarTornillo(ctx, coords.x, coords.y, modoTornillo);
+      setTornillosInferior(prev => [...prev, { x: coords.x, y: coords.y, color: modoTornillo, rotacion: orientacionTornillo }]);
       reproducirSonidoTornillo();
+      return;
+    }
+    if (modoRX) {
+      guardarEstadoCanvas(canvas, false);
+      ctx.font = 'bold 28px Arial';
+      ctx.fillStyle = '#dc2626';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('RX', coords.x, coords.y);
       return;
     }
     
@@ -255,7 +296,7 @@ const OdontogramaCompletoHibrido = () => {
     ctx.beginPath();
     ctx.moveTo(coords.x, coords.y);
     isDrawingInferior.current = true;
-  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, dibujarTornillo]);
+  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, orientacionTornillo, modoRX]);
 
   const drawInferior = useCallback((e) => {
     if (!isDrawingInferior.current) return;
@@ -289,7 +330,72 @@ const OdontogramaCompletoHibrido = () => {
     isDrawingInferior.current = false;
   }, []);
 
-  
+  const halfTornillo = TORNILLO_SIZE / 2;
+  const hitTestTornillo = (list, x, y) => {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const t = list[i];
+      if (x >= t.x - halfTornillo && x <= t.x + halfTornillo && y >= t.y - halfTornillo && y <= t.y + halfTornillo) return i;
+    }
+    return -1;
+  };
+
+  const handleTornillosMouseDown = useCallback((esSuperior, e) => {
+    e.preventDefault();
+    const canvas = esSuperior ? canvasSuperiorTornillosRef.current : canvasInferiorTornillosRef.current;
+    if (!canvas) return;
+    const coords = getCanvasCoordinates(canvas, e.nativeEvent || e);
+    const list = esSuperior ? tornillosSuperior : tornillosInferior;
+    const index = hitTestTornillo(list, coords.x, coords.y);
+    if (modoRotarTornillo) {
+      if (index >= 0) {
+        const siguiente = ((list[index].rotacion ?? 0) + 90) % 360;
+        if (esSuperior) {
+          setTornillosSuperior(prev => {
+            const next = [...prev];
+            next[index] = { ...next[index], rotacion: siguiente };
+            return next;
+          });
+        } else {
+          setTornillosInferior(prev => {
+            const next = [...prev];
+            next[index] = { ...next[index], rotacion: siguiente };
+            return next;
+          });
+        }
+        reproducirSonidoClick();
+      }
+      return;
+    }
+    if (!modoMoverTornillo) return;
+    if (index >= 0) draggingTornilloRef.current = { superior: esSuperior, index };
+  }, [modoMoverTornillo, modoRotarTornillo, getCanvasCoordinates, tornillosSuperior, tornillosInferior]);
+
+  const handleTornillosMouseMove = useCallback((esSuperior, e) => {
+    const dr = draggingTornilloRef.current;
+    if (!dr || dr.superior !== esSuperior) return;
+    e.preventDefault();
+    const canvas = esSuperior ? canvasSuperiorTornillosRef.current : canvasInferiorTornillosRef.current;
+    if (!canvas) return;
+    const coords = getCanvasCoordinates(canvas, e.nativeEvent || e);
+    if (esSuperior) {
+      setTornillosSuperior(prev => {
+        const next = [...prev];
+        if (next[dr.index]) next[dr.index] = { ...next[dr.index], x: coords.x, y: coords.y };
+        return next;
+      });
+    } else {
+      setTornillosInferior(prev => {
+        const next = [...prev];
+        if (next[dr.index]) next[dr.index] = { ...next[dr.index], x: coords.x, y: coords.y };
+        return next;
+      });
+    }
+  }, [getCanvasCoordinates]);
+
+  const handleTornillosMouseUp = useCallback(() => {
+    draggingTornilloRef.current = null;
+  }, []);
+
   const GuargarOdontograma = useCallback(() => {
     const canvasSuperior = canvasSuperiorRef.current;
     const canvasInferior = canvasInferiorRef.current;
@@ -301,13 +407,17 @@ const OdontogramaCompletoHibrido = () => {
       return;
     }
 
-    // Componer base + trazos para cada arco
+    const canvasSuperiorTornillos = canvasSuperiorTornillosRef.current;
+    const canvasInferiorTornillos = canvasInferiorTornillosRef.current;
+
+    // Componer base + trazos + tornillos para cada arco
     const compSuperior = document.createElement('canvas');
     compSuperior.width = canvasSuperior.width;
     compSuperior.height = canvasSuperior.height;
     const ctxSup = compSuperior.getContext('2d');
     ctxSup.drawImage(canvasSuperior, 0, 0);
     ctxSup.drawImage(canvasSuperiorStrokes, 0, 0);
+    if (canvasSuperiorTornillos) ctxSup.drawImage(canvasSuperiorTornillos, 0, 0);
 
     const compInferior = document.createElement('canvas');
     compInferior.width = canvasInferior.width;
@@ -315,6 +425,7 @@ const OdontogramaCompletoHibrido = () => {
     const ctxInf = compInferior.getContext('2d');
     ctxInf.drawImage(canvasInferior, 0, 0);
     ctxInf.drawImage(canvasInferiorStrokes, 0, 0);
+    if (canvasInferiorTornillos) ctxInf.drawImage(canvasInferiorTornillos, 0, 0);
 
     const combinedWidth = Math.max(compSuperior.width, compInferior.width);
     const combinedHeight = compSuperior.height + compInferior.height;
@@ -539,7 +650,21 @@ const OdontogramaCompletoHibrido = () => {
       canvasInferiorStrokesRef.current.width = w;
       canvasInferiorStrokesRef.current.height = h;
     }
+    if (canvasSuperiorTornillosRef.current) {
+      canvasSuperiorTornillosRef.current.width = w;
+      canvasSuperiorTornillosRef.current.height = h;
+    }
+    if (canvasInferiorTornillosRef.current) {
+      canvasInferiorTornillosRef.current.width = w;
+      canvasInferiorTornillosRef.current.height = h;
+    }
   }, [imagenOdontograma]);
+
+  // Redibujar capas de tornillos cuando cambian las listas
+  useEffect(() => {
+    redrawTornillosLayer(true);
+    redrawTornillosLayer(false);
+  }, [tornillosSuperior, tornillosInferior, redrawTornillosLayer]);
 
   useEffect(() => {
     cargarOpcionesTratamiento();
@@ -611,7 +736,7 @@ const OdontogramaCompletoHibrido = () => {
 
 
   const clearCanvas = useCallback(() => {
-    // Limpiar solo la capa de trazos (la imagen base no se toca)
+    // Limpiar capa de trazos y capa de tornillos
     if (canvasSuperiorStrokesRef.current) {
       const ctx = canvasSuperiorStrokesRef.current.getContext('2d');
       ctx.clearRect(0, 0, canvasSuperiorStrokesRef.current.width, canvasSuperiorStrokesRef.current.height);
@@ -620,7 +745,17 @@ const OdontogramaCompletoHibrido = () => {
       const ctx = canvasInferiorStrokesRef.current.getContext('2d');
       ctx.clearRect(0, 0, canvasInferiorStrokesRef.current.width, canvasInferiorStrokesRef.current.height);
     }
+    if (canvasSuperiorTornillosRef.current) {
+      const ctx = canvasSuperiorTornillosRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasSuperiorTornillosRef.current.width, canvasSuperiorTornillosRef.current.height);
+    }
+    if (canvasInferiorTornillosRef.current) {
+      const ctx = canvasInferiorTornillosRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasInferiorTornillosRef.current.width, canvasInferiorTornillosRef.current.height);
+    }
     setHistorialUnificado([]);
+    setTornillosSuperior([]);
+    setTornillosInferior([]);
     setDibujoGuardado("");
   }, []);
 
@@ -1065,10 +1200,10 @@ const OdontogramaCompletoHibrido = () => {
         }
       `}</style>
       <div className="col-md-10" style={{ padding: '20px', minHeight: '100vh' }}>
-      {/* HEADER INFO */}
+      {/* HEADER: Volver + Paciente / Médico */}
       <div className="card shadow-sm mb-3 border-left border-primary" style={{ borderLeftWidth: '5px' }}>
-        <div className="card-body py-2">
-          <div className="row">
+        <div className="card-body py-2 d-flex justify-content-between align-items-center flex-wrap">
+          <div className="row flex-grow-1 mb-0">
             <div className="col-md-6 border-right">
               <label className="small font-weight-bold text-uppercase text-muted mb-0">Paciente</label>
               <div className="h5 font-weight-bold mb-0 text-dark">
@@ -1082,25 +1217,19 @@ const OdontogramaCompletoHibrido = () => {
               </div>
             </div>
           </div>
+          <Link 
+            to={`/ver_odontogramas/${id_paciente}`}
+            className="btn btn-secondary ml-2"
+            style={{
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <i className="fas fa-arrow-left me-2"></i>Volver
+          </Link>
         </div>
-      </div>
-
-      <br /><br />
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="font-weight-bold text-dark mb-0 border-bottom pb-2" style={{ flex: 1 }}>Creación de Odontograma</h4>
-        <Link 
-          to={`/ver_odontogramas/${id_paciente}`}
-          className="btn btn-secondary ml-3"
-          style={{
-            borderRadius: '8px',
-            padding: '10px 20px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <i className="fas fa-arrow-left me-2"></i>Volver
-        </Link>
       </div>
 
       <div className="row">
@@ -1138,10 +1267,10 @@ const OdontogramaCompletoHibrido = () => {
                         : 'white',
                       color: tipoOdontograma === "adulto" ? 'white' : '#667eea',
                       border: tipoOdontograma === "adulto" ? 'none' : '2px solid #667eea',
-                      borderRadius: '12px',
-                      padding: '14px 28px',
+                      borderRadius: '10px',
+                      padding: '8px 18px',
                       fontWeight: '600',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       boxShadow: tipoOdontograma === "adulto" 
                         ? '0 4px 15px rgba(102, 126, 234, 0.4)' 
                         : '0 2px 8px rgba(0,0,0,0.1)',
@@ -1149,8 +1278,8 @@ const OdontogramaCompletoHibrido = () => {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      minWidth: '160px',
+                      gap: '8px',
+                      minWidth: '100px',
                       justifyContent: 'center'
                     }}
                     onMouseEnter={(e) => {
@@ -1166,7 +1295,7 @@ const OdontogramaCompletoHibrido = () => {
                       }
                     }}
                   >
-                    <i className="fas fa-user" style={{ fontSize: '18px' }}></i>
+                    <i className="fas fa-user" style={{ fontSize: '14px' }}></i>
                     <span>Adulto</span>
                   </button>
                   <button 
@@ -1178,10 +1307,10 @@ const OdontogramaCompletoHibrido = () => {
                         : 'white',
                       color: tipoOdontograma === "nino" ? 'white' : '#f5576c',
                       border: tipoOdontograma === "nino" ? 'none' : '2px solid #f5576c',
-                      borderRadius: '12px',
-                      padding: '14px 28px',
+                      borderRadius: '10px',
+                      padding: '8px 18px',
                       fontWeight: '600',
-                      fontSize: '15px',
+                      fontSize: '13px',
                       boxShadow: tipoOdontograma === "nino" 
                         ? '0 4px 15px rgba(245, 87, 108, 0.4)' 
                         : '0 2px 8px rgba(0,0,0,0.1)',
@@ -1189,8 +1318,8 @@ const OdontogramaCompletoHibrido = () => {
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      minWidth: '200px',
+                      gap: '8px',
+                      minWidth: '140px',
                       justifyContent: 'center'
                     }}
                     onMouseEnter={(e) => {
@@ -1206,229 +1335,10 @@ const OdontogramaCompletoHibrido = () => {
                       }
                     }}
                   >
-                    <i className="fas fa-child" style={{ fontSize: '18px' }}></i>
+                    <i className="fas fa-child" style={{ fontSize: '14px' }}></i>
                     <span>Niño (Dientes de Leche)</span>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* PANEL DE HERRAMIENTAS - Estilo moderno */}
-          <div
-            className="mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-              borderRadius: '16px',
-              padding: '20px 24px',
-              boxShadow: '0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06)',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-              <span style={{
-                width: 36,
-                height: 36,
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: '16px',
-                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
-              }}>
-                <i className="fas fa-pencil-alt"></i>
-              </span>
-              <h6 style={{
-                margin: 0,
-                fontWeight: 700,
-                fontSize: '15px',
-                color: '#334155',
-                letterSpacing: '-0.02em',
-              }}>
-                Herramientas de dibujo
-              </h6>
-            </div>
-
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '16px',
-              rowGap: '14px',
-            }}>
-              {/* Implantes */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '12px',
-                border: '1px solid rgba(148, 163, 184, 0.15)',
-              }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Implantes</span>
-                <button
-                  onClick={() => {
-                    reproducirSonidoClick();
-                    setModoBorrador(false);
-                    setModoTornillo(modoTornillo === 'rojo' ? null : 'rojo');
-                  }}
-                  title="Tornillo rojo - clic en la imagen para colocar"
-                  style={{
-                    minWidth: 100,
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    border: modoTornillo === 'rojo' ? '2px solid #dc2626' : '1px solid #fecaca',
-                    background: modoTornillo === 'rojo' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : '#fff',
-                    color: modoTornillo === 'rojo' ? '#fff' : '#b91c1c',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: modoTornillo === 'rojo' ? '0 2px 8px rgba(220, 38, 38, 0.3)' : 'none',
-                  }}
-                >
-                  <i className="fas fa-screwdriver" style={{ marginRight: 6 }}></i> Rojo
-                </button>
-                <button
-                  onClick={() => {
-                    reproducirSonidoClick();
-                    setModoBorrador(false);
-                    setModoTornillo(modoTornillo === 'azul' ? null : 'azul');
-                  }}
-                  title="Tornillo azul - clic en la imagen para colocar"
-                  style={{
-                    minWidth: 100,
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    border: modoTornillo === 'azul' ? '2px solid #2563eb' : '1px solid #bfdbfe',
-                    background: modoTornillo === 'azul' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#fff',
-                    color: modoTornillo === 'azul' ? '#fff' : '#1d4ed8',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: modoTornillo === 'azul' ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
-                  }}
-                >
-                  <i className="fas fa-screwdriver" style={{ marginRight: 6 }}></i> Azul
-                </button>
-              </div>
-
-              {/* Colores */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 14px',
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '12px',
-                border: '1px solid rgba(148, 163, 184, 0.15)',
-              }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Lápiz</span>
-                {[
-                  { id: 'red', label: 'Rojo', emoji: '🔴', bg: '#ef4444', border: '#fecaca', active: colorDibujo === 'red' },
-                  { id: 'blue', label: 'Azul', emoji: '🔵', bg: '#3b82f6', border: '#bfdbfe', active: colorDibujo === 'blue' },
-                  { id: 'green', label: 'Verde', emoji: '🟢', bg: '#22c55e', border: '#bbf7d0', active: colorDibujo === 'green' },
-                  { id: 'black', label: 'Negro', emoji: '⚫', bg: '#1e293b', border: '#cbd5e1', active: colorDibujo === 'black' },
-                ].map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => { setModoBorrador(false); setModoTornillo(null); setColorDibujo(c.id); }}
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: '10px',
-                      border: c.active ? `2px solid ${c.bg}` : `1px solid ${c.border}`,
-                      background: c.active ? c.bg : '#fff',
-                      color: c.active ? '#fff' : c.bg,
-                      fontSize: '18px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: c.active ? `0 2px 8px ${c.border}` : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    title={c.label}
-                  >
-                    {c.emoji}
-                  </button>
-                ))}
-              </div>
-
-              {/* Acciones */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 14px',
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '12px',
-                border: '1px solid rgba(148, 163, 184, 0.15)',
-              }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Acciones</span>
-                <button
-                  onClick={() => {
-                    reproducirSonidoClick();
-                    setModoTornillo(null);
-                    setModoBorrador(!modoBorrador);
-                  }}
-                  title={modoBorrador ? 'Desactivar borrador' : 'Activar borrador'}
-                  style={{
-                    minWidth: 110,
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    border: modoBorrador ? '2px solid #64748b' : '1px solid #e2e8f0',
-                    background: modoBorrador ? '#475569' : '#fff',
-                    color: modoBorrador ? '#fff' : '#475569',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <i className="fa fa-eraser" style={{ marginRight: 6 }}></i> {modoBorrador ? 'Borrador ON' : 'Borrador'}
-                </button>
-                <button
-                  onClick={clearCanvas}
-                  style={{
-                    minWidth: 100,
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #e2e8f0',
-                    background: '#fff',
-                    color: '#64748b',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <i className="fa fa-trash" style={{ marginRight: 6 }}></i> Borrar todo
-                </button>
-                <button
-                  onClick={deshacer}
-                  disabled={historialUnificado.length === 0}
-                  title="Deshacer último trazo (Ctrl+Z)"
-                  style={{
-                    minWidth: 100,
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #fcd34d',
-                    background: historialUnificado.length === 0 ? '#fef3c7' : '#fef9c3',
-                    color: historialUnificado.length === 0 ? '#a3a3a3' : '#b45309',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    cursor: historialUnificado.length === 0 ? 'not-allowed' : 'pointer',
-                    opacity: historialUnificado.length === 0 ? 0.7 : 1,
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <i className="fas fa-undo" style={{ marginRight: 6 }}></i> Deshacer
-                </button>
               </div>
             </div>
           </div>
@@ -1485,7 +1395,7 @@ const OdontogramaCompletoHibrido = () => {
                       width: 'auto',
                       height: 'auto',
                       display: 'block',
-                      pointerEvents: 'auto'
+                      pointerEvents: (modoMoverTornillo || modoRotarTornillo) ? 'none' : 'auto'
                     }}
                     onMouseDown={startDrawingSuperior}
                     onMouseMove={drawSuperior}
@@ -1494,6 +1404,28 @@ const OdontogramaCompletoHibrido = () => {
                     onTouchStart={startDrawingSuperior}
                     onTouchMove={drawSuperior}
                     onTouchEnd={endDrawingSuperior}
+                  />
+                  <canvas
+                    ref={canvasSuperiorTornillosRef}
+                    style={{ 
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      border: 'none',
+                      pointerEvents: (modoMoverTornillo || modoRotarTornillo) ? 'auto' : 'none',
+                      cursor: modoMoverTornillo ? 'grab' : (modoRotarTornillo ? 'pointer' : 'default'),
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      display: 'block'
+                    }}
+                    onMouseDown={(e) => handleTornillosMouseDown(true, e)}
+                    onMouseMove={(e) => handleTornillosMouseMove(true, e)}
+                    onMouseUp={handleTornillosMouseUp}
+                    onMouseLeave={handleTornillosMouseUp}
+                    onTouchStart={(e) => handleTornillosMouseDown(true, e)}
+                    onTouchMove={(e) => handleTornillosMouseMove(true, e)}
+                    onTouchEnd={handleTornillosMouseUp}
                   />
                 </div>
               </div>
@@ -1559,7 +1491,7 @@ const OdontogramaCompletoHibrido = () => {
                       width: 'auto',
                       height: 'auto',
                       display: 'block',
-                      pointerEvents: 'auto'
+                      pointerEvents: (modoMoverTornillo || modoRotarTornillo) ? 'none' : 'auto'
                     }}
                     onMouseDown={startDrawingInferior}
                     onMouseMove={drawInferior}
@@ -1568,6 +1500,28 @@ const OdontogramaCompletoHibrido = () => {
                     onTouchStart={startDrawingInferior}
                     onTouchMove={drawInferior}
                     onTouchEnd={endDrawingInferior}
+                  />
+                  <canvas
+                    ref={canvasInferiorTornillosRef}
+                    style={{ 
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      border: 'none',
+                      pointerEvents: (modoMoverTornillo || modoRotarTornillo) ? 'auto' : 'none',
+                      cursor: modoMoverTornillo ? 'grab' : (modoRotarTornillo ? 'pointer' : 'default'),
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      display: 'block'
+                    }}
+                    onMouseDown={(e) => handleTornillosMouseDown(false, e)}
+                    onMouseMove={(e) => handleTornillosMouseMove(false, e)}
+                    onMouseUp={handleTornillosMouseUp}
+                    onMouseLeave={handleTornillosMouseUp}
+                    onTouchStart={(e) => handleTornillosMouseDown(false, e)}
+                    onTouchMove={(e) => handleTornillosMouseMove(false, e)}
+                    onTouchEnd={handleTornillosMouseUp}
                   />
                 </div>
               </div>
@@ -1623,11 +1577,21 @@ const OdontogramaCompletoHibrido = () => {
                       {presupuesto.some(p => p.diente === seleccionCara.diente && p.cara === seleccionCara.cara) && (
                         <button
                           type="button"
-                          className="btn btn-sm btn-light text-danger border-0"
+                          className="btn font-weight-bold"
                           onClick={() => limpiarCara(seleccionCara.diente, seleccionCara.cara)}
-                          title="Quitar color/procedimiento de esta cara"
+                          title="Quitar color y procedimiento de esta cara"
+                          style={{
+                            background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '10px 18px',
+                            borderRadius: '10px',
+                            fontSize: '15px',
+                            boxShadow: '0 4px 12px rgba(220, 53, 69, 0.45)',
+                            whiteSpace: 'nowrap'
+                          }}
                         >
-                          <i className="fas fa-eraser me-1"></i> Limpiar cara
+                          <i className="fas fa-eraser me-2"></i> Limpiar cara
                         </button>
                       )}
                       <button 
@@ -1651,6 +1615,28 @@ const OdontogramaCompletoHibrido = () => {
 
                   {/* Body del Modal */}
                   <div className="modal-body p-4" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    {/* Opción destacada: Limpiar cara */}
+                    {presupuesto.some(p => p.diente === seleccionCara.diente && p.cara === seleccionCara.cara) && (
+                      <div className="mb-4 p-3 rounded" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%)', border: '2px solid #fecaca' }}>
+                        <span className="d-block mb-2 small text-muted font-weight-bold text-uppercase">Quitar marcado de esta cara</span>
+                        <button
+                          type="button"
+                          className="btn font-weight-bold"
+                          onClick={() => limpiarCara(seleccionCara.diente, seleccionCara.cara)}
+                          style={{
+                            background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '10px',
+                            fontSize: '15px',
+                            boxShadow: '0 4px 12px rgba(220, 53, 69, 0.4)'
+                          }}
+                        >
+                          <i className="fas fa-eraser me-2"></i> Limpiar cara
+                        </button>
+                      </div>
+                    )}
                     {/* Paleta de opciones rápidas */}
                     <div className="mb-4 pb-3 border-bottom">
                       <label className="form-label mb-2 d-block" style={{ fontSize: '14px', fontWeight: 'bold', color: '#495057' }}>
@@ -1923,8 +1909,81 @@ const OdontogramaCompletoHibrido = () => {
 
         </div>
 
-        {/* LISTA DE EVOLUCIÓN (DERECHA) */}
+        {/* HERRAMIENTAS + RESUMEN DEL PLAN (DERECHA) */}
         <div className="col-lg-4">
+          {/* Herramientas de dibujo - flotante al hacer scroll */}
+          <div
+            className="mb-3"
+            style={{
+              position: 'sticky',
+              top: 16,
+              zIndex: 100,
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              borderRadius: '16px',
+              padding: '16px 18px',
+              boxShadow: '0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06)',
+              border: '1px solid rgba(148, 163, 184, 0.2)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <span style={{
+                width: 32,
+                height: 32,
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: '14px',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+              }}>
+                <i className="fas fa-pencil-alt"></i>
+              </span>
+              <h6 style={{ margin: 0, fontWeight: 700, fontSize: '14px', color: '#334155' }}>Herramientas de dibujo</h6>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', padding: '6px 10px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.15)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Implantes</span>
+                <button onClick={() => { reproducirSonidoClick(); setModoMoverTornillo(false); setModoRotarTornillo(false); setModoBorrador(false); setModoRX(false); setModoTornillo(modoTornillo === 'rojo' ? null : 'rojo'); }} title="Tornillo rojo" style={{ minWidth: 80, padding: '5px 10px', borderRadius: '8px', border: modoTornillo === 'rojo' ? '2px solid #dc2626' : '1px solid #fecaca', background: modoTornillo === 'rojo' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : '#fff', color: modoTornillo === 'rojo' ? '#fff' : '#b91c1c', fontWeight: 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img src={TORNILLO_ROJO_URL} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> Rojo
+                </button>
+                <button onClick={() => { reproducirSonidoClick(); setModoMoverTornillo(false); setModoRotarTornillo(false); setModoBorrador(false); setModoRX(false); setModoTornillo(modoTornillo === 'azul' ? null : 'azul'); }} title="Tornillo azul" style={{ minWidth: 80, padding: '5px 10px', borderRadius: '8px', border: modoTornillo === 'azul' ? '2px solid #2563eb' : '1px solid #bfdbfe', background: modoTornillo === 'azul' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#fff', color: modoTornillo === 'azul' ? '#fff' : '#1d4ed8', fontWeight: 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img src={TORNILLO_AZUL_URL} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> Azul
+                </button>
+                <button onClick={() => { reproducirSonidoClick(); setModoTornillo(null); setModoBorrador(false); setModoRotarTornillo(false); setModoRX(false); setModoMoverTornillo(prev => !prev); }} title="Mover tornillos" style={{ minWidth: 100, padding: '5px 10px', borderRadius: '8px', border: modoMoverTornillo ? '2px solid #0d9488' : '1px solid #99f6e4', background: modoMoverTornillo ? 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)' : '#fff', color: modoMoverTornillo ? '#fff' : '#0f766e', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                  <i className="fas fa-arrows-alt me-1"></i> Mover
+                </button>
+                <button onClick={() => { reproducirSonidoClick(); setModoTornillo(null); setModoBorrador(false); setModoMoverTornillo(false); setModoRX(false); setModoRotarTornillo(prev => !prev); }} title="Rotar tornillo" style={{ minWidth: 90, padding: '5px 10px', borderRadius: '8px', border: modoRotarTornillo ? '2px solid #7c3aed' : '1px solid #ddd6fe', background: modoRotarTornillo ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' : '#fff', color: modoRotarTornillo ? '#fff' : '#5b21b6', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                  <i className="fas fa-sync-alt me-1"></i> Rotar
+                </button>
+                <button onClick={() => { reproducirSonidoClick(); setModoTornillo(null); setModoBorrador(false); setModoMoverTornillo(false); setModoRotarTornillo(false); setModoRX(prev => !prev); }} title="Clic en el canvas para colocar texto RX (radiografía)" style={{ minWidth: 56, padding: '5px 10px', borderRadius: '8px', border: modoRX ? '2px solid #0f766e' : '1px solid #99f6e4', background: modoRX ? '#0f766e' : '#fff', color: modoRX ? '#fff' : '#0f766e', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+                  RX
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.15)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Lápiz</span>
+                {[{ id: 'red', emoji: '🔴', bg: '#ef4444', border: '#fecaca' }, { id: 'blue', emoji: '🔵', bg: '#3b82f6', border: '#bfdbfe' }, { id: 'green', emoji: '🟢', bg: '#22c55e', border: '#bbf7d0' }, { id: 'black', emoji: '⚫', bg: '#1e293b', border: '#cbd5e1' }].map((c) => (
+                  <button key={c.id} onClick={() => { setModoMoverTornillo(false); setModoRotarTornillo(false); setModoBorrador(false); setModoTornillo(null); setModoRX(false); setColorDibujo(c.id); }} title={c.id} style={{ width: 36, height: 36, borderRadius: '8px', border: colorDibujo === c.id ? `2px solid ${c.bg}` : `1px solid ${c.border}`, background: colorDibujo === c.id ? c.bg : '#fff', color: colorDibujo === c.id ? '#fff' : c.bg, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {c.emoji}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', padding: '6px 10px', background: 'rgba(255,255,255,0.7)', borderRadius: '10px', border: '1px solid rgba(148, 163, 184, 0.15)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Acciones</span>
+                <button onClick={() => { reproducirSonidoClick(); setModoMoverTornillo(false); setModoRotarTornillo(false); setModoTornillo(null); setModoRX(false); setModoBorrador(!modoBorrador); }} title="Borrador" style={{ padding: '5px 10px', borderRadius: '8px', border: modoBorrador ? '2px solid #64748b' : '1px solid #e2e8f0', background: modoBorrador ? '#475569' : '#fff', color: modoBorrador ? '#fff' : '#475569', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                  <i className="fa fa-eraser me-1"></i> {modoBorrador ? 'ON' : 'Borrador'}
+                </button>
+                <button onClick={() => { setModoMoverTornillo(false); setModoRotarTornillo(false); setModoRX(false); clearCanvas(); }} style={{ padding: '5px 10px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>
+                  <i className="fa fa-trash me-1"></i> Borrar
+                </button>
+                <button onClick={() => { setModoMoverTornillo(false); setModoRotarTornillo(false); setModoRX(false); deshacer(); }} disabled={historialUnificado.length === 0} title="Deshacer" style={{ padding: '5px 10px', borderRadius: '8px', border: '1px solid #fcd34d', background: historialUnificado.length === 0 ? '#fef3c7' : '#fef9c3', color: historialUnificado.length === 0 ? '#a3a3a3' : '#b45309', fontWeight: 600, fontSize: '12px', cursor: historialUnificado.length === 0 ? 'not-allowed' : 'pointer', opacity: historialUnificado.length === 0 ? 0.7 : 1 }}>
+                  <i className="fas fa-undo me-1"></i> Deshacer
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="card shadow-sm border-0">
             <div className="card-header bg-dark text-black font-weight-bold py-2">
               Resumen del Plan
