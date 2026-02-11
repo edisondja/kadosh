@@ -6,6 +6,10 @@ import Axios from "axios";
 import Alertify from "alertifyjs";
 import alertify from "alertifyjs";
 
+const TORNILLO_SIZE = 85;
+const TORNILLO_ROJO_URL = `${process.env.PUBLIC_URL || ''}/tornillo_rojo.png`;
+const TORNILLO_AZUL_URL = `${process.env.PUBLIC_URL || ''}/tornillo_azul.png`;
+
 
 const OPCIONES_TRATAMIENTO = [
   { id: 1, nombre: "Resina", precio: 45.00, color: "blue" },
@@ -31,6 +35,10 @@ const PIEZAS_NINO = [
   [85, 84, 83, 82, 81, 71, 72, 73, 74, 75]
 ];
 
+// Cursor con forma de borrador: al elegir Borrador el mouse se transforma en este icono sobre el canvas
+const CURSOR_BORRADOR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="3" y="12" width="20" height="14" rx="2" fill="#f5a9c8" stroke="#222" stroke-width="2"/><rect x="5" y="14" width="16" height="10" rx="1" fill="#ffcce0"/></svg>';
+const CURSOR_BORRADOR = 'url("data:image/svg+xml,' + encodeURIComponent(CURSOR_BORRADOR_SVG) + '") 16 24, crosshair';
+
 // --- COMPONENTE PRINCIPAL ---
 const OdontogramaCompletoHibrido = () => {
 
@@ -40,6 +48,8 @@ const OdontogramaCompletoHibrido = () => {
   const [presupuesto, setPresupuesto] = useState([]);
   const [seleccionCara, setSeleccionCara] = useState(null); // Para el odontograma cara a cara
   const [colorDibujo, setColorDibujo] = useState("red"); // Para el canvas principal
+  const [modoBorrador, setModoBorrador] = useState(false); // true = cursor borrador, los trazos que toque se eliminan
+  const [modoTornillo, setModoTornillo] = useState(null); // 'rojo' | 'azul' | null - simular implante con tornillos
   const [dibujoGuardado, setDibujoGuardado] = useState(Odontograma); // Almacena el Data URL del canvas principal
   const [opciones_tratamiento, setOpcionesTratamiento] = useState([]);
   const [filtroProcedimientos, setFiltroProcedimientos] = useState(""); // Filtro de búsqueda
@@ -51,15 +61,19 @@ const OdontogramaCompletoHibrido = () => {
   const [piezaAnimada, setPiezaAnimada] = useState(null); // Para animar la pieza clickeada
   const [piezaConImpacto, setPiezaConImpacto] = useState(null); // Para animación de impacto al agregar procedimiento/color
   const [imagenOdontograma, setImagenOdontograma] = useState(null); // Para almacenar la imagen cargada
-  const [historialSuperior, setHistorialSuperior] = useState([]); // Historial de estados del canvas superior
-  const [historialInferior, setHistorialInferior] = useState([]); // Historial de estados del canvas inferior
+  // Historial unificado: último trazo entrado es el primero en deshacerse (LIFO)
+  const [historialUnificado, setHistorialUnificado] = useState([]); // [{ esSuperior, state }]
 
   // === Lógica de los CANVAS ===
-  const canvasSuperiorRef = useRef(null);
+  const canvasSuperiorRef = useRef(null);       // Base: solo imagen del odontograma
   const canvasInferiorRef = useRef(null);
+  const canvasSuperiorStrokesRef = useRef(null); // Capa de trazos (lo que dibuja/borra el usuario)
+  const canvasInferiorStrokesRef = useRef(null);
   const isDrawingSuperior = useRef(false);
   const isDrawingInferior = useRef(false);
   const presupuestoScrollRef = useRef(null);
+  const imgTornilloRojoRef = useRef(null);
+  const imgTornilloAzulRef = useRef(null);
 
 
 
@@ -99,122 +113,176 @@ const OdontogramaCompletoHibrido = () => {
     };
   }, []);
 
-  // Guardar estado del canvas antes de dibujar
+  // Cargar imágenes PNG de tornillos (desde public/)
+  useEffect(() => {
+    const rojo = new Image();
+    rojo.onload = () => { imgTornilloRojoRef.current = rojo; };
+    rojo.src = TORNILLO_ROJO_URL;
+    const azul = new Image();
+    azul.onload = () => { imgTornilloAzulRef.current = azul; };
+    azul.src = TORNILLO_AZUL_URL;
+    return () => {
+      imgTornilloRojoRef.current = null;
+      imgTornilloAzulRef.current = null;
+    };
+  }, []);
+
+  // Dibujar un tornillo (implante) en el canvas: imagen PNG 50x50 o fallback círculo
+  const dibujarTornillo = useCallback((ctx, x, y, color) => {
+    if (!ctx) return;
+    const esRojo = color === 'rojo';
+    const img = esRojo ? imgTornilloRojoRef.current : imgTornilloAzulRef.current;
+    const half = TORNILLO_SIZE / 2;
+    if (img && img.complete && img.naturalWidth) {
+      ctx.drawImage(img, x - half, y - half, TORNILLO_SIZE, TORNILLO_SIZE);
+      return;
+    }
+    ctx.save();
+    ctx.fillStyle = esRojo ? '#c00' : '#06c';
+    ctx.strokeStyle = esRojo ? '#800' : '#004';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 3, y);
+    ctx.lineTo(x + 3, y);
+    ctx.stroke();
+    ctx.restore();
+  }, []);
+
+  // Guardar estado del canvas antes de dibujar (para deshacer último trazo en orden LIFO)
   const guardarEstadoCanvas = useCallback((canvas, esSuperior) => {
     if (!canvas) return;
     const estado = canvas.toDataURL('image/png');
-    if (esSuperior) {
-      setHistorialSuperior(prev => [...prev, estado]);
-    } else {
-      setHistorialInferior(prev => [...prev, estado]);
-    }
+    setHistorialUnificado(prev => [...prev, { esSuperior, state: estado }]);
   }, []);
 
-  // Función para deshacer el último trazo
-  const deshacerUltimoTrazo = useCallback((esSuperior) => {
-    const canvas = esSuperior ? canvasSuperiorRef.current : canvasInferiorRef.current;
-    const historial = esSuperior ? historialSuperior : historialInferior;
-    
-    if (!canvas || historial.length === 0) return;
-    
+  // Deshacer siempre el último trazo (restaura la capa de trazos; la imagen base no se toca)
+  const deshacer = useCallback(() => {
+    if (historialUnificado.length === 0) return;
+    const canvasSuperiorStrokes = canvasSuperiorStrokesRef.current;
+    const canvasInferiorStrokes = canvasInferiorStrokesRef.current;
+    const ultimo = historialUnificado[historialUnificado.length - 1];
+    const canvas = ultimo.esSuperior ? canvasSuperiorStrokes : canvasInferiorStrokes;
+    if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
-    const estadoAnterior = historial[historial.length - 1];
-    
     const img = new Image();
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
-      
-      // Remover el último estado del historial
-      if (esSuperior) {
-        setHistorialSuperior(prev => prev.slice(0, -1));
-      } else {
-        setHistorialInferior(prev => prev.slice(0, -1));
-      }
+      setHistorialUnificado(prev => prev.slice(0, -1));
     };
-    img.src = estadoAnterior;
-  }, [historialSuperior, historialInferior]);
+    img.src = ultimo.state;
+  }, [historialUnificado]);
 
-  // Función para deshacer en el canvas activo (el último que se dibujó)
-  const deshacer = useCallback(() => {
-    // Intentar deshacer en ambos canvas, empezando por el que tenga historial
-    if (historialSuperior.length > 0) {
-      deshacerUltimoTrazo(true);
-    } else if (historialInferior.length > 0) {
-      deshacerUltimoTrazo(false);
-    }
-  }, [historialSuperior, historialInferior, deshacerUltimoTrazo]);
-
-  // Funciones para dibujar en canvas superior
+  // Funciones para dibujar en la capa de trazos (solo trazos; la imagen base no se toca)
   const startDrawingSuperior = useCallback((e) => {
     e.preventDefault();
-    const canvas = canvasSuperiorRef.current;
+    const canvas = canvasSuperiorStrokesRef.current;
     if (!canvas) return;
-    
-    // Guardar estado antes de empezar a dibujar
-    guardarEstadoCanvas(canvas, true);
     
     const event = e.nativeEvent || e;
     const coords = getCanvasCoordinates(canvas, event);
     const ctx = canvas.getContext('2d');
+
+    if (modoTornillo) {
+      guardarEstadoCanvas(canvas, true);
+      dibujarTornillo(ctx, coords.x, coords.y, modoTornillo);
+      reproducirSonidoTornillo();
+      return;
+    }
+    
+    guardarEstadoCanvas(canvas, true);
     ctx.beginPath();
     ctx.moveTo(coords.x, coords.y);
     isDrawingSuperior.current = true;
-  }, [getCanvasCoordinates, guardarEstadoCanvas]);
+  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, dibujarTornillo]);
 
   const drawSuperior = useCallback((e) => {
     if (!isDrawingSuperior.current) return;
     e.preventDefault();
-    const canvas = canvasSuperiorRef.current;
+    const canvas = canvasSuperiorStrokesRef.current;
     if (!canvas) return;
     
     const event = e.nativeEvent || e;
     const coords = getCanvasCoordinates(canvas, event);
     const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = colorDibujo;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  }, [colorDibujo, getCanvasCoordinates]);
+    if (modoBorrador) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+      ctx.lineWidth = 16;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      ctx.strokeStyle = colorDibujo;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+    }
+  }, [colorDibujo, modoBorrador, getCanvasCoordinates]);
 
   const endDrawingSuperior = useCallback((e) => {
     if (e) e.preventDefault();
     isDrawingSuperior.current = false;
   }, []);
 
-  // Funciones para dibujar en canvas inferior
   const startDrawingInferior = useCallback((e) => {
     e.preventDefault();
-    const canvas = canvasInferiorRef.current;
+    const canvas = canvasInferiorStrokesRef.current;
     if (!canvas) return;
-    
-    // Guardar estado antes de empezar a dibujar
-    guardarEstadoCanvas(canvas, false);
     
     const event = e.nativeEvent || e;
     const coords = getCanvasCoordinates(canvas, event);
     const ctx = canvas.getContext('2d');
+
+    if (modoTornillo) {
+      guardarEstadoCanvas(canvas, false);
+      dibujarTornillo(ctx, coords.x, coords.y, modoTornillo);
+      reproducirSonidoTornillo();
+      return;
+    }
+    
+    guardarEstadoCanvas(canvas, false);
     ctx.beginPath();
     ctx.moveTo(coords.x, coords.y);
     isDrawingInferior.current = true;
-  }, [getCanvasCoordinates, guardarEstadoCanvas]);
+  }, [getCanvasCoordinates, guardarEstadoCanvas, modoTornillo, dibujarTornillo]);
 
   const drawInferior = useCallback((e) => {
     if (!isDrawingInferior.current) return;
     e.preventDefault();
-    const canvas = canvasInferiorRef.current;
+    const canvas = canvasInferiorStrokesRef.current;
     if (!canvas) return;
     
     const event = e.nativeEvent || e;
     const coords = getCanvasCoordinates(canvas, event);
     const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = colorDibujo;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineTo(coords.x, coords.y);
-    ctx.stroke();
-  }, [colorDibujo, getCanvasCoordinates]);
+    if (modoBorrador) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+      ctx.lineWidth = 16;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      ctx.strokeStyle = colorDibujo;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+    }
+  }, [colorDibujo, modoBorrador, getCanvasCoordinates]);
 
   const endDrawingInferior = useCallback((e) => {
     if (e) e.preventDefault();
@@ -223,44 +291,55 @@ const OdontogramaCompletoHibrido = () => {
 
   
   const GuargarOdontograma = useCallback(() => {
-    // Combinar ambos canvas (superior e inferior) en uno solo
     const canvasSuperior = canvasSuperiorRef.current;
     const canvasInferior = canvasInferiorRef.current;
-    
-    if (!canvasSuperior || !canvasInferior) {
+    const canvasSuperiorStrokes = canvasSuperiorStrokesRef.current;
+    const canvasInferiorStrokes = canvasInferiorStrokesRef.current;
+
+    if (!canvasSuperior || !canvasInferior || !canvasSuperiorStrokes || !canvasInferiorStrokes) {
       Alertify.error("Error: No se puede acceder a los canvas.");
       return;
     }
 
-    // Crear un canvas combinado
-    const combinedWidth = Math.max(canvasSuperior.width, canvasInferior.width);
-    const combinedHeight = canvasSuperior.height + canvasInferior.height;
-    
-    // Redimensionar si es muy grande
+    // Componer base + trazos para cada arco
+    const compSuperior = document.createElement('canvas');
+    compSuperior.width = canvasSuperior.width;
+    compSuperior.height = canvasSuperior.height;
+    const ctxSup = compSuperior.getContext('2d');
+    ctxSup.drawImage(canvasSuperior, 0, 0);
+    ctxSup.drawImage(canvasSuperiorStrokes, 0, 0);
+
+    const compInferior = document.createElement('canvas');
+    compInferior.width = canvasInferior.width;
+    compInferior.height = canvasInferior.height;
+    const ctxInf = compInferior.getContext('2d');
+    ctxInf.drawImage(canvasInferior, 0, 0);
+    ctxInf.drawImage(canvasInferiorStrokes, 0, 0);
+
+    const combinedWidth = Math.max(compSuperior.width, compInferior.width);
+    const combinedHeight = compSuperior.height + compInferior.height;
+
     const maxWidth = 1200;
     const maxHeight = 800;
     let finalWidth = combinedWidth;
     let finalHeight = combinedHeight;
-    
+
     if (finalWidth > maxWidth || finalHeight > maxHeight) {
       const ratio = Math.min(maxWidth / finalWidth, maxHeight / finalHeight);
       finalWidth = finalWidth * ratio;
       finalHeight = finalHeight * ratio;
     }
 
-    // Crear canvas temporal para la imagen combinada
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = finalWidth;
     tempCanvas.height = finalHeight;
     const tempCtx = tempCanvas.getContext('2d');
-    
-    // Dibujar canvas superior escalado
-    const superiorHeight = (canvasSuperior.height / combinedHeight) * finalHeight;
-    tempCtx.drawImage(canvasSuperior, 0, 0, finalWidth, superiorHeight);
-    
-    // Dibujar canvas inferior escalado
-    const inferiorHeight = (canvasInferior.height / combinedHeight) * finalHeight;
-    tempCtx.drawImage(canvasInferior, 0, superiorHeight, finalWidth, inferiorHeight);
+
+    const superiorHeight = (compSuperior.height / combinedHeight) * finalHeight;
+    tempCtx.drawImage(compSuperior, 0, 0, finalWidth, superiorHeight);
+
+    const inferiorHeight = (compInferior.height / combinedHeight) * finalHeight;
+    tempCtx.drawImage(compInferior, 0, superiorHeight, finalWidth, inferiorHeight);
 
     // Convertir el canvas combinado a JPEG con calidad reducida
     const dibujoActual = tempCanvas.toDataURL('image/jpeg', 0.6);
@@ -420,44 +499,47 @@ const OdontogramaCompletoHibrido = () => {
     }
   }, []);
 
-  // Cargar la imagen del odontograma y dibujarla en los canvas
+  // Cargar la imagen del odontograma: base en un canvas, trazos en otra capa
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
       setImagenOdontograma(img);
-      
-      // Dibujar mitad superior en canvas superior
+      const w = img.width;
+      const h = img.height / 2;
+
       const canvasSuperior = canvasSuperiorRef.current;
       if (canvasSuperior) {
+        canvasSuperior.width = w;
+        canvasSuperior.height = h;
         const ctx = canvasSuperior.getContext('2d');
-        // Establecer el tamaño del canvas igual a la mitad de la imagen
-        canvasSuperior.width = img.width;
-        canvasSuperior.height = img.height / 2;
-        // Dibujar solo la mitad superior de la imagen (sourceY=0, sourceHeight=height/2)
-        ctx.drawImage(
-          img, 
-          0, 0, img.width, img.height / 2,  // Source: desde (0,0) hasta (width, height/2)
-          0, 0, img.width, img.height / 2   // Destination: todo el canvas
-        );
+        ctx.drawImage(img, 0, 0, w, h, 0, 0, w, h);
       }
-      
-      // Dibujar mitad inferior en canvas inferior
+
       const canvasInferior = canvasInferiorRef.current;
       if (canvasInferior) {
+        canvasInferior.width = w;
+        canvasInferior.height = h;
         const ctx = canvasInferior.getContext('2d');
-        // Establecer el tamaño del canvas igual a la mitad de la imagen
-        canvasInferior.width = img.width;
-        canvasInferior.height = img.height / 2;
-        // Dibujar solo la mitad inferior de la imagen (sourceY=height/2, sourceHeight=height/2)
-        ctx.drawImage(
-          img, 
-          0, img.height / 2, img.width, img.height / 2,  // Source: desde (0, height/2) hasta (width, height)
-          0, 0, img.width, img.height / 2                 // Destination: todo el canvas
-        );
+        ctx.drawImage(img, 0, h, w, h, 0, 0, w, h);
       }
     };
     img.src = Odontograma;
   }, []);
+
+  // Dimensionar la capa de trazos cuando ya está en el DOM (tras tener imagenOdontograma)
+  useEffect(() => {
+    if (!imagenOdontograma) return;
+    const w = imagenOdontograma.width;
+    const h = imagenOdontograma.height / 2;
+    if (canvasSuperiorStrokesRef.current) {
+      canvasSuperiorStrokesRef.current.width = w;
+      canvasSuperiorStrokesRef.current.height = h;
+    }
+    if (canvasInferiorStrokesRef.current) {
+      canvasInferiorStrokesRef.current.width = w;
+      canvasInferiorStrokesRef.current.height = h;
+    }
+  }, [imagenOdontograma]);
 
   useEffect(() => {
     cargarOpcionesTratamiento();
@@ -492,7 +574,7 @@ const OdontogramaCompletoHibrido = () => {
       // Ctrl+Z o Cmd+Z (Mac)
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
-        if (historialSuperior.length > 0 || historialInferior.length > 0) {
+        if (historialUnificado.length > 0) {
           deshacer();
         }
       }
@@ -503,7 +585,7 @@ const OdontogramaCompletoHibrido = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [historialSuperior, historialInferior, deshacer]);
+  }, [historialUnificado, deshacer]);
 
   // Preservar la posición del scroll cuando cambia el tipo de odontograma
   const scrollPositionRef = useRef(0);
@@ -529,39 +611,41 @@ const OdontogramaCompletoHibrido = () => {
 
 
   const clearCanvas = useCallback(() => {
-    // Limpiar canvas superior
-    if (canvasSuperiorRef.current) {
-      const ctx = canvasSuperiorRef.current.getContext('2d');
-      ctx.clearRect(0, 0, canvasSuperiorRef.current.width, canvasSuperiorRef.current.height);
-      // Redibujar la imagen base si existe
-      if (imagenOdontograma) {
-        ctx.drawImage(
-          imagenOdontograma, 
-          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2,
-          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2
-        );
-      }
+    // Limpiar solo la capa de trazos (la imagen base no se toca)
+    if (canvasSuperiorStrokesRef.current) {
+      const ctx = canvasSuperiorStrokesRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasSuperiorStrokesRef.current.width, canvasSuperiorStrokesRef.current.height);
     }
-    // Limpiar canvas inferior
-    if (canvasInferiorRef.current) {
-      const ctx = canvasInferiorRef.current.getContext('2d');
-      ctx.clearRect(0, 0, canvasInferiorRef.current.width, canvasInferiorRef.current.height);
-      // Redibujar la imagen base si existe
-      if (imagenOdontograma) {
-        ctx.drawImage(
-          imagenOdontograma, 
-          0, imagenOdontograma.height / 2, imagenOdontograma.width, imagenOdontograma.height / 2,
-          0, 0, imagenOdontograma.width, imagenOdontograma.height / 2
-        );
-      }
+    if (canvasInferiorStrokesRef.current) {
+      const ctx = canvasInferiorStrokesRef.current.getContext('2d');
+      ctx.clearRect(0, 0, canvasInferiorStrokesRef.current.width, canvasInferiorStrokesRef.current.height);
     }
-    // Limpiar historiales
-    setHistorialSuperior([]);
-    setHistorialInferior([]);
-    setDibujoGuardado(""); // Limpiar dibujo guardado
-  }, [imagenOdontograma]);
+    setHistorialUnificado([]);
+    setDibujoGuardado("");
+  }, []);
 
   // === Lógica del ODONTOGRAMA CARA A CARA ===
+  // Sonido metálico al colocar tornillo (ting/clink de metal)
+  const reproducirSonidoTornillo = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.06);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } catch (e) {
+      console.log('Audio no disponible');
+    }
+  };
+
   // Función para reproducir sonido de kick suave con bajo al hacer clic en piezas
   const reproducirSonidoMetalico = () => {
     try {
@@ -714,6 +798,7 @@ const OdontogramaCompletoHibrido = () => {
       cara: seleccionCara.cara, 
       tipo: "procedimiento", 
       precio: facturar ? (proc.precio || 0) : 0, // Si no se factura, precio es 0
+      color: 'red', // Por defecto se marca la pieza en rojo al agregar un procedimiento
       tempId: Date.now() 
     };
     setPresupuesto([...presupuesto, nuevo]);
@@ -762,7 +847,12 @@ const OdontogramaCompletoHibrido = () => {
     // alertify.message eliminado para no deformar el modal
   };
 
-    
+  // Limpiar el color/procedimiento de una cara (diente-cara)
+  const limpiarCara = useCallback((diente, cara) => {
+    setPresupuesto(prev => prev.filter(p => !(p.diente === diente && p.cara === cara)));
+    setSeleccionCara(null);
+    setFiltroProcedimientos("");
+  }, []);
 
   const total = presupuesto.reduce((acc, item) => acc + item.precio, 0);
 
@@ -1124,61 +1214,222 @@ const OdontogramaCompletoHibrido = () => {
             </div>
           </div>
 
-          {/* PANEL DE LÁPIZ */}
-          <div className="card shadow-sm p-4 bg-white mb-4">
-            <h6 className="font-weight-bold text-secondary mb-3">
-              <i className="fas fa-pencil-alt me-2"></i>Herramientas de Dibujo
-            </h6>
-            <div className="d-flex justify-content-around align-items-center flex-wrap gap-3">
-                <span className="font-weight-bold small">Color del Lápiz:</span>
-                <button 
-                  className={`btn btn-sm ${colorDibujo === 'red' ? 'btn-danger' : 'btn-outline-danger'}`} 
-                  onClick={() => setColorDibujo("red")}
-                  style={{ minWidth: '60px' }}
-                >
-                  🔴 Rojo
-                </button>
-                <button 
-                  className={`btn btn-sm ${colorDibujo === 'blue' ? 'btn-primary' : 'btn-outline-primary'}`} 
-                  onClick={() => setColorDibujo("blue")}
-                  style={{ minWidth: '60px' }}
-                >
-                  🔵 Azul
-                </button>
-                <button 
-                  className={`btn btn-sm ${colorDibujo === 'green' ? 'btn-success' : 'btn-outline-success'}`} 
-                  onClick={() => setColorDibujo("green")}
-                  style={{ minWidth: '60px' }}
-                >
-                  🟢 Verde
-                </button>
-                <button 
-                  className={`btn btn-sm ${colorDibujo === 'black' ? 'btn-dark' : 'btn-outline-dark'}`} 
-                  onClick={() => setColorDibujo("black")}
-                  style={{ minWidth: '60px' }}
-                >
-                  ⚫ Negro
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={clearCanvas}
-                  style={{ minWidth: '100px' }}
-                >
-                  <i className="fa fa-eraser me-1"></i> Borrar Todo
-                </button>
-                <button 
-                  className="btn btn-sm btn-outline-warning" 
-                  onClick={deshacer}
-                  disabled={historialSuperior.length === 0 && historialInferior.length === 0}
-                  style={{ 
-                    minWidth: '100px',
-                    opacity: (historialSuperior.length === 0 && historialInferior.length === 0) ? 0.5 : 1,
-                    cursor: (historialSuperior.length === 0 && historialInferior.length === 0) ? 'not-allowed' : 'pointer'
+          {/* PANEL DE HERRAMIENTAS - Estilo moderno */}
+          <div
+            className="mb-4"
+            style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              borderRadius: '16px',
+              padding: '20px 24px',
+              boxShadow: '0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06)',
+              border: '1px solid rgba(148, 163, 184, 0.2)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+              <span style={{
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: '16px',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+              }}>
+                <i className="fas fa-pencil-alt"></i>
+              </span>
+              <h6 style={{
+                margin: 0,
+                fontWeight: 700,
+                fontSize: '15px',
+                color: '#334155',
+                letterSpacing: '-0.02em',
+              }}>
+                Herramientas de dibujo
+              </h6>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '16px',
+              rowGap: '14px',
+            }}>
+              {/* Implantes */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px',
+                border: '1px solid rgba(148, 163, 184, 0.15)',
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Implantes</span>
+                <button
+                  onClick={() => {
+                    reproducirSonidoClick();
+                    setModoBorrador(false);
+                    setModoTornillo(modoTornillo === 'rojo' ? null : 'rojo');
                   }}
-                  title="Deshacer último trazo (Ctrl+Z)"
+                  title="Tornillo rojo - clic en la imagen para colocar"
+                  style={{
+                    minWidth: 100,
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: modoTornillo === 'rojo' ? '2px solid #dc2626' : '1px solid #fecaca',
+                    background: modoTornillo === 'rojo' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : '#fff',
+                    color: modoTornillo === 'rojo' ? '#fff' : '#b91c1c',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: modoTornillo === 'rojo' ? '0 2px 8px rgba(220, 38, 38, 0.3)' : 'none',
+                  }}
                 >
-                  <i className="fas fa-undo me-1"></i> Deshacer
+                  <i className="fas fa-screwdriver" style={{ marginRight: 6 }}></i> Rojo
                 </button>
+                <button
+                  onClick={() => {
+                    reproducirSonidoClick();
+                    setModoBorrador(false);
+                    setModoTornillo(modoTornillo === 'azul' ? null : 'azul');
+                  }}
+                  title="Tornillo azul - clic en la imagen para colocar"
+                  style={{
+                    minWidth: 100,
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: modoTornillo === 'azul' ? '2px solid #2563eb' : '1px solid #bfdbfe',
+                    background: modoTornillo === 'azul' ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#fff',
+                    color: modoTornillo === 'azul' ? '#fff' : '#1d4ed8',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: modoTornillo === 'azul' ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                  }}
+                >
+                  <i className="fas fa-screwdriver" style={{ marginRight: 6 }}></i> Azul
+                </button>
+              </div>
+
+              {/* Colores */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px',
+                border: '1px solid rgba(148, 163, 184, 0.15)',
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Lápiz</span>
+                {[
+                  { id: 'red', label: 'Rojo', emoji: '🔴', bg: '#ef4444', border: '#fecaca', active: colorDibujo === 'red' },
+                  { id: 'blue', label: 'Azul', emoji: '🔵', bg: '#3b82f6', border: '#bfdbfe', active: colorDibujo === 'blue' },
+                  { id: 'green', label: 'Verde', emoji: '🟢', bg: '#22c55e', border: '#bbf7d0', active: colorDibujo === 'green' },
+                  { id: 'black', label: 'Negro', emoji: '⚫', bg: '#1e293b', border: '#cbd5e1', active: colorDibujo === 'black' },
+                ].map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => { setModoBorrador(false); setModoTornillo(null); setColorDibujo(c.id); }}
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '10px',
+                      border: c.active ? `2px solid ${c.bg}` : `1px solid ${c.border}`,
+                      background: c.active ? c.bg : '#fff',
+                      color: c.active ? '#fff' : c.bg,
+                      fontSize: '18px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: c.active ? `0 2px 8px ${c.border}` : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title={c.label}
+                  >
+                    {c.emoji}
+                  </button>
+                ))}
+              </div>
+
+              {/* Acciones */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '12px',
+                border: '1px solid rgba(148, 163, 184, 0.15)',
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Acciones</span>
+                <button
+                  onClick={() => {
+                    reproducirSonidoClick();
+                    setModoTornillo(null);
+                    setModoBorrador(!modoBorrador);
+                  }}
+                  title={modoBorrador ? 'Desactivar borrador' : 'Activar borrador'}
+                  style={{
+                    minWidth: 110,
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: modoBorrador ? '2px solid #64748b' : '1px solid #e2e8f0',
+                    background: modoBorrador ? '#475569' : '#fff',
+                    color: modoBorrador ? '#fff' : '#475569',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <i className="fa fa-eraser" style={{ marginRight: 6 }}></i> {modoBorrador ? 'Borrador ON' : 'Borrador'}
+                </button>
+                <button
+                  onClick={clearCanvas}
+                  style={{
+                    minWidth: 100,
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #e2e8f0',
+                    background: '#fff',
+                    color: '#64748b',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <i className="fa fa-trash" style={{ marginRight: 6 }}></i> Borrar todo
+                </button>
+                <button
+                  onClick={deshacer}
+                  disabled={historialUnificado.length === 0}
+                  title="Deshacer último trazo (Ctrl+Z)"
+                  style={{
+                    minWidth: 100,
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #fcd34d',
+                    background: historialUnificado.length === 0 ? '#fef3c7' : '#fef9c3',
+                    color: historialUnificado.length === 0 ? '#a3a3a3' : '#b45309',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: historialUnificado.length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: historialUnificado.length === 0 ? 0.7 : 1,
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <i className="fas fa-undo" style={{ marginRight: 6 }}></i> Deshacer
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1198,28 +1449,53 @@ const OdontogramaCompletoHibrido = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   margin: '0 auto',
-                  overflow: 'auto'
+                  overflow: 'auto',
+                  cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair'
                 }}
               >
-                <canvas
-                  ref={canvasSuperiorRef}
+                <div 
                   style={{ 
-                    border: '1px solid #ccc', 
-                    cursor: 'crosshair', 
-                    touchAction: 'none',
-                    maxWidth: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    display: 'block'
+                    position: 'relative', 
+                    display: 'inline-block',
+                    cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair'
                   }}
-                  onMouseDown={startDrawingSuperior}
-                  onMouseMove={drawSuperior}
-                  onMouseUp={endDrawingSuperior}
-                  onMouseLeave={endDrawingSuperior}
-                  onTouchStart={startDrawingSuperior}
-                  onTouchMove={drawSuperior}
-                  onTouchEnd={endDrawingSuperior}
-                />
+                >
+                  <canvas
+                    ref={canvasSuperiorRef}
+                    style={{ 
+                      border: '1px solid #ccc', 
+                      display: 'block',
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      verticalAlign: 'top',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <canvas
+                    ref={canvasSuperiorStrokesRef}
+                    style={{ 
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      border: '1px solid #ccc',
+                      cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair',
+                      touchAction: 'none',
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      display: 'block',
+                      pointerEvents: 'auto'
+                    }}
+                    onMouseDown={startDrawingSuperior}
+                    onMouseMove={drawSuperior}
+                    onMouseUp={endDrawingSuperior}
+                    onMouseLeave={endDrawingSuperior}
+                    onTouchStart={startDrawingSuperior}
+                    onTouchMove={drawSuperior}
+                    onTouchEnd={endDrawingSuperior}
+                  />
+                </div>
               </div>
             )}
             
@@ -1247,28 +1523,53 @@ const OdontogramaCompletoHibrido = () => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   margin: '0 auto',
-                  overflow: 'auto'
+                  overflow: 'auto',
+                  cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair'
                 }}
               >
-                <canvas
-                  ref={canvasInferiorRef}
+                <div 
                   style={{ 
-                    border: '1px solid #ccc', 
-                    cursor: 'crosshair', 
-                    touchAction: 'none',
-                    maxWidth: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    display: 'block'
+                    position: 'relative', 
+                    display: 'inline-block',
+                    cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair'
                   }}
-                  onMouseDown={startDrawingInferior}
-                  onMouseMove={drawInferior}
-                  onMouseUp={endDrawingInferior}
-                  onMouseLeave={endDrawingInferior}
-                  onTouchStart={startDrawingInferior}
-                  onTouchMove={drawInferior}
-                  onTouchEnd={endDrawingInferior}
-                />
+                >
+                  <canvas
+                    ref={canvasInferiorRef}
+                    style={{ 
+                      border: '1px solid #ccc', 
+                      display: 'block',
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      verticalAlign: 'top',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                  <canvas
+                    ref={canvasInferiorStrokesRef}
+                    style={{ 
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      border: '1px solid #ccc',
+                      cursor: modoBorrador ? CURSOR_BORRADOR : 'crosshair',
+                      touchAction: 'none',
+                      maxWidth: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      display: 'block',
+                      pointerEvents: 'auto'
+                    }}
+                    onMouseDown={startDrawingInferior}
+                    onMouseMove={drawInferior}
+                    onMouseUp={endDrawingInferior}
+                    onMouseLeave={endDrawingInferior}
+                    onTouchStart={startDrawingInferior}
+                    onTouchMove={drawInferior}
+                    onTouchEnd={endDrawingInferior}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -1306,7 +1607,7 @@ const OdontogramaCompletoHibrido = () => {
                 <div className="modal-content shadow-lg" style={{ borderRadius: '16px', border: 'none' }}>
                   {/* Header del Modal */}
                   <div 
-                    className="modal-header text-white" 
+                    className="modal-header text-white d-flex align-items-center justify-content-between flex-wrap" 
                     style={{ 
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       borderRadius: '16px 16px 0 0',
@@ -1314,26 +1615,38 @@ const OdontogramaCompletoHibrido = () => {
                       padding: '20px 30px'
                     }}
                   >
-                    <h5 className="modal-title font-weight-bold" style={{ fontSize: '20px' }}>
+                    <h5 className="modal-title font-weight-bold mb-0" style={{ fontSize: '20px' }}>
                       <i className="fas fa-tooth me-2"></i>
                       Diente {seleccionCara.diente} - Cara {seleccionCara.cara}
                     </h5>
-                    <button 
-                      type="button" 
-                      className="close text-white" 
-                      onClick={() => {
-                        setSeleccionCara(null);
-                        setFiltroProcedimientos("");
-                      }}
-                      style={{ 
-                        fontSize: '28px',
-                        fontWeight: '300',
-                        opacity: 0.9,
-                        textShadow: 'none'
-                      }}
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
+                    <div className="d-flex align-items-center gap-2">
+                      {presupuesto.some(p => p.diente === seleccionCara.diente && p.cara === seleccionCara.cara) && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-light text-danger border-0"
+                          onClick={() => limpiarCara(seleccionCara.diente, seleccionCara.cara)}
+                          title="Quitar color/procedimiento de esta cara"
+                        >
+                          <i className="fas fa-eraser me-1"></i> Limpiar cara
+                        </button>
+                      )}
+                      <button 
+                        type="button" 
+                        className="close text-white" 
+                        onClick={() => {
+                          setSeleccionCara(null);
+                          setFiltroProcedimientos("");
+                        }}
+                        style={{ 
+                          fontSize: '28px',
+                          fontWeight: '300',
+                          opacity: 0.9,
+                          textShadow: 'none'
+                        }}
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Body del Modal */}

@@ -21,7 +21,9 @@ class  AgregarFactura extends React.Component{
             doctores:[],
             factura:'',
             boton_estado:true,
-            paciente: { nombre: '', apellido: '' }
+            paciente: { nombre: '', apellido: '' },
+            presupuestosPaciente: [],
+            filtroPresupuesto: ''
         };
         this.removeTodo = this.removeTodo.bind(this);
 
@@ -88,7 +90,52 @@ class  AgregarFactura extends React.Component{
         cargar_doctores.cargar_procedimientos(this);
         cargar_doctores.cargar_doctores(this);
         cargar_doctores.cargar_paciente(this, this.props.match.params.id);
+        this.cargarPresupuestosPaciente();
     }
+
+    cargarPresupuestosPaciente = () => {
+        const pacienteId = this.props.match.params.id;
+        if (!pacienteId) return;
+        Axios.get(`${cargar_doctores.url_base}/api/cargar_presupuestos/${pacienteId}`)
+            .then((res) => {
+                this.setState({ presupuestosPaciente: res.data || [] });
+            })
+            .catch(() => {
+                this.setState({ presupuestosPaciente: [] });
+            });
+    };
+
+    cargarPresupuestoComoFactura = (idPresupuesto) => {
+        Axios.get(`${cargar_doctores.url_base}/api/cargar_presupuesto/${idPresupuesto}`)
+            .then((res) => {
+                const data = res.data;
+                let procedimientos = data.procedimientos || [];
+                if (Array.isArray(procedimientos) && procedimientos.length > 0 && Array.isArray(procedimientos[0])) {
+                    procedimientos = procedimientos[0];
+                }
+                const lista = procedimientos.map((p) => ({
+                    nombre_procedimiento: p.nombre_procedimiento || p.nombre || 'Procedimiento',
+                    total: Number(p.total) || 0,
+                    id_procedimiento: p.id_procedimiento || p.id || 0,
+                    cantidad: Number(p.cantidad) || 1
+                }));
+                const total = lista.reduce((sum, p) => sum + (Number(p.total) || 0), 0) || (Number(data.total) || 0);
+                this.setState({
+                    lista_procedimiento: lista,
+                    total: total,
+                    boton_estado: false
+                });
+                if (data.doctor_id && document.getElementById('doctor_i')) {
+                    const sel = document.getElementById('doctor_i');
+                    if (sel) sel.value = data.doctor_id;
+                }
+                this.reproducirSonidoAgregar();
+                Alertify.success('Presupuesto cargado como factura. Puede editar y generar.');
+            })
+            .catch((err) => {
+                Alertify.error(err.response?.data?.error || 'Error al cargar presupuesto');
+            });
+    };
 
     agregarProcedimiento=(id,nombre,precio)=>{
 
@@ -298,6 +345,69 @@ class  AgregarFactura extends React.Component{
                                     </button>
                                 </Link>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Cargar desde presupuesto */}
+                    <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                        <div className="card-header border-0" style={{
+                            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                            padding: '16px 20px'
+                        }}>
+                            <h5 className="mb-0" style={{ fontWeight: 700, fontSize: '16px', color: '#495057' }}>
+                                <i className="fas fa-file-invoice-dollar me-2 text-primary"></i>
+                                Cargar desde presupuesto
+                            </h5>
+                            <p className="mb-0 mt-1 small text-muted">Seleccione un presupuesto del paciente para cargar sus procedimientos como factura.</p>
+                        </div>
+                        <div className="card-body p-3">
+                            <div className="mb-3">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Buscar presupuesto por nombre..."
+                                    value={this.state.filtroPresupuesto}
+                                    onChange={(e) => this.setState({ filtroPresupuesto: e.target.value })}
+                                    style={{ borderRadius: '10px', padding: '10px 14px' }}
+                                />
+                            </div>
+                            {this.state.presupuestosPaciente.length === 0 ? (
+                                <p className="mb-0 text-muted small">No hay presupuestos para este paciente.</p>
+                            ) : (
+                                <div className="table-responsive" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                                    <table className="table table-sm table-hover mb-0">
+                                        <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1 }}>
+                                            <tr>
+                                                <th className="border-0 small font-weight-bold text-muted">Nombre</th>
+                                                <th className="border-0 small font-weight-bold text-muted">Fecha</th>
+                                                <th className="border-0 small font-weight-bold text-muted">Total</th>
+                                                <th className="border-0 small font-weight-bold text-muted text-center">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {this.state.presupuestosPaciente
+                                                .filter((p) => !this.state.filtroPresupuesto || (p.nombre || '').toLowerCase().includes(this.state.filtroPresupuesto.toLowerCase()))
+                                                .map((p) => (
+                                                    <tr key={p.id}>
+                                                        <td className="align-middle small">{p.nombre || '—'}</td>
+                                                        <td className="align-middle small">{p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                                                        <td className="align-middle small font-weight-bold text-success">${new Intl.NumberFormat().format((() => { try { if (p.total != null) return p.total; const f = typeof p.factura === 'string' ? JSON.parse(p.factura) : p.factura; return (f && f.total != null) ? f.total : 0; } catch (e) { return 0; } })())}</td>
+                                                        <td className="align-middle text-center">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm btn-primary"
+                                                                onClick={() => this.cargarPresupuestoComoFactura(p.id)}
+                                                                style={{ borderRadius: '8px', padding: '6px 12px', fontSize: '12px' }}
+                                                            >
+                                                                <i className="fas fa-plus me-1"></i> Cargar como factura
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
                     </div>
 

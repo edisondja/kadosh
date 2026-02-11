@@ -76,7 +76,7 @@ class PerfilPaciente extends React.Component{
 				previewArchivos: [],
 				dragActive: false,
 				subiendoArchivo: false,
-				vistaDocumentos: 'tabla', // 'tabla' o 'tarjetas'
+				vistaDocumentos: 'tarjetas', // 'tabla' o 'tarjetas' (por defecto tarjetas)
 
 				// Ficha médica
 					created_at:'',
@@ -2078,9 +2078,23 @@ class PerfilPaciente extends React.Component{
 												/>
 											</a>
 											) : esPdf ? (
-											<div className="text-center">
-												<i className="fas fa-file-pdf fa-3x text-danger"></i>
-											</div>
+											<a
+												href={url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="d-inline-block rounded border overflow-hidden bg-light"
+												style={{ width: 60, height: 70 }}
+												title="Vista previa PDF"
+											>
+												<iframe
+													src={url + '#view=FitH'}
+													title="Vista previa PDF"
+													width={60}
+													height={70}
+													className="border-0 d-block"
+													style={{ pointerEvents: 'none' }}
+												/>
+											</a>
 											) : (
 											<div className="text-center">
 												<i className="fas fa-file fa-3x text-primary"></i>
@@ -2178,13 +2192,27 @@ class PerfilPaciente extends React.Component{
 												style={{ height: '150px', objectFit: 'cover', width: '100%' }}
 												/>
 											</a>
+											) : esPdf ? (
+											<a
+												href={url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="d-block rounded overflow-hidden bg-light"
+												style={{ height: '150px', width: '100%' }}
+												title="Ver PDF"
+											>
+												<iframe
+													src={url + '#view=FitH'}
+													title="Vista previa PDF"
+													width="100%"
+													height={150}
+													className="border-0 d-block"
+													style={{ pointerEvents: 'none' }}
+												/>
+											</a>
 											) : (
 											<div className="text-center py-4 bg-light rounded">
-												{esPdf ? (
-													<i className="fas fa-file-pdf fa-4x text-danger"></i>
-												) : (
-													<i className="fas fa-file fa-4x text-primary"></i>
-												)}
+												<i className="fas fa-file fa-4x text-primary"></i>
 											</div>
 											)}
 											<div className="card-body p-2">

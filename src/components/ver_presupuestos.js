@@ -317,6 +317,15 @@ class VerPresupuesto extends React.Component{
                                                     color: '#495057',
                                                     padding: '15px 20px',
                                                     border: 'none'
+                                                }}>Doctor</th>
+                                                <th style={{ 
+                                                    fontWeight: 600, 
+                                                    fontSize: '13px',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    color: '#495057',
+                                                    padding: '15px 20px',
+                                                    border: 'none'
                                                 }}>Fecha Creado</th>
                                                 <th style={{ 
                                                     fontWeight: 600, 
@@ -351,6 +360,9 @@ class VerPresupuesto extends React.Component{
                                                     </td>
                                                     <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
                                                         {data.paciente ? data.paciente.nombre : 'N/A'}
+                                                    </td>
+                                                    <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
+                                                        {data.doctor ? `${(data.doctor.nombre || '').trim()} ${(data.doctor.apellido || '').trim()}`.trim() || '—' : '—'}
                                                     </td>
                                                     <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
                                                         {data.created_at ? new Date(data.created_at).toLocaleDateString('es-ES', { 

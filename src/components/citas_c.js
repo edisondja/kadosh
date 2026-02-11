@@ -564,6 +564,35 @@ class  Cita extends React.Component{
 						</div>
 					</div>
 					{/* Tabla de pacientes */}
+					<div style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '12px',
+						marginBottom: '16px',
+						paddingBottom: '12px',
+						borderBottom: '2px solid #e5e7eb'
+					}}>
+						<div style={{
+							width: '40px',
+							height: '40px',
+							borderRadius: '12px',
+							background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							color: '#fff',
+							fontSize: '18px'
+						}}>
+							<i className="fas fa-user-friends"></i>
+						</div>
+						<h3 style={{
+							fontSize: '20px',
+							fontWeight: 700,
+							color: '#1f2937',
+							margin: 0,
+							letterSpacing: '-0.02em'
+						}}>Pacientes</h3>
+					</div>
 					<div className="card border-0 shadow-sm" style={{ 
 						borderRadius: '16px',
 						overflow: 'hidden',

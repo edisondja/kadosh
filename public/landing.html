@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odontoed - Sistema de Gestión para Clínicas Dentales | Edasystems</title>
+  <meta name="description" content="Sistema integral de gestión para clínicas dentales: pacientes, citas, agenda, facturación, odontogramas, presupuestos, recetas y más.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0e2b52;
+      --primary-light: #1e4a8a;
+      --accent: #667eea;
+      --accent-alt: #764ba2;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #1e3a5f 100%);
+      color: #fff;
+      padding: 80px 0 100px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .hero .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.95;
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .btn-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); color: #fff; }
+
+    /* Section */
+    section {
+      padding: 72px 0;
+    }
+    section:nth-child(even) { background: var(--bg-alt); }
+    .section-title {
+      text-align: center;
+      font-size: clamp(24px, 4vw, 32px);
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .section-desc {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 48px;
+    }
+
+    /* Features grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 28px;
+    }
+    .feature-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .feature-card:hover {
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+      border-color: var(--accent);
+    }
+    .feature-card .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .feature-card p, .feature-card ul {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .feature-card ul { margin-top: 8px; padding-left: 20px; }
+    .feature-card li { margin-bottom: 4px; }
+
+    /* Centros */
+    .centros-section { background: var(--bg); }
+    .centros-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+      align-items: stretch;
+      justify-items: center;
+    }
+    .centro-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+      padding: 24px 20px;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .centro-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    }
+    .centro-item .centro-logo {
+      width: 120px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
+    .centro-item .centro-nombre {
+      font-size: 0.95rem;
+      line-height: 1.3;
+    }
+
+    /* Vista módulos - slider */
+    .vista-modulos-section { background: var(--bg-alt); }
+    .slider-wrapper {
+      position: relative;
+      max-width: 520px;
+      margin: 0 auto 24px;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    .slider-track {
+      display: flex;
+      transition: transform 0.4s ease;
+    }
+    .slider-track .vista-modulo {
+      flex: 0 0 100%;
+      min-width: 100%;
+    }
+    .vista-modulo {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s;
+    }
+    .vista-modulo:hover { box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15); }
+    .vista-modulo .vista-titulo {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .vista-modulo .vista-body {
+      padding: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    /* Mockup agenda */
+    .mock-agenda {
+      display: grid;
+      grid-template-columns: 48px repeat(5, 1fr);
+      gap: 2px;
+      font-size: 10px;
+    }
+    .mock-agenda .cell {
+      background: #f1f5f9;
+      padding: 6px 4px;
+      text-align: center;
+      border-radius: 4px;
+    }
+    .mock-agenda .cell.header { background: #e2e8f0; font-weight: 700; color: var(--text); }
+    .mock-agenda .cell.hora { background: #f8fafc; color: var(--text-muted); }
+    .mock-agenda .cell.evento { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+    /* Mockup odontograma */
+    .mock-odonto {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+    }
+    .mock-odonto .diente {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #fff;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .mock-odonto .diente.filled { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-color: #667eea; }
+    /* Mockup facturación */
+    .mock-factura table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .mock-factura th, .mock-factura td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    .mock-factura th { background: #f1f5f9; font-weight: 600; color: var(--text); }
+    .mock-factura .total { font-weight: 700; background: #f8fafc; }
+    /* Mockup formulario */
+    .mock-form .field { margin-bottom: 10px; }
+    .mock-form .field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .mock-form .field .input { width: 100%; height: 28px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px; }
+    /* Mockup doctores */
+    .mock-doctores .doc-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .mock-doctores .doc-row:last-child { border-bottom: none; }
+    .mock-doctores .doc-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+    /* Mockup reportes */
+    .mock-reportes { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding-top: 20px; }
+    .mock-reportes .bar { flex: 1; background: linear-gradient(180deg, var(--accent) 0%, var(--accent-alt) 100%); border-radius: 6px 6px 0 0; min-height: 20px; }
+    .mock-reportes .bar:nth-child(1) { height: 70%; }
+    .mock-reportes .bar:nth-child(2) { height: 45%; }
+    .mock-reportes .bar:nth-child(3) { height: 90%; }
+    .mock-reportes .bar:nth-child(4) { height: 55%; }
+    .mock-reportes .bar:nth-child(5) { height: 75%; }
+
+    /* Slider controles */
+    .slider-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .slider-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg);
+      color: var(--accent);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+    .slider-btn:hover {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      color: #fff;
+      border-color: transparent;
+    }
+    .slider-dots {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .slider-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .slider-dot:hover { background: #94a3b8; }
+    .slider-dot.active {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      transform: scale(1.2);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--primary);
+      color: #fff;
+      padding: 40px 0;
+      text-align: center;
+    }
+    footer a { color: rgba(255,255,255,0.9); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-creador {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-creador .creador-foto {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid rgba(255,255,255,0.6);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+    .footer-creador .creador-texto { font-size: 0.95rem; opacity: 0.95; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <span class="badge"><i class="fas fa-tooth" style="margin-right: 8px;"></i> Edasystems</span>
+      <h1>Odontoed</h1>
+      <p class="subtitle">Sistema integral de gestión para clínicas dentales. Pacientes, citas, agenda, facturación, odontogramas, presupuestos y más en una sola plataforma.</p>
+      <a href="#" class="btn-cta">Solicitar acceso</a>
+    </div>
+  </header>
+
+  <section class="centros-section">
+    <div class="container">
+      <h2 class="section-title">Centros que utilizan Odontoed</h2>
+      <p class="section-desc">Clínicas y centros dentales que ya gestionan su día a día con nuestro sistema.</p>
+      <div class="centros-grid">
+        <div class="centro-item">
+          <img class="centro-logo" src="https://leonardobatistac1.odontoed.com/leonardo_batista.jpeg" alt="Clínica Dr. Leonardo Batista">
+          <span class="centro-nombre">Clínica Dr. Leonardo Batista</span>
+        </div>
+        <div class="centro-item">
+          <img class="centro-logo" src="https://clinickadosh.com/logokadosh.jpg" alt="Clínica Dental Kadosh OR SRL">
+          <span class="centro-nombre">Clínica Dental Kadosh OR SRL</span>
+        </div>
+        <div class="centro-item">
+          <img class="centro-logo" src="https://sosclinic.odontoed.com/logotipo_sos.png" alt="Servicios Odontológicos Especializados">
+          <span class="centro-nombre">Servicios Odontológicos Especializados</span>
+        </div>
+        <div class="centro-item">
+          <img class="centro-logo" src="https://dentaladv.odontoed.com/milkelys.jpeg" alt="Dental Advance">
+          <span class="centro-nombre">Dental Advance</span>
+        </div>
+        <div class="centro-item">
+          <img class="centro-logo" src="https://noeodontoestetic.com/noe_logo.jpg" alt="Noe Odonto Estetic">
+          <span class="centro-nombre">Noe Odonto Estetic</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Todo lo que tu clínica necesita</h2>
+      <p class="section-desc">Funcionalidades pensadas para simplificar el día a día y mejorar la atención al paciente.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-users"></i></div>
+          <h3>Gestión de Pacientes</h3>
+          <p>Registro completo con historial médico y odontológico, ficha médica digital y adjuntos.</p>
+          <ul>
+            <li>Búsqueda avanzada y filtros</li>
+            <li>Exportar/Importar datos (JSON)</li>
+            <li><strong>Registro rápido</strong> desde el módulo de citas (agregar paciente sin salir de la agenda)</li>
+            <li>Vista de cantidades en perfil: notas, facturas, documentos, presupuestos y recetas desde la tarjeta del paciente</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-calendar-alt"></i></div>
+          <h3>Citas y Agenda</h3>
+          <p>Calendario integrado con vista día, semana y mes. Slots cada 30 minutos.</p>
+          <ul>
+            <li><strong>Dictado por voz</strong> del motivo de la cita (speech-to-text)</li>
+            <li>Agendar con pacientes no registrados y crearlos al momento</li>
+            <li>Duración de cita en intervalos de media hora (30 min, 1 h, 1 h 30, etc.)</li>
+            <li>Recordatorios por email e integración con Google Calendar</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-tooth"></i></div>
+          <h3>Odontogramas</h3>
+          <p>Odontogramas interactivos para adultos y niños, con historial por paciente.</p>
+          <ul>
+            <li>Dibujo de procedimientos por diente y cara</li>
+            <li>Impresión personalizada</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+          <h3>Facturación y Finanzas</h3>
+          <p>Facturas, recibos, presupuestos y punto de venta en un solo lugar.</p>
+          <ul>
+            <li>Múltiples métodos de pago (efectivo, tarjeta, transferencia, cheque)</li>
+            <li>Presupuestos con aviso <strong>"Presupuesto sujeto a cambios"</strong> (visible en pantalla, impresión y PDF)</li>
+            <li>Envío por WhatsApp, email y PDF</li>
+            <li>Contabilidad integrada, nómina y salarios de doctores</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-file-medical-alt"></i></div>
+          <h3>Presupuestos y Recetas</h3>
+          <p>Presupuestos profesionales y recetas médicas con logo de la clínica.</p>
+          <ul>
+            <li>Creación y visualización de presupuestos</li>
+            <li>Impresión y envío para WhatsApp</li>
+            <li>Recetas con impresión y envío por correo</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-book"></i></div>
+          <h3>Manual de Usuario</h3>
+          <p>Documentación integrada dentro del sistema para todos los roles.</p>
+          <ul>
+            <li>Manual accesible desde el menú</li>
+            <li>Instrucciones de uso de cada módulo</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Auditoría y Seguridad</h3>
+          <p>Registro de acciones y control por roles (Administrador, Contable, Secretaria, Doctor).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-cogs"></i></div>
+          <h3>Configuración y Multi-tenant</h3>
+          <p>Datos de la clínica, logo, facturación y administración de múltiples clínicas (tenants).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vista-modulos-section">
+    <div class="container">
+      <h2 class="section-title">Así se ve Odontoed</h2>
+      <p class="section-desc">Vista previa de los módulos principales: agenda, odontograma, facturación, pacientes, doctores y reportes.</p>
+
+      <div class="slider-wrapper" id="sliderWrapper">
+        <div class="slider-track" id="sliderTrack">
+        <!-- Agenda -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-calendar-alt"></i> Agenda de Citas</div>
+          <div class="vista-body">
+            <div class="mock-agenda">
+              <div class="cell header">HORA</div>
+              <div class="cell header">Lun</div>
+              <div class="cell header">Mar</div>
+              <div class="cell header">Mié</div>
+              <div class="cell header">Jue</div>
+              <div class="cell header">Vie</div>
+              <div class="cell hora">08:00</div>
+              <div class="cell"></div>
+              <div class="cell evento">Cita</div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell hora">09:00</div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell evento">Cita</div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell hora">10:00</div>
+              <div class="cell evento">Cita</div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Odontograma -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-tooth"></i> Odontograma</div>
+          <div class="vista-body">
+            <div class="mock-odonto">
+              <div class="diente">18</div><div class="diente">17</div><div class="diente filled">16</div><div class="diente">15</div><div class="diente">14</div><div class="diente">13</div><div class="diente">12</div><div class="diente">11</div>
+              <div class="diente">21</div><div class="diente">22</div><div class="diente">23</div><div class="diente filled">24</div><div class="diente">25</div><div class="diente">26</div><div class="diente">27</div><div class="diente">28</div>
+            </div>
+            <p style="margin-top: 12px; font-size: 11px;">Dientes con procedimientos marcados por cara y color.</p>
+          </div>
+        </div>
+
+        <!-- Facturación -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-file-invoice-dollar"></i> Facturación</div>
+          <div class="vista-body mock-factura">
+            <table>
+              <thead><tr><th>Concepto</th><th>Precio</th></tr></thead>
+              <tbody>
+                <tr><td>Limpieza</td><td>RD$ 1,500</td></tr>
+                <tr><td>Resina</td><td>RD$ 2,200</td></tr>
+                <tr><td>Radiografía</td><td>RD$ 800</td></tr>
+                <tr class="total"><td>TOTAL</td><td>RD$ 4,500</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Agregar Paciente -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-user-plus"></i> Agregar Paciente</div>
+          <div class="vista-body mock-form">
+            <div class="field"><label>Nombre</label><div class="input"></div></div>
+            <div class="field"><label>Apellido</label><div class="input"></div></div>
+            <div class="field"><label>Cédula / Teléfono</label><div class="input"></div></div>
+            <p style="font-size: 11px; margin-top: 8px;">Registro completo y registro rápido desde citas.</p>
+          </div>
+        </div>
+
+        <!-- Doctores -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-user-md"></i> Módulo de Doctores</div>
+          <div class="vista-body mock-doctores">
+            <div class="doc-row"><div class="doc-avatar"><i class="fas fa-user"></i></div><div><strong>Dr. Juan Pérez</strong><br><small>Odontólogo General</small></div></div>
+            <div class="doc-row"><div class="doc-avatar"><i class="fas fa-user"></i></div><div><strong>Dra. María López</strong><br><small>Ortodoncista</small></div></div>
+            <div class="doc-row"><div class="doc-avatar"><i class="fas fa-user"></i></div><div><strong>Dr. Carlos Sánchez</strong><br><small>Implantólogo</small></div></div>
+          </div>
+        </div>
+
+        <!-- Reportes -->
+        <div class="vista-modulo">
+          <div class="vista-titulo"><i class="fas fa-chart-bar"></i> Reportes</div>
+          <div class="vista-body">
+            <div class="mock-reportes">
+              <div class="bar" title="Sem 1"></div>
+              <div class="bar" title="Sem 2"></div>
+              <div class="bar" title="Sem 3"></div>
+              <div class="bar" title="Sem 4"></div>
+              <div class="bar" title="Sem 5"></div>
+            </div>
+            <p style="margin-top: 12px; font-size: 11px;">Reportes de ingresos, procedimientos, nómina y auditoría.</p>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="slider-controls">
+        <button type="button" class="slider-btn" id="sliderPrev" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+        <div class="slider-dots" id="sliderDots"></div>
+        <button type="button" class="slider-btn" id="sliderNext" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2 class="section-title">Tecnología moderna</h2>
+      <p class="section-desc">React, Laravel y MySQL. Interfaz responsiva y segura.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon"><i class="fab fa-react"></i></div>
+          <h3>Frontend</h3>
+          <p>React, React Router, Axios, Bootstrap, Chart.js, jsPDF, react-big-calendar.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fab fa-laravel"></i></div>
+          <h3>Backend</h3>
+          <p>Laravel, API REST, Eloquent ORM, Dompdf.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon"><i class="fas fa-database"></i></div>
+          <h3>Base de datos</h3>
+          <p>MySQL. Arquitectura multi-tenant para varias clínicas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container" style="text-align: center;">
+      <h2 class="section-title">¿Listo para gestionar tu clínica?</h2>
+      <p class="section-desc">Contáctanos para más información o solicitar acceso al sistema.</p>
+      <p style="margin-bottom: 20px; font-size: 1rem; color: var(--text-muted);">Escríbenos a:</p>
+      <p style="margin-bottom: 12px;">
+        <a href="mailto:edisondja@gmail.com" style="color: var(--accent); text-decoration: none; font-weight: 600;">edisondja@gmail.com</a>
+      </p>
+      <p style="margin-bottom: 24px;">
+        <a href="mailto:services@odontoed.com" style="color: var(--accent); text-decoration: none; font-weight: 600;">services@odontoed.com</a>
+      </p>
+      <a href="mailto:services@odontoed.com" class="btn-cta">Contactar</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p><strong>Odontoed</strong> · Sistema de gestión para clínicas dentales · Edasystems</p>
+      <p style="margin-top: 8px; opacity: 0.9;">Hecho con dedicación para clínicas dentales</p>
+      <div class="footer-creador">
+        <img src="https://odontoed.com/ceo_edison.png" alt="Edison De Jesus Abreu - CEO" class="creador-foto" onerror="this.style.display='none'">
+        <p class="creador-texto">Creado por <strong>Edison De Jesus Abreu</strong></p>
+      </div>
+      <p style="margin-top: 16px; font-size: 0.9rem; opacity: 0.9;">
+        Contacto: <a href="mailto:edisondja@gmail.com" style="color: rgba(255,255,255,0.95); text-decoration: underline;">edisondja@gmail.com</a> · <a href="mailto:services@odontoed.com" style="color: rgba(255,255,255,0.95); text-decoration: underline;">services@odontoed.com</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      var track = document.getElementById('sliderTrack');
+      var prevBtn = document.getElementById('sliderPrev');
+      var nextBtn = document.getElementById('sliderNext');
+      var dotsContainer = document.getElementById('sliderDots');
+      if (!track || !prevBtn || !nextBtn) return;
+
+      var slides = track.querySelectorAll('.vista-modulo');
+      var total = slides.length;
+      var current = 0;
+      var autoplayInterval;
+
+      function goTo(index) {
+        current = (index + total) % total;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        dotsContainer.querySelectorAll('.slider-dot').forEach(function(dot, i) {
+          dot.classList.toggle('active', i === current);
+        });
+      }
+
+      function next() { goTo(current + 1); }
+      function prev() { goTo(current - 1); }
+
+      for (var i = 0; i < total; i++) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'Ir a slide ' + (i + 1));
+        dot.addEventListener('click', (function(idx) { return function() { goTo(idx); }; })(i));
+        dotsContainer.appendChild(dot);
+      }
+
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+
+      function startAutoplay() {
+        autoplayInterval = setInterval(next, 4500);
+      }
+      function stopAutoplay() {
+        clearInterval(autoplayInterval);
+      }
+      startAutoplay();
+      track.parentElement.addEventListener('mouseenter', stopAutoplay);
+      track.parentElement.addEventListener('mouseleave', startAutoplay);
+    })();
+  </script>
+</body>
+</html>

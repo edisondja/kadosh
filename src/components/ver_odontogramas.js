@@ -91,10 +91,17 @@ const VerOdontogramas = (props) => {
                 <div>
                     <button 
                         onClick={() => window.history.back()} 
-                        className="btn btn-secondary mr-3"
+                        className="btn btn-secondary mr-2"
                     >
                         <i className="fas fa-arrow-left"></i> Volver
                     </button>
+                    <Link 
+                        to={`/perfil_paciente/${id_paciente}/${doctorId || 1}`}
+                        className="btn btn-outline-primary mr-3"
+                        style={{ minWidth: 'auto' }}
+                    >
+                        <i className="fas fa-user"></i> Perfil del paciente
+                    </Link>
                     <h3 style={{display: 'inline'}}>Odontogramas de {paciente.nombre} {paciente.apellido}</h3>
                 </div>
                 <Link 
