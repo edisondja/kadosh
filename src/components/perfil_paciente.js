@@ -3304,10 +3304,11 @@ class PerfilPaciente extends React.Component{
 																		</span>
 																	</div>
 																</div>
-																<div className="mt-3">
+																<div className="mt-3 d-flex gap-2">
 																	<Link 
 																		to={`/ver_odontograma/${odontograma.id}`}
 																		onClick={() => this.setState({ modal_odontogramas_visible: false })}
+																		className="flex-grow-1"
 																	>
 																		<button
 																			className="btn btn-sm w-100"
@@ -3320,16 +3321,25 @@ class PerfilPaciente extends React.Component{
 																				fontWeight: 600,
 																				transition: 'all 0.2s ease'
 																			}}
-																			onMouseEnter={(e) => {
-																				e.target.style.transform = 'translateY(-2px)';
-																				e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
-																			}}
-																			onMouseLeave={(e) => {
-																				e.target.style.transform = 'translateY(0)';
-																				e.target.style.boxShadow = 'none';
+																		>
+																			<i className="fas fa-eye me-2"></i>Ver
+																		</button>
+																	</Link>
+																	<Link 
+																		to={`/odontograma/editar/${odontograma.id}`}
+																		onClick={() => this.setState({ modal_odontogramas_visible: false })}
+																		className="flex-grow-1"
+																	>
+																		<button
+																			className="btn btn-sm btn-success w-100"
+																			style={{
+																				border: 'none',
+																				borderRadius: '8px',
+																				padding: '8px 16px',
+																				fontWeight: 600
 																			}}
 																		>
-																			<i className="fas fa-eye me-2"></i>Ver Detalles
+																			<i className="fas fa-sync-alt me-2"></i>Actualizar
 																		</button>
 																	</Link>
 																</div>

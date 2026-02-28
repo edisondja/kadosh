@@ -3,6 +3,7 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import Buscar from '../buscar.png';
 import Core from './funciones_extras';
+import { getPrintStyles, getPrintHeader } from './plantilla_impresion';
 import '../css/dashboard.css';
 import Suplidores from './funciones_extras';
 import alertify from 'alertifyjs';
@@ -21,6 +22,8 @@ class Gasto extends React.Component{
             monto_gasto:0,
             id_suplidor:0,
             roll_estado:0,
+            fecha_inicial_reporte:'',
+            fecha_final_reporte:'',
             no_permiso:'Usted no tiene los permisos suficientes para raelizar esta acción',
             modalGastoVisible: false,
             formGasto: {
@@ -219,9 +222,11 @@ class Gasto extends React.Component{
         this.Cargar_monto_gasto(fecha_inicial,fecha_final);
 
         Axios.get(`${Core.url_base}/api/fecha_gastos/${fecha_inicial}/${fecha_final}`).then(data=>{
-      
-            this.setState({registros:data.data});
-            console.log(data.data);
+            this.setState({
+                registros: data.data,
+                fecha_inicial_reporte: fecha_inicial,
+                fecha_final_reporte: fecha_final
+            });
         }).catch(error=>{
 
             Alertify.message(error);
@@ -298,15 +303,43 @@ class Gasto extends React.Component{
     }
        
 
-    Imprimir(){
+    formatearFechaPerfil = (s) => {
+        if (!s) return '';
+        const [y, m, d] = String(s).split('-');
+        return d && m && y ? d + '/' + m + '/' + y : s;
+    }
 
-        var ficha = document.getElementById("reportes");
-        var ventimp = window.open(' ', 'popimpr');
-        ventimp.document.write(ficha.innerHTML);
-        ventimp.document.close();
-        ventimp.print();
-        ventimp.close();
-
+    Imprimir = () => {
+        try {
+            const contenedor = document.getElementById("reportes");
+            if (!contenedor) {
+                Alertify.warning("No hay contenido para imprimir. Busque gastos primero.");
+                return;
+            }
+            const config = Core.Config || {};
+            const fi = this.state.fecha_inicial_reporte;
+            const ff = this.state.fecha_final_reporte;
+            const periodoTexto = (fi && ff) ? ('Período: ' + this.formatearFechaPerfil(fi) + ' al ' + this.formatearFechaPerfil(ff)) : 'Resumen de gastos por período';
+            const header = getPrintHeader(
+                config.app_logo || '',
+                config.name_company || '',
+                'Reporte de Gastos',
+                periodoTexto
+            );
+            const ventimp = window.open('', 'popimpr', 'width=800,height=600');
+            if (!ventimp) {
+                Alertify.error("Permita ventanas emergentes para poder imprimir.");
+                return;
+            }
+            const titulo = (config.name_company || 'Reporte').substring(0, 40).replace(/</g, '');
+            ventimp.document.write(
+                '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reporte de Gastos - ' + titulo + '</title>' + getPrintStyles() + '</head><body>' + header + '<div class="print-body reporte-gastos">' + contenedor.innerHTML + '</div></body></html>'
+            );
+            ventimp.document.close();
+            setTimeout(function() { ventimp.focus(); ventimp.print(); ventimp.close(); }, 500);
+        } catch (e) {
+            Alertify.error("Error al imprimir: " + (e.message || String(e)));
+        }
     }
 
 
@@ -634,14 +667,14 @@ class Gasto extends React.Component{
                             <div className="card-body text-white p-3">
                                 <div className="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h5 className="mb-0" style={{ fontWeight: 600, fontSize: '16px' }}>
+                                        <h5 className="mb-0 fw-bold" style={{ fontWeight: 700, fontSize: '16px' }}>
                                             Total en Gastos
                                         </h5>
-                                        <p className="mb-0" style={{ opacity: 0.9, fontSize: '13px' }}>
+                                        <p className="mb-0 fw-bold" style={{ opacity: 0.9, fontSize: '13px', fontWeight: 700 }}>
                                             Suma total del período seleccionado
                                         </p>
                                     </div>
-                                    <div style={{
+                                    <div className="fw-bold" style={{
                                         fontSize: '28px',
                                         fontWeight: 700
                                     }}>
@@ -658,7 +691,17 @@ class Gasto extends React.Component{
                     borderRadius: '16px',
                     overflow: 'hidden',
                     animation: 'slideUp 0.7s ease'
-                }} id="reportes">
+                }}>
+                <div id="reportes">
+                    <div className="reporte-print-header" style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '2px solid #2d2d2f' }}>
+                        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1a1a1a' }}>Reporte de Gastos</h1>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6c757d' }}>Resumen de gastos por período</p>
+                        {this.state.fecha_inicial_reporte && this.state.fecha_final_reporte && (
+                            <p style={{ marginTop: '6px', fontWeight: 600, color: '#495057', fontSize: '14px' }}>
+                                Período: {this.formatearFechaPerfil(this.state.fecha_inicial_reporte)} al {this.formatearFechaPerfil(this.state.fecha_final_reporte)}
+                            </p>
+                        )}
+                    </div>
                     <div className="card-body p-0">
                         {this.state.registros.length === 0 ? (
                             <div className="text-center py-5">
@@ -760,7 +803,7 @@ class Gasto extends React.Component{
                                                 padding: '15px 20px',
                                                 border: 'none'
                                             }}>Fecha</th>
-                                            <th style={{ 
+                                            <th className="no-imprimir" style={{ 
                                                 fontWeight: 600, 
                                                 fontSize: '13px',
                                                 textTransform: 'uppercase',
@@ -804,7 +847,7 @@ class Gasto extends React.Component{
                                                         fontSize: '12px',
                                                         fontWeight: 600
                                                     }}>
-                                                        {data.tipo_de_pago || 'N/A'}
+                                                        {(data.tipo_de_pago || 'N/A').replace(/tarjeto/i, 'tarjeta')}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
@@ -825,7 +868,7 @@ class Gasto extends React.Component{
                                                 <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057', fontSize: '13px' }}>
                                                     {data.fecha_registro ? new Date(data.fecha_registro).toLocaleDateString('es-DO') : 'N/A'}
                                                 </td>
-                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+                                                <td className="no-imprimir" style={{ padding: '15px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
                                                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                                                         <button
                                                             className="btn btn-sm"
@@ -939,6 +982,7 @@ class Gasto extends React.Component{
                             </div>
                         )}
                     </div>
+                </div>
                 </div>
 
                 {/* Modal para Registrar Gasto */}

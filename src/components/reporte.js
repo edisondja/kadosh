@@ -3,12 +3,13 @@ import Axios from 'axios';
 import Alertify from 'alertifyjs';
 import FuncionesExtras from './funciones_extras';
 import FacturaInterfaz from './factura_interfaz';
+import { getPrintStyles, getPrintHeader } from './plantilla_impresion';
 import '../css/dashboard.css';
 import Nomina from './nomina';
 import { Doughnut,Bar} from 'react-chartjs-2';
 import Reporte_grafic from './reporte_grafico';
 
-class Reporte extends React.Component{ds
+class Reporte extends React.Component{
 
 
         constructor(props){
@@ -16,7 +17,8 @@ class Reporte extends React.Component{ds
             this.state={
                 data:[],contador:false,recibos:[],monto_total:0,valor:89,semena:[],
                 Lunes:200,Martes:0,Miercoles:0,
-                Jueves:0,Viernes:0,Sabado:0,menu_select:"reportes_graficos"
+                Jueves:0,Viernes:0,Sabado:0,menu_select:"reportes_graficos",
+                fecha_inicial_reporte:'',fecha_final_reporte:''
            }
         }
 
@@ -80,32 +82,65 @@ class Reporte extends React.Component{ds
                 });
         }
         
-        Imprimir(){
-            var ficha = document.getElementById("reportes");
-            var ventimp = window.open(' ', 'popimpr');
-            ventimp.document.write(ficha.innerHTML);
-            ventimp.document.close();
-            ventimp.print();
-            ventimp.close();
+        formatearFechaPerfil = (s) => {
+            if (!s) return '';
+            const [y, m, d] = String(s).split('-');
+            return d && m && y ? `${d}/${m}/${y}` : s;
+        }
+
+        Imprimir = () => {
+            try {
+                const contenedor = document.getElementById("reportes");
+                if (!contenedor) {
+                    Alertify.warning("No hay contenido para imprimir. Busque un reporte primero.");
+                    return;
+                }
+                const config = FuncionesExtras.Config || {};
+                const fi = this.state.fecha_inicial_reporte;
+                const ff = this.state.fecha_final_reporte;
+                const periodoTexto = (fi && ff) ? ('Período: ' + this.formatearFechaPerfil(fi) + ' al ' + this.formatearFechaPerfil(ff)) : 'Resumen de facturación por período';
+                const header = getPrintHeader(
+                    config.app_logo || '',
+                    config.name_company || '',
+                    'Reporte de Ingresos (Recibos)',
+                    periodoTexto
+                );
+                const ventimp = window.open('', 'popimpr', 'width=800,height=600');
+                if (!ventimp) {
+                    Alertify.error("Permita ventanas emergentes para poder imprimir.");
+                    return;
+                }
+                const titulo = (config.name_company || 'Reporte').substring(0, 40).replace(/</g, '');
+                ventimp.document.write(
+                    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reporte de Ingresos - ' + titulo + '</title>' + getPrintStyles() + '</head><body>' + header + '<div class="print-body">' + contenedor.innerHTML + '</div></body></html>'
+                );
+                ventimp.document.close();
+                setTimeout(function() { ventimp.focus(); ventimp.print(); ventimp.close(); }, 500);
+            } catch (e) {
+                Alertify.error("Error al imprimir: " + (e.message || String(e)));
+            }
         }
 
         reportes=(config='normal')=>{
             var fecha_inicial;
             var fecha_final;
 
-            if(config=='normal'){
+            if(config==='normal'){
                 var f = new Date();
-                fecha_inicial = f.getFullYear() + "-" + (f.getMonth() +1) + "-" +f.getDate();
-                fecha_final = fecha_final;
-            }else if(config=='consultar_fechas'){
+                fecha_inicial = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, '0') + "-" + String(f.getDate()).padStart(2, '0');
+                fecha_final = fecha_inicial;
+            }else if(config==='consultar_fechas'){
                 fecha_inicial = document.getElementById('fecha_inicial').value;
                 fecha_final = document.getElementById('fecha_final').value;  
-              
             }
-           Axios.get(`${FuncionesExtras.url_base}/api/facturas_reportes/${fecha_inicial}/${fecha_final}`).then(data=>{
-
-                this.setState({recibos:data.data.recibos,monto_total:data.data.monto_total});    
-
+            if (!fecha_inicial || !fecha_final) return;
+            Axios.get(`${FuncionesExtras.url_base}/api/facturas_reportes/${fecha_inicial}/${fecha_final}`).then(data=>{
+                this.setState({
+                    recibos: data.data.recibos,
+                    monto_total: data.data.monto_total,
+                    fecha_inicial_reporte: fecha_inicial,
+                    fecha_final_reporte: fecha_final
+                });
            }).catch(error=>{
                 Alertify.error(error);
            })
@@ -276,157 +311,172 @@ class Reporte extends React.Component{ds
                                 </div>
                             </div>
 
-                            <div id="reportes" className="card border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
-                                <div className="card-body p-0">
-                                    {this.state.recibos.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <i className="fas fa-file-alt fa-4x text-muted mb-3" style={{ opacity: 0.3 }}></i>
-                                            <h5 className="text-muted mb-2">No hay reportes para mostrar</h5>
-                                            <p className="text-muted mb-0" style={{ fontSize: '14px' }}>
-                                                Seleccione un rango de fechas y haga clic en Buscar
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="table-responsive">
-                                            <table className="table table-hover mb-0">
-                                                <thead style={{ 
-                                                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                                    borderBottom: '2px solid #dee2e6'
-                                                }}>
-                                                    <tr>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Código</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Doctor</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Paciente</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Concepto</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Tipo de Pago</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Monto</th>
-                                                        <th style={{ 
-                                                            fontWeight: 600, 
-                                                            fontSize: '13px',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            color: '#495057',
-                                                            padding: '15px 20px',
-                                                            border: 'none'
-                                                        }}>Fecha</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {this.state.recibos.map((data, index) => (
-                                                        <tr 
-                                                            key={index}
-                                                            style={{ 
-                                                                transition: 'all 0.2s ease',
-                                                                borderBottom: '1px solid #f0f0f0'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.backgroundColor = '#f8f9fa';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.backgroundColor = 'white';
-                                                            }}
-                                                        >
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', fontWeight: 600, color: '#495057' }}>
-                                                                {data.codigo_recibo}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
-                                                                {data?.factura?.doctor
-                                                                    ? `${data.factura.doctor.nombre} ${data.factura.doctor.apellido}`
-                                                                    : "Sin doctor"}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
-                                                                {data?.factura?.paciente
-                                                                    ? `${data.factura.paciente.nombre} ${data.factura.paciente.apellido}`
-                                                                    : "Sin paciente"}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
-                                                                {data.concepto_pago}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
-                                                                {data.tipo_de_pago}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', fontWeight: 600, color: '#28a745', fontSize: '15px' }}>
-                                                                ${new Intl.NumberFormat().format(data.monto)}
-                                                            </td>
-                                                            <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
-                                                                {data.fecha_pago}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                            <div id="reportes">
+                                <div className="reporte-print-header">
+                                    <h1>Reporte de Recibos</h1>
+                                    <p>Resumen de facturación por período</p>
+                                    {this.state.fecha_inicial_reporte && this.state.fecha_final_reporte && (
+                                        <p style={{ marginTop: '6px', fontWeight: 600, color: '#495057', fontSize: '14px' }}>
+                                            Período: {this.formatearFechaPerfil(this.state.fecha_inicial_reporte)} al {this.formatearFechaPerfil(this.state.fecha_final_reporte)}
+                                        </p>
                                     )}
                                 </div>
-                            </div>
-
-                            <div className="card border-0 shadow-sm mt-4" style={{ 
-                                borderRadius: '16px',
-                                background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
-                                overflow: 'hidden'
-                            }}>
-                                <div className="card-body text-white p-4">
-                                    <div className="d-flex justify-content-between align-items-center">
+                                <div className="card border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+                                    <div className="card-body p-0">
+                                        {this.state.recibos.length === 0 ? (
+                                            <div className="text-center py-5">
+                                                <i className="fas fa-file-alt fa-4x text-muted mb-3" style={{ opacity: 0.3 }}></i>
+                                                <h5 className="text-muted mb-2">No hay reportes para mostrar</h5>
+                                                <p className="text-muted mb-0" style={{ fontSize: '14px' }}>
+                                                    Seleccione un rango de fechas y haga clic en Buscar
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="table-responsive">
+                                                <table className="table table-hover mb-0">
+                                                    <thead style={{ 
+                                                        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                                                        borderBottom: '2px solid #dee2e6'
+                                                    }}>
+                                                        <tr>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Código</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Doctor</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Paciente</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Concepto</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Tipo de Pago</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Monto</th>
+                                                            <th style={{ 
+                                                                fontWeight: 600, 
+                                                                fontSize: '13px',
+                                                                textTransform: 'uppercase',
+                                                                letterSpacing: '0.5px',
+                                                                color: '#495057',
+                                                                padding: '15px 20px',
+                                                                border: 'none'
+                                                            }}>Fecha</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {this.state.recibos.map((data, index) => (
+                                                            <tr 
+                                                                key={index}
+                                                                style={{ 
+                                                                    transition: 'all 0.2s ease',
+                                                                    borderBottom: '1px solid #f0f0f0'
+                                                                }}
+                                                                onMouseEnter={(e) => {
+                                                                    e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                    e.currentTarget.style.backgroundColor = 'white';
+                                                                }}
+                                                            >
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', fontWeight: 600, color: '#495057' }}>
+                                                                    {data.codigo_recibo}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
+                                                                    {data?.factura?.doctor
+                                                                        ? `${data.factura.doctor.nombre} ${data.factura.doctor.apellido}`
+                                                                        : "Sin doctor"}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#495057' }}>
+                                                                    {data?.factura?.paciente
+                                                                        ? `${data.factura.paciente.nombre} ${data.factura.paciente.apellido}`
+                                                                        : "Sin paciente"}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
+                                                                    {data.concepto_pago}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
+                                                                    {(data.tipo_de_pago || '').replace(/tarjeto/i, 'tarjeta')}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', fontWeight: 600, color: '#28a745', fontSize: '15px' }}>
+                                                                    ${new Intl.NumberFormat().format(data.monto)}
+                                                                </td>
+                                                                <td style={{ padding: '15px 20px', verticalAlign: 'middle', color: '#6c757d', fontSize: '14px' }}>
+                                                                    {data.fecha_pago}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                    <tfoot style={{ background: '#f1f3f5', borderTop: '2px solid #1a1a2e' }}>
+                                                        <tr>
+                                                            <td colSpan="6" style={{ padding: '12px 20px', fontWeight: 700, fontSize: '14px', color: '#1a1a2e' }}>
+                                                                Ingresos Totales (Recibos)
+                                                            </td>
+                                                            <td style={{ padding: '12px 20px', fontWeight: 700, fontSize: '16px', color: '#1a1a2e', textAlign: 'right' }}>
+                                                                $RD {new Intl.NumberFormat().format(this.state.monto_total)}
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="reporte-print-total print-total-page card border-0 shadow-sm mt-4 no-en-impresion" style={{ 
+                                    borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #2d2d2f 0%, #1c1c1e 100%)',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div className="card-body text-white p-4 d-flex justify-content-between align-items-center">
                                         <div>
-                                            <h4 className="mb-0" style={{ fontWeight: 700, fontSize: '24px' }}>
-                                                Ingresos Totales
+                                            <h4 className="mb-0 label fw-bold" style={{ fontWeight: 700, fontSize: '24px' }}>
+                                                Ingresos Totales (Recibos)
                                             </h4>
-                                            <p className="mb-0" style={{ opacity: 0.9, fontSize: '14px' }}>
+                                            <p className="mb-0 fw-bold" style={{ opacity: 0.9, fontSize: '14px', fontWeight: 700 }}>
                                                 Suma total del período seleccionado
                                             </p>
                                         </div>
-                                        <div style={{
-                                            fontSize: '32px',
-                                            fontWeight: 700
-                                        }}>
+                                        <div className="monto fw-bold" style={{ fontSize: '32px', fontWeight: 700 }}>
                                             $RD {new Intl.NumberFormat().format(this.state.monto_total)}
                                         </div>
                                     </div>
@@ -503,7 +553,7 @@ class Reporte extends React.Component{ds
                                         borderRadius: '12px',
                                         backdropFilter: 'blur(10px)'
                                     }}>
-                                        <div style={{ fontSize: '14px', opacity: 0.9 }}>Ingresos de Hoy</div>
+                                        <div style={{ fontSize: '14px', opacity: 0.9, fontWeight: 700 }}>Ingresos de Hoy</div>
                                         <div style={{ fontSize: '24px', fontWeight: 700 }}>
                                             $RD {new Intl.NumberFormat().format(this.state.monto_total)}
                                         </div>

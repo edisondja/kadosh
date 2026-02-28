@@ -11,7 +11,8 @@ class Notificacion extends React.Component {
         super(props);
         this.state = {
             notificaciones: [],
-            nombreClinica: '', // Nombre de la clínica desde la configuración
+            nombreClinica: '',
+            mensajeCumpleanos: '', // Mensaje personalizado desde configuración (placeholders: {nombre}, {nombreClinica})
         };
     }
 
@@ -26,7 +27,8 @@ class Notificacion extends React.Component {
                 if (res.data && res.data.length > 0) {
                     const config = res.data[0];
                     const nombreClinica = config.nombre_clinica || FuncionesExtras.Config.name_company || 'Clínica';
-                    this.setState({ nombreClinica });
+                    const mensajeCumpleanos = (config.mensaje_cumpleanos && config.mensaje_cumpleanos.trim()) ? config.mensaje_cumpleanos.trim() : '';
+                    this.setState({ nombreClinica, mensajeCumpleanos });
                 } else {
                     // Fallback al nombre del JSON si no hay config en BD
                     this.setState({ nombreClinica: FuncionesExtras.Config.name_company || 'Clínica' });
@@ -46,7 +48,9 @@ class Notificacion extends React.Component {
    
     compartirWhatsapp = (telefono, nombre) => {
         const nombreClinica = this.state.nombreClinica || FuncionesExtras.Config.name_company || 'Clínica';
-        const mensaje = `🎉 ¡Hola ${nombre}! 🎂 El equipo de ${nombreClinica} te desea un feliz cumpleaños 🎈.`;
+        const mensaje = this.state.mensajeCumpleanos
+            ? this.state.mensajeCumpleanos.replace(/\{nombre\}/g, nombre).replace(/\{nombreClinica\}/g, nombreClinica)
+            : `🎉 ¡Hola ${nombre}! 🎂 El equipo de ${nombreClinica} te desea un feliz cumpleaños 🎈.`;
         const url = `https://web.whatsapp.com/send?phone=1${telefono}&text=${encodeURIComponent(mensaje)}`;
 
         if (this.waWindow && !this.waWindow.closed) {
@@ -81,7 +85,9 @@ class Notificacion extends React.Component {
                                     <p className="descripcion">
                                         Hoy está de cumpleaños <strong>{data.nombre} {data.apellido}</strong> 🎂.<br />
                                         Teléfono: <strong>{data.telefono}</strong><br />
-                                        ¡Felicítalo y demuéstrale lo especial que es para la familia Kadoshor!
+                                        {this.state.mensajeCumpleanos
+                                            ? this.state.mensajeCumpleanos.replace(/\{nombre\}/g, data.nombre).replace(/\{nombreClinica\}/g, this.state.nombreClinica || 'Clínica')
+                                            : '¡Felicítalo y demuéstrale lo especial que es para la familia Kadoshor!'}
                                     </p>
                                     <div className="botones">
                                         <button className="btn-negro" onClick={() => this.ver_paciente(data.id, data.id_doctor)}>

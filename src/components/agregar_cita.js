@@ -9,14 +9,12 @@ import alertify from 'alertifyjs';
 import { Link,Redirect } from 'react-router-dom';
 
 
-  // **AQUÍ ESTÁ LA CLAVE**
-moment.locale('es', {
-    // Sobreescribe el formato de los días de la semana para que no se abrevien
-    weekdaysMin: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], // Mantener abreviación mínima si se requiere
+  // Actualizar locale existente 'es' (evita deprecación de defineLocale)
+moment.updateLocale('es', {
+    weekdaysMin: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     weekdaysShort: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-    // Usamos 'ddd' o 'dddd' para el formato de encabezado de día,
-    // que toma los valores de 'weekdaysShort' o 'weekdays'
 });
+moment.locale('es');
 // ------------------------------------------------------------------
 const localizer = momentLocalizer(moment);
 

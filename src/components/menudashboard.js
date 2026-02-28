@@ -36,7 +36,9 @@ import Configuracion from './configuracion';
 import AgregarCita from './agregar_cita';
 import Modulo_p from './modulo_p';
 import ActulizarPaciente from './actualizar_paciente';
-import Odontograma from './odontograma';  
+import Odontograma from './odontograma';
+import OdontogramaEditar from './odontograma_editar';
+import ChatSoporte from './chat_soporte';
 import FichaMedica from './ficha_medica';
 import ver_odontogramas from './ver_odontogramas';
 import VerOdontogramaIndividual from './ver_odontograma_individual';
@@ -712,6 +714,7 @@ class MenuDashboard extends React.Component {
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />
+              <Route path="/odontograma/editar/:id" component={OdontogramaEditar} />
               <Route path="/odontograma/:id_paciente/:id_doctor" component={Odontograma} />
               <Route path="/ver_odontogramas/:id_paciente" component={ver_odontogramas} />
               <Route path="/ver_odontograma/:id" component={VerOdontogramaIndividual} />
@@ -727,6 +730,7 @@ class MenuDashboard extends React.Component {
               <Route  component={Modulo_p} />
             </Switch>
         </div>
+        <ChatSoporte />
       </Router>
     );
   }

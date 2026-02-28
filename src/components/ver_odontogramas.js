@@ -184,23 +184,37 @@ const VerOdontogramas = (props) => {
                                             )}
                                         </div>
                                     </p>
-                                    <div className="d-flex justify-content-between" style={{ marginTop: '20px', gap: '10px' }}>
+                                    <div className="d-flex justify-content-between flex-wrap" style={{ marginTop: '20px', gap: '10px' }}>
                                         <Link 
                                             to={`/ver_odontograma/${odontograma.id}`} 
                                             className="btn btn-primary btn-sm"
                                             style={{ 
                                                 flex: 1,
+                                                minWidth: '80px',
                                                 padding: '8px 15px',
                                                 borderRadius: '5px'
                                             }}
                                         >
                                             <i className="fas fa-eye"></i> Ver
                                         </Link>
+                                        <Link 
+                                            to={`/odontograma/editar/${odontograma.id}`} 
+                                            className="btn btn-success btn-sm"
+                                            style={{ 
+                                                flex: 1,
+                                                minWidth: '80px',
+                                                padding: '8px 15px',
+                                                borderRadius: '5px'
+                                            }}
+                                        >
+                                            <i className="fas fa-sync-alt"></i> Actualizar
+                                        </Link>
                                         <button 
                                             className="btn btn-danger btn-sm"
                                             onClick={() => eliminarOdontograma(odontograma.id)}
                                             style={{ 
                                                 flex: 1,
+                                                minWidth: '80px',
                                                 padding: '8px 15px',
                                                 borderRadius: '5px'
                                             }}

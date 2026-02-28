@@ -40,12 +40,16 @@ const CURSOR_BORRADOR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="32" 
 const CURSOR_BORRADOR = 'url("data:image/svg+xml,' + encodeURIComponent(CURSOR_BORRADOR_SVG) + '") 16 24, crosshair';
 
 // --- COMPONENTE PRINCIPAL ---
-const OdontogramaCompletoHibrido = () => {
+const OdontogramaCompletoHibrido = (props = {}) => {
+  const params = useParams();
+  const id_paciente = props.id_paciente != null ? props.id_paciente : params.id_paciente;
+  const id_doctor = props.id_doctor != null ? props.id_doctor : params.id_doctor;
+  const id_odontograma = props.id_odontograma ?? null;
+  const initialDibujo = props.initialDibujo ?? null;
+  const initialPresupuesto = props.initialPresupuesto ?? [];
 
-
-  const { id_paciente, id_doctor } = useParams();
   // === ESTADOS GENERALES ===
-  const [presupuesto, setPresupuesto] = useState([]);
+  const [presupuesto, setPresupuesto] = useState(initialPresupuesto.length > 0 ? initialPresupuesto : []);
   const [seleccionCara, setSeleccionCara] = useState(null); // Para el odontograma cara a cara
   const [colorDibujo, setColorDibujo] = useState("red"); // Para el canvas principal
   const [modoBorrador, setModoBorrador] = useState(false); // true = cursor borrador, los trazos que toque se eliminan
@@ -481,31 +485,47 @@ const OdontogramaCompletoHibrido = () => {
     }
 
     const usuarioId = localStorage.getItem("id_usuario");
-    
-    Axios.post(`${Core.url_base}/api/crear_odontograma`, {
-      id_paciente: pacienteId,
-      id_doctor: doctorId,
-      dibujo_odontograma: dibujoActual, // El dibujo del canvas como Data URL
-      detalles: detalles.length > 0 ? detalles : [], // Los procedimientos seleccionados
-      usuario_id: usuarioId // Para auditoría
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity
-    }).then(response => {
-      // Reproducir sonido de logro al guardar el odontograma
-      reproducirSonidoLogro();
-      Alertify.success("Odontograma guardado correctamente.");
-      // Redirigir a la lista de odontogramas del paciente
-      window.location.href = `/ver_odontogramas/${id_paciente}`;
-    }).catch(error => {
-      console.error("Error al guardar:", error.response?.data || error.message);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Error desconocido";
-      Alertify.error("Error al guardar el odontograma: " + errorMessage);
-    });
-  }, [id_paciente, id_doctor, presupuesto]);
+
+    const payload = {
+      dibujo_odontograma: dibujoActual,
+      detalles: detalles.length > 0 ? detalles : [],
+      usuario_id: usuarioId
+    };
+
+    if (id_odontograma) {
+      Axios.post(`${Core.url_base}/api/actualizar_odontograma/${id_odontograma}`, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      }).then(() => {
+        reproducirSonidoLogro();
+        Alertify.success("Odontograma actualizado correctamente.");
+        window.location.href = `/ver_odontogramas/${id_paciente}`;
+      }).catch(error => {
+        console.error("Error al actualizar:", error.response?.data || error.message);
+        const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Error desconocido";
+        Alertify.error("Error al actualizar el odontograma: " + errorMessage);
+      });
+    } else {
+      Axios.post(`${Core.url_base}/api/crear_odontograma`, {
+        id_paciente: pacienteId,
+        id_doctor: doctorId,
+        ...payload
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      }).then(() => {
+        reproducirSonidoLogro();
+        Alertify.success("Odontograma guardado correctamente.");
+        window.location.href = `/ver_odontogramas/${id_paciente}`;
+      }).catch(error => {
+        console.error("Error al guardar:", error.response?.data || error.message);
+        const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Error desconocido";
+        Alertify.error("Error al guardar el odontograma: " + errorMessage);
+      });
+    }
+  }, [id_paciente, id_doctor, id_odontograma, presupuesto]);
 
 
   const cargarOpcionesTratamiento = useCallback(() => {
@@ -659,6 +679,43 @@ const OdontogramaCompletoHibrido = () => {
       canvasInferiorTornillosRef.current.height = h;
     }
   }, [imagenOdontograma]);
+
+  // Modo edición: cargar dibujo guardado en las capas de trazos (mitad superior e inferior)
+  useEffect(() => {
+    if (!id_odontograma || !initialDibujo || !imagenOdontograma) return;
+    const canvasSup = canvasSuperiorStrokesRef.current;
+    const canvasInf = canvasInferiorStrokesRef.current;
+    if (!canvasSup || !canvasInf) return;
+    const w = imagenOdontograma.width;
+    const h = imagenOdontograma.height / 2;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const ctxSup = canvasSup.getContext('2d');
+      const ctxInf = canvasInf.getContext('2d');
+      ctxSup.drawImage(img, 0, 0, img.width, img.height / 2, 0, 0, w, h);
+      ctxInf.drawImage(img, 0, img.height / 2, img.width, img.height / 2, 0, 0, w, h);
+    };
+    img.onerror = () => console.warn('No se pudo cargar el dibujo del odontograma para edición');
+    img.src = initialDibujo;
+  }, [id_odontograma, initialDibujo, imagenOdontograma]);
+
+  // Modo edición: cargar las piezas marcadas (detalles) desde la base de datos solo al abrir
+  const appliedInitialPresupuestoRef = useRef(null);
+  useEffect(() => {
+    if (!id_odontograma || !initialPresupuesto || initialPresupuesto.length === 0) return;
+    if (appliedInitialPresupuestoRef.current === id_odontograma) return;
+    appliedInitialPresupuestoRef.current = id_odontograma;
+    setPresupuesto(initialPresupuesto.map((d) => ({
+      diente: Number(d.diente) ?? d.diente,
+      cara: d.cara != null ? String(d.cara) : '',
+      tipo: d.tipo || 'procedimiento',
+      descripcion: d.descripcion || '',
+      nombre: d.descripcion || d.nombre || '',
+      precio: parseFloat(d.precio) || 0,
+      color: d.color || null
+    })));
+  }, [id_odontograma, initialPresupuesto]);
 
   // Redibujar capas de tornillos cuando cambian las listas
   useEffect(() => {
@@ -2032,7 +2089,7 @@ const OdontogramaCompletoHibrido = () => {
                 className="btn btn-primary btn-block font-weight-bold py-3 shadow"
                 onClick={GuargarOdontograma}
               >
-                💾 GUARDAR REGISTRO CLÍNICO
+                {id_odontograma ? '💾 ACTUALIZAR REGISTRO CLÍNICO' : '💾 GUARDAR REGISTRO CLÍNICO'}
               </button>
             </div>
           </div>

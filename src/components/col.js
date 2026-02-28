@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '..css/bootstrap.css';
+import '../css/bootstrap.css';
 
 class Col extends React.Component{
 

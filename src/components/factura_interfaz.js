@@ -19,6 +19,7 @@ class FacturaInterfaz extends React.Component {
         super(props);
         this.state={
             descuentos_aplicados:0,
+            descuentos:[],
             contador:false,
             paciente:{},
             procedimientos_imprimir:[],
@@ -126,39 +127,27 @@ class FacturaInterfaz extends React.Component {
     }
     
     descontar=(id_factura)=>{
-            
-        Alertify.confirm("Descuento manual",`
+            const self = this;
+            Alertify.confirm("Descuento manual",`
         <input type='number' class='form-control col-md-5' id="descontar" placeholder='Digite el monto'>
         <hr/><textarea cols='30' class='form-control' id="comentario" placeholder='Comentario de descuento'></textarea>`,
-        
-        function(e){
-
-            let descuento = parseInt(document.getElementById('descontar').value);
-            let comentario = document.getElementById('comentario').value;
-            
-           // var clock = this.validar_pago(this.state.factura.precio_estatus,descuento);
-
-           // if(clock==true){
-                Axios.get(`${Url_base.url_base}/api/descontar_precio_factura/${id_factura}/${descuento}/${comentario}`).then(data=>{
-                    Alertify.success("Descuento aplicado con exito");
-                    this.setState({factura:{precio_estatus:this.state.factura.precio_estatus-descuento}});
-
-                }).catch(error=>{
-                    //Alertify.error("No se pudo aplicar el descuento con exito");
-                    console.log(error);
-                })
-           // }
-
-
-        },function(e){
-
-
-
-        }).set('resizable',true).resizeTo(500,300);
-
-
-
-        
+        function(){
+            let descuento = parseInt(document.getElementById('descontar').value, 10);
+            let comentario = document.getElementById('comentario') ? document.getElementById('comentario').value : '';
+            if (!descuento || isNaN(descuento)) {
+                Alertify.warning("Ingrese un monto válido");
+                return;
+            }
+            Axios.get(`${Url_base.url_base}/api/descontar_precio_factura/${id_factura}/${descuento}/${comentario || ''}`).then(()=>{
+                Alertify.success("Descuento aplicado con éxito");
+                self.setState({ factura: { ...self.state.factura, precio_estatus: self.state.factura.precio_estatus - descuento } });
+                self.cargar_descuentos_de_facutra(id_factura, "solo_texto");
+                self.cargar_factura(id_factura);
+            }).catch((error)=>{
+                Alertify.error("No se pudo aplicar el descuento");
+                console.log(error);
+            });
+        }, function(){}).set('resizable',true).resizeTo(500,300);
     }
 
 
@@ -193,6 +182,7 @@ class FacturaInterfaz extends React.Component {
                                 
                     });
 
+this.setState({ descuentos: data.data || [] });
                     Alertify.confirm("Descuentos en esta factura",`<p style='color:#9319d3;'>Descuentos aplicados</p>
                     <div id="panel_descuento"><table class="table">
                         <tr>
@@ -251,8 +241,7 @@ class FacturaInterfaz extends React.Component {
             });
 
         }else{
-
-                this.setState({descuentos_aplicados:data.data.length});
+                this.setState({descuentos_aplicados:data.data.length, descuentos: data.data || []});
         }
 
         }).catch(error=>{
@@ -512,21 +501,27 @@ enviarPago = () => {
     }
 
     eliminar_descuento(id_descuento){
-    
-       console.log(id_descuento);
-        Axios.post({
-            url:`${Url_base.url_base}/eliminar_descuento/`,
-            method:'post',
-            data:{
-                id_descuento:id_descuento
-            }
-        }).then(data=>{
-                Alertify.message("Descuento borrado con exito");
-        }).catch(error=>{
+        Axios.post(`${Url_base.url_base}/api/eliminar_descuento`, { id_descuento: id_descuento })
+            .then(() => {
+                Alertify.message("Descuento borrado con éxito");
+            })
+            .catch(() => {
                 Alertify.error("Error al eliminar descuento");
-        });
+            });
+    }
 
-
+    eliminar_descuento_factura = (id_descuento) => {
+        Alertify.confirm("Eliminar descuento", "¿Está seguro de eliminar este descuento?", () => {
+            Axios.post(`${Url_base.url_base}/api/eliminar_descuento`, { id_descuento: id_descuento })
+                .then(() => {
+                    Alertify.success("Descuento eliminado");
+                    this.cargar_descuentos_de_facutra(this.props.match.params.id_factura, "solo_texto");
+                    this.cargar_factura(this.props.match.params.id_factura);
+                })
+                .catch(() => {
+                    Alertify.error("Error al eliminar descuento");
+                });
+        }, function() {});
     }
 
     cargar_factura=(id_factura)=>{
@@ -772,7 +767,7 @@ enviarPago = () => {
                     </Link>
                     <button 
                         className="btn"
-                        onClick={() => this.cargar_descuentos_de_facutra(this.props.match.params.id_factura)}
+                        onClick={() => this.cargar_descuentos_de_facutra(this.props.match.params.id_factura, 'solo_texto')}
                         style={{
                             background: 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)',
                             color: 'white',
@@ -791,23 +786,84 @@ enviarPago = () => {
                             e.target.style.boxShadow = 'none';
                         }}
                     >
-                        <i className="fas fa-tags me-2"></i>Ver descuentos ({this.state.descuentos_aplicados})
+                        <i className="fas fa-sync-alt me-2"></i>Actualizar descuentos ({this.state.descuentos_aplicados})
                     </button>
                 </div>
 
                 <hr style={{ margin: '25px 0', borderColor: '#e0e0e0' }} />
 
-                {/* Información de Descuentos */}
-                <div style={{
-                    marginBottom: '20px',
-                    padding: '12px 16px',
-                    background: 'rgba(102, 126, 234, 0.1)',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(102, 126, 234, 0.2)'
-                }}>
-                    <strong style={{ color: '#667eea' }}>
-                        Cantidad de descuentos aplicados en esta factura ({this.state.descuentos_aplicados})
-                    </strong>
+                {/* Historial de descuentos - Siempre visible en la factura */}
+                <h2 style={{ marginBottom: '20px', fontWeight: 700, color: '#2d2d2f' }}>
+                    <i className="fas fa-tags me-2" style={{ color: '#667eea' }}></i>Historial de descuentos
+                </h2>
+                <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', marginBottom: '24px' }}>
+                    <div className="card-body p-0">
+                        {this.state.descuentos && this.state.descuentos.length > 0 ? (
+                            <div className="table-responsive">
+                                <table className="table table-hover mb-0" style={{ margin: 0 }}>
+                                    <thead style={{ background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
+                                        <tr>
+                                            <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Monto de descuento</th>
+                                            <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Comentario</th>
+                                            <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6' }}>Fecha</th>
+                                            <th style={{ padding: '15px', fontWeight: 600, color: '#495057', borderBottom: '2px solid #dee2e6', textAlign: 'center' }}>Eliminar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {this.state.descuentos.map((d) => (
+                                            <tr 
+                                                key={d.id} 
+                                                style={{
+                                                    transition: 'all 0.2s ease',
+                                                    borderBottom: '1px solid #f0f0f0'
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                            >
+                                                <td style={{ padding: '15px', fontWeight: 600, color: '#dc3545' }}>
+                                                    RD$ {new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2 }).format(d.monto)}
+                                                </td>
+                                                <td style={{ padding: '15px', color: '#495057' }}>{d.comentario || '—'}</td>
+                                                <td style={{ padding: '15px', color: '#6c757d' }}>
+                                                    {d.created_at ? new Date(d.created_at).toLocaleDateString('es-DO', { dateStyle: 'short' }) : '—'}
+                                                </td>
+                                                <td style={{ padding: '15px', textAlign: 'center' }}>
+                                                    <button 
+                                                        type="button"
+                                                        className="btn btn-sm"
+                                                        onClick={() => this.eliminar_descuento_factura(d.id)}
+                                                        style={{
+                                                            background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 16px',
+                                                            fontWeight: 600,
+                                                            transition: 'all 0.2s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.target.style.transform = 'translateY(-2px)';
+                                                            e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.target.style.transform = 'translateY(0)';
+                                                            e.target.style.boxShadow = 'none';
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>Eliminar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-muted mb-0 p-4" style={{ fontSize: '15px' }}>
+                                <i className="fas fa-info-circle me-2"></i>No hay descuentos aplicados en esta factura.
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Pagos Realizados */}
@@ -848,7 +904,7 @@ enviarPago = () => {
                                                 RD$ {new Intl.NumberFormat().format(data.monto)}
                                             </td>
                                             <td style={{ padding: '15px', color: '#495057' }}>{data.concepto_pago || 'N/A'}</td>
-                                            <td style={{ padding: '15px', color: '#495057' }}>{data.tipo_de_pago || 'N/A'}</td>
+                                            <td style={{ padding: '15px', color: '#495057' }}>{(data.tipo_de_pago || 'N/A').replace(/tarjeto/i, 'tarjeta')}</td>
                                             <td style={{ padding: '15px', color: '#6c757d' }}>{data.fecha_pago || 'N/A'}</td>
                                             <td style={{ padding: '15px', textAlign: 'center' }}>
                                                 <Link to={`/imprimir_recibo/${data.id}/${this.props.match.params.id_factura}/${this.props.match.params.id}/${this.state.factura.id}`}>

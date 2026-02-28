@@ -31,6 +31,7 @@ const ConfigComponent = () => {
     google_calendar_id: '',
     recordatorio_minutos: 30,
     clave_secreta: '',
+    mensaje_cumpleanos: '',
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -143,6 +144,8 @@ const ConfigComponent = () => {
       usar_google_calendar: false,
       google_calendar_id: '',
       recordatorio_minutos: 30,
+      clave_secreta: '',
+      mensaje_cumpleanos: '',
     });
     setLogoPreview(null);
     setFaviconPreview(null);
@@ -174,6 +177,8 @@ const ConfigComponent = () => {
       usar_google_calendar: config.usar_google_calendar || false,
       google_calendar_id: config.google_calendar_id || '',
       recordatorio_minutos: config.recordatorio_minutos || 30,
+      clave_secreta: config.clave_secreta || '',
+      mensaje_cumpleanos: config.mensaje_cumpleanos || '',
     });
 
     setLogoPreview(config.ruta_logo);
@@ -414,6 +419,31 @@ const ConfigComponent = () => {
                     />
                     <small className="form-text text-muted">
                       Esta clave será requerida para eliminar perfiles de pacientes, facturas o recibos
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mensaje de cumpleaños */}
+            <div className="card mb-4">
+              <div className="card-header bg-light">
+                <h5 className="mb-0"><i className="fas fa-birthday-cake"></i> Mensaje de cumpleaños</h5>
+              </div>
+              <div className="card-body" style={{ padding: '20px' }}>
+                <div className="row">
+                  <div className="col-md-12 mb-3">
+                    <label className="form-label">Mensaje para pacientes (WhatsApp y tarjeta)</label>
+                    <textarea
+                      className="form-control"
+                      name="mensaje_cumpleanos"
+                      value={formData.mensaje_cumpleanos}
+                      onChange={handleChange}
+                      rows={3}
+                      placeholder="Ej: 🎉 ¡Hola {nombre}! 🎂 El equipo de {nombreClinica} te desea un feliz cumpleaños 🎈."
+                    />
+                    <small className="form-text text-muted">
+                      Use <code>{'{nombre}'}</code> para el nombre del paciente y <code>{'{nombreClinica}'}</code> para el nombre de la clínica. Si lo deja vacío se usará el mensaje por defecto.
                     </small>
                   </div>
                 </div>

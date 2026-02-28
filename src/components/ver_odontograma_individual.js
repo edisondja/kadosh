@@ -229,7 +229,19 @@ const VerOdontogramaIndividual = () => {
             <div className="container mt-4" style={{ padding: '20px' }}>
                 <div className="d-flex justify-content-between align-items-center mb-4 no-print" style={{ padding: '0 10px' }}>
                     <h3>Odontograma #{odontograma.id}</h3>
-                    <div style={{ display: 'flex', gap: '15px' }}>
+                    <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                        <Link 
+                            to={`/odontograma/editar/${odontograma.id}`} 
+                            className="btn btn-success"
+                            style={{
+                                borderRadius: '8px',
+                                padding: '10px 20px',
+                                fontWeight: '600',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                            }}
+                        >
+                            <i className="fas fa-edit me-2"></i>Editar odontograma
+                        </Link>
                         <button 
                             onClick={handleImprimir}
                             className="btn btn-primary"
