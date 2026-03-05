@@ -350,7 +350,7 @@ class PacienteAdmin extends  React.Component{
 							<div className="col-md-6 mb-3">
 								<label style={{ fontWeight: 600, color: '#4b5563', marginBottom: '8px', display: 'block' }}>
 									<i className="fas fa-id-card me-2" style={{ color: '#667eea' }}></i>
-									Cédula o Pasaporte
+									Cédula o Pasaporte <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: '13px' }}>(opcional)</span>
 								</label>
 								<input 
 									type="text" 
@@ -381,7 +381,7 @@ class PacienteAdmin extends  React.Component{
 							<div className="col-md-6 mb-3">
 								<label style={{ fontWeight: 600, color: '#4b5563', marginBottom: '8px', display: 'block' }}>
 									<i className="fas fa-envelope me-2" style={{ color: '#667eea' }}></i>
-									Correo Electrónico
+									Correo Electrónico <span style={{ fontWeight: 400, color: '#9ca3af', fontSize: '13px' }}>(opcional)</span>
 								</label>
 								<input 
 									type="email"
