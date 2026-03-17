@@ -73,10 +73,19 @@ generarPDFyEnviarWhatsApp = async () => {
       formData.append('pdf', pdfBlob, 'recibo.pdf');
 
       const response = await Axios.post(`${Core.url_base}/api/subir_recibo_temp`, formData);
-      const pdfUrl = response.data.url;
+      const pdfUrl = response.data.view_url || response.data.url;
 
-      const telefono = this.state.recibo.factura?.paciente?.telefono?.replace(/\D/g, '') || '';
-      const mensaje = `Hola 👋, aquí tienes tu recibo de pago de ${Core.Config.name_company}:\n${pdfUrl}`;
+      let telefono = this.state.recibo.factura?.paciente?.telefono?.replace(/\D/g, '') || '';
+      // Normalizar a formato internacional si solo viene el número local (Rep. Dom. = 1 + 10 dígitos)
+      if (telefono.length === 10) telefono = `1${telefono}`;
+
+      // Evitar emojis/símbolos que algunos WhatsApp no muestran correctamente
+      const empresa = (Core.Config.name_company || 'la clínica')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      const mensaje = `Hola, aqui tienes tu recibo de pago de ${empresa}.\n\nDescargar: ${pdfUrl}`;
       const wsLink = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
       window.open(wsLink, '_blank');

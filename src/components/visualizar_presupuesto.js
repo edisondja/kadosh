@@ -67,15 +67,20 @@ class VisualizarPresupuesto extends React.Component {
                                 return Axios.post(`${Core.url_base}/api/subir_recibo_temp`, formData);
                         })
                         .then(response => {
-                                const pdfUrl = response.data.url;
+                                const pdfUrl = response.data.view_url || response.data.url;
 
-                                const telefono = this.state.paciente.telefono
+                                let telefono = this.state.paciente.telefono
                                 ? this.state.paciente.telefono.replace(/\D/g, '')
                                 : '';
+                                if (telefono.length === 10) telefono = `1${telefono}`;
+
+                                const empresa = (Core.Config.name_company || 'la clínica')
+                                  .toString()
+                                  .normalize('NFD')
+                                  .replace(/[\u0300-\u036f]/g, '');
 
                                 const mensaje =
-                                `Hola 👋, aquí tienes tu presupuesto de tratamiento de ${Core.Config.name_company}:\n` +
-                                pdfUrl;
+                                `Hola, aqui tienes tu presupuesto de tratamiento de ${empresa}.\n\nDescargar: ${pdfUrl}`;
 
                                 const wsLink =
                                 `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
