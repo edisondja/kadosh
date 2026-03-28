@@ -23,12 +23,6 @@ class ActualizarPaciente extends React.Component{
 
                 Axios.get(`${Core.url_base}/api/paciente/${id_paciente}`).then(data=>{
                         this.setState({paciente:data.data});
-                        console.log(this.state.paciente);
-
-                        if(this.state.paciente.foto_paciente==""){
-
-                                foto_paciente:document.getElementById("imagen_paciente").src=User;
-                        }
                 }).catch(error=>{
                         Alertify.error("Error al cargar paciente");
                 });
@@ -44,7 +38,10 @@ class ActualizarPaciente extends React.Component{
 
             Axios.post(`${Core.url_base}/api/actualizar_foto_paciente`,formData).then(data=>{
 
-                document.getElementById("imagen_paciente").src=Core.url_base+'/storage/'+data.data;
+                var url = Core.url_storage_publico(data.data);
+                if (url) {
+                    document.getElementById("imagen_paciente").src = url;
+                }
 
             }).catch(error=>{
 
@@ -236,8 +233,9 @@ class ActualizarPaciente extends React.Component{
                                 <div className="row align-items-center">
                                     <div className="col-md-4 text-center mb-3 mb-md-0">
                                         <img 
-                                            src={Core.url_base+'/storage/'+this.state.paciente.foto_paciente} 
+                                            src={Core.url_storage_publico(this.state.paciente.foto_paciente) || User} 
                                             id="imagen_paciente" 
+                                            onError={(e) => { e.target.onerror = null; e.target.src = User; }}
                                             style={{
                                                 height: '150px',
                                                 width: '150px',

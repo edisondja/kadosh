@@ -49,6 +49,8 @@ import PuntoVenta from './punto_venta';
 import SalariosDoctores from './salarios_doctores';
 import Especialidades from './especialidades';
 import ExportarImportar from './exportar_importar';
+import ConsultaDeudas from './consulta_deudas';
+import InvitarPaciente from './invitar_paciente';
 import Presupuestos from './presupuestos';
 import AdministrarTenants from './administrar_tenants';
 import AsignarGananciasRecibos from './asignar_ganancias_recibos';
@@ -202,6 +204,7 @@ class MenuDashboard extends React.Component {
       // Definir todas las opciones del menú como objetos con datos
       const opcionesGestion = [
         { ruta: "/paciente", icono: "fas fa-user-plus", texto: FuncionesExtras.lenguaje.agregar_paciente },
+        { ruta: "/invitar_paciente", icono: "fas fa-paper-plane", texto: "Invitar registro paciente" },
         { ruta: "/doctor", icono: "fas fa-user-md", texto: FuncionesExtras.lenguaje.agregar_doctor },
         { ruta: "/asignar_ganancias_recibos", icono: "fas fa-money-bill-wave", texto: "Asignar Ganancias por Recibo" },
         { ruta: "/procedimiento", icono: "fas fa-stethoscope", texto: FuncionesExtras.lenguaje.agregar_procedimiento },
@@ -219,7 +222,8 @@ class MenuDashboard extends React.Component {
         { ruta: "/nomina", icono: "fas fa-money-check-alt", texto: "Nómina" },
         { ruta: "/punto_venta", icono: "fas fa-cash-register", texto: "Punto de Venta" },
         { ruta: "/salarios_doctores", icono: "fas fa-hand-holding-usd", texto: "Salarios Doctores" },
-        { ruta: "/historial_pagos", icono: "fas fa-credit-card", texto: "Historial de Pagos" }
+        { ruta: "/historial_pagos", icono: "fas fa-credit-card", texto: "Historial de Pagos" },
+        { ruta: "/consulta_deudas", icono: "fas fa-file-invoice-dollar", texto: "Consulta de deudas" }
       ];
 
       const opcionesReportes = [
@@ -503,6 +507,7 @@ class MenuDashboard extends React.Component {
           <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
           <li><Link to="/notificaciones" id="notificaiones"><img src={NotificacionImg} className="img_estilo" />&nbsp;Notificaciones</Link></li>
           <li><Link to="/paciente" id="agregar_paciente"><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar Paciente</Link></li>
+          <li><Link to="/invitar_paciente"><i className="fas fa-paper-plane" style={{ width: 28, marginRight: 4, textAlign: 'center' }} />&nbsp;Invitar registro paciente</Link></li>
           <li><Link to="/citas_pendiente" id="cargar_citas"><img src={CitasImg} className="img_estilo" />&nbsp;Citas Pendiente</Link></li>
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
@@ -686,6 +691,7 @@ class MenuDashboard extends React.Component {
               <Route path="/cargar_pacientes" component={Citas} />
               <Route path="/citas" component={Citas} />
               <Route path="/paciente" component={Paciente} />
+              <Route path="/invitar_paciente" component={InvitarPaciente} />
               <Route path="/doctor" component={Doctor} />
               <Route path="/asignar_ganancias_recibos" component={AsignarGananciasRecibos} />
               <Route path="/procedimiento" component={ProcedimientoForm} />
@@ -709,6 +715,7 @@ class MenuDashboard extends React.Component {
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
               <Route path="/configuracion" component={Configuracion} />
               <Route path="/historial_pagos" component={HistorialPagos} />
+              <Route path="/consulta_deudas" component={ConsultaDeudas} />
               <Route path="/exportar_importar" component={ExportarImportar} />
               <Route path="/presupuestos" component={Presupuestos} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />

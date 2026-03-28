@@ -9,7 +9,22 @@ import LogoApp from '../noe_logo.png';
 var password = Config.passowrd_admin;
 //var url_base =  "https://service.clinickadosh.com";
 //var url_base =  "http://clinica1.miapp.local:8000";
-var url_base =  Config.api_url;
+// Elegir API según entorno (dev/local vs producción)
+var url_base = Config.api_url;
+try {
+    const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
+    const isLocal =
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host.endsWith('.local') ||
+        /^192\.168\.\d{1,3}\.\d{1,3}$/.test(host) ||
+        /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
+    if (isLocal && Config.api_url222) {
+        url_base = Config.api_url222;
+    }
+} catch (e) {
+    // mantener valor por defecto
+}
 var lenguaje =  Config.app_lang.es;
 
 
@@ -150,6 +165,86 @@ function cargar_factura(el,id_factura){
 
     });
 
+}
+
+/** Deudas por paciente: facturas con precio_estatus > 0 (misma lógica que consultar deuda). Fechas opcionales acotan por created_at. */
+function obtener_deudas_por_fecha(fecha_desde, fecha_hasta) {
+    const params = {};
+    if (fecha_desde && fecha_hasta) {
+        params.fecha_desde = fecha_desde;
+        params.fecha_hasta = fecha_hasta;
+    }
+    return Axios.get(`${url_base}/api/deudas_por_fecha`, { params }).then((response) => response.data);
+}
+
+/** Cabeceras para que Laravel 5 devuelva JSON en 422/validación (no HTML). */
+var headers_invitacion_json = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+};
+
+function verificar_invitacion_paciente(token) {
+    return Axios.get(`${url_base}/api/invitacion_paciente/${encodeURIComponent(token)}`, {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    }).then((r) => r.data);
+}
+
+function registrar_paciente_invitacion(payload) {
+    var foto = payload.foto_paciente;
+    var data = Object.assign({}, payload);
+    delete data.foto_paciente;
+
+    if (foto && typeof File !== 'undefined' && foto instanceof File) {
+        var fd = new FormData();
+        Object.keys(data).forEach(function (k) {
+            var v = data[k];
+            fd.append(k, v === undefined || v === null ? '' : v);
+        });
+        fd.append('foto_paciente', foto);
+        return Axios.post(`${url_base}/api/invitacion_paciente/registrar`, fd, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        }).then((r) => r.data);
+    }
+
+    return Axios.post(`${url_base}/api/invitacion_paciente/registrar`, data, {
+        headers: headers_invitacion_json,
+    }).then((r) => r.data);
+}
+
+/** URL pública de un archivo guardado en storage/app/public (foto paciente, radiografías, etc.). */
+function url_storage_publico(ruta) {
+    if (ruta === undefined || ruta === null) {
+        return '';
+    }
+    var s = String(ruta).trim();
+    if (s === '') {
+        return '';
+    }
+    s = s.replace(/\\/g, '/').replace(/^\/+/, '');
+    if (s.indexOf('public/') === 0) {
+        s = s.slice(7);
+    }
+    var name = s.indexOf('/') >= 0 ? s.split('/').pop() : s;
+    if (!name || name === '.' || name === '..') {
+        return '';
+    }
+    var base = String(url_base || '').replace(/\/+$/, '');
+    return base + '/storage/' + encodeURIComponent(name);
+}
+
+function crear_invitacion_paciente(id_doctor, telefono_destino) {
+    return Axios.post(
+        `${url_base}/api/invitacion_paciente/crear`,
+        {
+            id_doctor: Number(id_doctor),
+            telefono_destino: telefono_destino || null,
+        },
+        { headers: headers_invitacion_json }
+    ).then((r) => r.data);
 }
 
  function Consultar_deuda_de_paciente(id_paciente){
@@ -747,6 +842,11 @@ export default {eliminar_nota,
                 cargar_procedimientos_de_factura,
                 cargar_factura,
                 cargar_paciente,
+                obtener_deudas_por_fecha,
+                verificar_invitacion_paciente,
+                registrar_paciente_invitacion,
+                crear_invitacion_paciente,
+                url_storage_publico,
                 cargar_doctores,cargar_procedimientos,
                 password,
                 url_base,

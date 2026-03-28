@@ -138,23 +138,29 @@ class ExportarImportar extends React.Component {
         const { tipo, archivoSeleccionado, datosImportados, exportando, importando, resultadoImportacion } = this.state;
 
         return (
-            <div className="container-fluid mt-4">
-                <div className="row">
-                    <div className="col-md-10" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h3 className="mb-4 text-primary">
+            <div
+                className="col-12 col-md-10 exportar-importar-modulo"
+                style={{
+                    minHeight: '100vh',
+                    padding: '12px 16px',
+                    backgroundColor: '#f5f5f7',
+                    borderRadius: '16px',
+                }}
+            >
+                        <h3 className="mb-3 text-primary mt-1">
                             <i className="fas fa-exchange-alt me-2"></i>Exportar / Importar Datos
                         </h3>
 
                         {/* Selector de tipo */}
-                        <div className="card shadow-sm border-0 mb-4" style={{ borderRadius: '16px' }}>
+                        <div className="card shadow-sm border-0 mb-3" style={{ borderRadius: '16px' }}>
                             <div className="card-body p-4">
                                 <label className="form-label fw-bold mb-3" style={{ fontSize: '16px' }}>
                                     <i className="fas fa-filter me-2"></i>Seleccionar Tipo de Datos
                                 </label>
-                                <div className="btn-group w-100" role="group">
+                                <div className="d-flex flex-column flex-md-row w-100" style={{ gap: '10px' }}>
                                     <button
                                         type="button"
-                                        className={`btn ${tipo === 'pacientes' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        className={`btn flex-fill ${tipo === 'pacientes' ? 'btn-primary' : 'btn-outline-primary'}`}
                                         onClick={() => this.cambiarTipo('pacientes')}
                                         style={{ fontSize: '16px', padding: '12px' }}
                                     >
@@ -162,7 +168,7 @@ class ExportarImportar extends React.Component {
                                     </button>
                                     <button
                                         type="button"
-                                        className={`btn ${tipo === 'usuarios' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                        className={`btn flex-fill ${tipo === 'usuarios' ? 'btn-primary' : 'btn-outline-primary'}`}
                                         onClick={() => this.cambiarTipo('usuarios')}
                                         style={{ fontSize: '16px', padding: '12px' }}
                                     >
@@ -172,9 +178,9 @@ class ExportarImportar extends React.Component {
                             </div>
                         </div>
 
-                        <div className="row" style={{ display: 'flex', flexWrap: 'nowrap', gap: '20px' }}>
+                        <div className="row">
                     {/* Sección de Exportación */}
-                    <div className="col-md-6 mb-4" style={{ flex: '1', minWidth: 0 }}>
+                    <div className="col-12 col-md-6 mb-4">
                         <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px' }}>
                             <div className="card-header bg-primary text-white" style={{ borderRadius: '16px 16px 0 0' }}>
                                 <h5 className="mb-0">
@@ -208,7 +214,7 @@ class ExportarImportar extends React.Component {
                     </div>
 
                     {/* Sección de Importación */}
-                    <div className="col-md-6 mb-4" style={{ flex: '1', minWidth: 0 }}>
+                    <div className="col-12 col-md-6 mb-4">
                         <div className="card shadow-sm border-0 h-100" style={{ borderRadius: '16px' }}>
                             <div className="card-header bg-success text-white" style={{ borderRadius: '16px 16px 0 0' }}>
                                 <h5 className="mb-0">
@@ -345,8 +351,6 @@ class ExportarImportar extends React.Component {
                                 </li>
                             )}
                         </ul>
-                    </div>
-                </div>
                     </div>
                 </div>
             </div>

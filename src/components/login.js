@@ -1,122 +1,164 @@
 import React from 'react';
-import ReactDom from 'react-dom';
-import Logo from  '../logos.jpg';
 import Dashboard from './dashboard';
 import Verificar from './funciones_extras';
+import RegistroPacienteInvitacion from './registro_paciente_invitacion';
 import Axios from 'axios';
-import { Doughnut } from 'react-chartjs-2';
 import alertify from 'alertifyjs';
+import '../css/login.css';
 
-class Login extends React.Component{
+class Login extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			login: Verificar.login_status,
+			cargando: false,
+		};
+	}
 
-		constructor(props){
-			super(props);
-			this.state= {login:Verificar.login_status,mensaje:" entre a la administracion",pacientes:[{n:" Se "},{n:" SS "}]
-				
-			};
-			this.color_notifiacion = {
-					color:'blue'
-			}
-
-			this.logo_stilo ={
-				marginLeft:'35%'
-			}
-
-			
-
-
+	componentDidMount() {
+		if (localStorage.getItem('login') === null) {
+			this.setState({ login: false });
+		} else {
+			this.setState({ login: true });
 		}
-		onKeyUp(event) {
-			if (event.charCode === 13) {
-				document.getElementById("boton_login").click();
-			}
-		}
-		componentDidMount(){
+	}
 
+	iniciar_sesion = (e) => {
+		if (e && e.preventDefault) e.preventDefault();
 
+		const usuario = document.querySelector('#usuario')?.value?.trim() || '';
+		const clave = document.querySelector('#clave')?.value || '';
 
-			if (localStorage.getItem("login") === null) {
-
-				this.setState({login:false});
-
-				
-		   	}else{
-
-				this.setState({login:true});
-
-			}
-			
+		if (!usuario || !clave) {
+			alertify.warning('Ingrese usuario y contraseña.');
+			return;
 		}
 
-		iniciar_sesion=()=>{	
-			let usuario = document.querySelector("#usuario").value;
-			let clave = document.querySelector("#clave").value;
-
-			Axios.get(`${Verificar.url_base}/api/login/${usuario}/${clave}`).then(data=>{
-				if(data.data && data.data.id && data.data.token){
-					this.setState({login:true});
-					this.setState({mensaje:" Credenciales correctas"});
-					this.color_notifiacion={color:"green"}
-					localStorage.setItem('login', data.data.nombre+" "+data.data.apellido);
-					localStorage.setItem('id_usuario',data.data.id);
-					localStorage.setItem('token',data.data.token);
-					localStorage.setItem('roll',data.data.roll);
-					if(data.data.tipo){
-						localStorage.setItem('tipo_usuario',data.data.tipo);
+		this.setState({ cargando: true });
+		Axios.get(`${Verificar.url_base}/api/login/${encodeURIComponent(usuario)}/${encodeURIComponent(clave)}`)
+			.then((data) => {
+				if (data.data && data.data.id && data.data.token) {
+					this.setState({ login: true });
+					localStorage.setItem('login', data.data.nombre + ' ' + data.data.apellido);
+					localStorage.setItem('id_usuario', data.data.id);
+					localStorage.setItem('token', data.data.token);
+					localStorage.setItem('roll', data.data.roll);
+					if (data.data.tipo) {
+						localStorage.setItem('tipo_usuario', data.data.tipo);
 					}
 				} else {
-					this.setState({mensaje:" Usuario y contraseña no válidos"});
-					this.color_notifiacion={color:"red"}
-					alertify.message("Usuario y contraseña no son correctos")
+					alertify.error('Usuario y contraseña no son correctos');
 				}
-			}).catch(error=>{
-				this.setState({mensaje:" Usuario y contraseña no válidos"});
-				this.color_notifiacion={color:"red"}
-				alertify.message("Usuario y contraseña no son correctos")
+			})
+			.catch(() => {
+				alertify.error('Usuario y contraseña no son correctos');
+			})
+			.finally(() => {
+				this.setState({ cargando: false });
 			});
+	};
 
-		
-		}
-
-		render(){
-			let dashboard;
-			if(this.state.login==true){
-
-				dashboard=<Dashboard/>
-
-			}else{	
-
-					dashboard=<div className="row">
-					<div className="col-md-4"></div>
-					
-						<div className="col-md-4 stilo_login"  onKeyPress={this.onKeyUp}><br/><br/>
-						<img src={Verificar.Config.app_logo} width={Verificar.Config.logo_width_login} style={this.logo_stilo}  /><br/> 
-							<strong>Usuario</strong><br/>
-							<input type='text' placeholder="&#9670; Usuario" className="form-control" id="usuario" /><br/>
-							<strong className="padding_text">Contraseña</strong><br/>
-							<input type='password' placeholder="&#9673; Clave" className="form-control" id="clave" /><br/>
-							<button className="btn btn-primary boton_login" onClick={this.iniciar_sesion} id="boton_login">Login</button>
-							<hr/>
-							 <p >{Verificar.Config.info_app} {Verificar.Config.website}</p>
-					
-						</div>
-						<div>
-						</div>
-						</div>
-						;
-					
-
+	render() {
+		if (typeof window !== 'undefined') {
+			const m = window.location.pathname.match(/^\/registro_paciente\/([^/]+)\/?$/i);
+			if (m && m[1]) {
+				return <RegistroPacienteInvitacion token={m[1]} />;
 			}
-
-
-			return (dashboard);
-
 		}
 
+		if (this.state.login === true) {
+			return <Dashboard />;
+		}
 
+		const cfg = Verificar.Config || {};
+		const nombreEmpresa = cfg.name_company || 'OdontoED';
 
+		return (
+			<div className="login-page">
+				<div className="login-page__noise" aria-hidden="true" />
+				<div className="login-page__inner">
+					<div className="login-card">
+						<div className="login-card__header">
+							<div className="login-card__logo-wrap">
+								<img
+									src={cfg.app_logo}
+									alt=""
+									className="login-card__logo"
+									width={cfg.logo_width_login || 160}
+								/>
+							</div>
+							<h1 className="login-card__title">Iniciar sesión</h1>
+							<p className="login-card__subtitle">{nombreEmpresa}</p>
+						</div>
 
+						<form className="login-card__form" onSubmit={this.iniciar_sesion} noValidate>
+							<label className="login-field-label" htmlFor="usuario">
+								<i className="fas fa-user login-field-icon" aria-hidden="true" />
+								Usuario
+							</label>
+							<div className="login-input-wrap">
+								<input
+									type="text"
+									id="usuario"
+									name="usuario"
+									className="login-input"
+									placeholder="Su nombre de usuario"
+									autoComplete="username"
+									disabled={this.state.cargando}
+								/>
+							</div>
 
+							<label className="login-field-label" htmlFor="clave">
+								<i className="fas fa-lock login-field-icon" aria-hidden="true" />
+								Contraseña
+							</label>
+							<div className="login-input-wrap">
+								<input
+									type="password"
+									id="clave"
+									name="clave"
+									className="login-input"
+									placeholder="••••••••"
+									autoComplete="current-password"
+									disabled={this.state.cargando}
+								/>
+							</div>
+
+							<button
+								type="submit"
+								className="login-submit"
+								id="boton_login"
+								disabled={this.state.cargando}
+							>
+								{this.state.cargando ? (
+									<>
+										<span className="login-submit__spinner" aria-hidden="true" />
+										Entrando…
+									</>
+								) : (
+									<>
+										<i className="fas fa-sign-in-alt mr-2" aria-hidden="true" />
+										Entrar
+									</>
+								)}
+							</button>
+						</form>
+
+						<footer className="login-card__footer">
+							<p className="login-card__legal">
+								{cfg.info_app}{' '}
+								{cfg.website ? (
+									<a href={`https://${cfg.website.replace(/^https?:\/\//, '')}`} className="login-card__link" target="_blank" rel="noopener noreferrer">
+										{cfg.website}
+									</a>
+								) : null}
+							</p>
+						</footer>
+					</div>
+				</div>
+			</div>
+		);
+	}
 }
 
-export default Login
+export default Login;

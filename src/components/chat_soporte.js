@@ -111,8 +111,13 @@ const ChatSoporte = () => {
     });
 
     Axios.post(`${Core.url_base}/api/soporte/enviar`, formData)
-      .then(() => {
-        Alertify.success('Mensaje enviado. Te responderemos a la brevedad.');
+      .then((res) => {
+        const clienteEnviado = res?.data?.cliente_enviado;
+        Alertify.success(
+          clienteEnviado === false
+            ? 'Mensaje enviado al soporte. No se pudo enviar confirmación al correo del cliente.'
+            : 'Mensaje enviado. Te responderemos a la brevedad.'
+        );
         setForm({ nombre: '', email: '', mensaje: '' });
         setAdjuntos([]);
         setPreviewUrls((prev) => {

@@ -1,13 +1,13 @@
 {
-  "api_url":"https://leonardobatista.odontoed.com/",
+  "api_urlb": "http://localhost:8000/",
+  "api_url":"https://leonardobatista.odontoed.com",
   "api_url32": "https://service.clinickadosh.com/",
-  "api_url222": "http://localhost:8000/",
   "name_company": "Clinica Dr.Leonardo Batista",
   "passowrd_admin":"batista2025",
   "app_version": "1.0.0",
   "app_description": "Sistema de gestión de pacientes",
   "app_author": "Edison De Jesus Abreu",
-  "app_email": "serive@odontoed.com",
+  "app_email": "service@odontoed.com",
   "app_phone": "849-340-2298", 
   "app_address": "C. Gracias de Dios 63, Jaquimeyes 81000, República Dominicana",
   "app_logo": "https://leonardobatistac1.odontoed.com/leonardo_batista.jpeg",
@@ -804,8 +804,5 @@
    
   
   }
-
-
-
 
 

@@ -524,12 +524,6 @@ class PerfilPaciente extends React.Component{
 
 				this.setState({paciente:data.data});
 
-				
-					if(this.state.paciente.foto_paciente==""){
-
-							document.getElementById("foto_paciente").src=ImagenPerfil;
-					}
-
 			}).catch(error=>{
 				
 				Alertify.error(`Error al cargar paciente`);
@@ -850,8 +844,15 @@ class PerfilPaciente extends React.Component{
 									<div className="d-flex align-items-center">
 										<img
 											id="foto_paciente"
-											src={Verficar.url_base + "/storage/" + this.state.paciente.foto_paciente}
+											src={
+												Verficar.url_storage_publico(this.state.paciente.foto_paciente) ||
+												ImagenPerfil
+											}
 											alt="Foto Paciente"
+											onError={(e) => {
+												e.target.onerror = null;
+												e.target.src = ImagenPerfil;
+											}}
 											style={{
 												width: '70px',
 												height: '70px',
@@ -2124,7 +2125,7 @@ class PerfilPaciente extends React.Component{
 											justifyItems: 'center'
 										}}>
 											{documentosFiltrados.map((doc, index) => {
-												const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+												const url = Verficar.url_storage_publico(doc.ruta_radiografia);
 												const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(doc.ruta_radiografia);
 												const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
 												const nombreArchivo = doc.ruta_radiografia.split('/').pop() || doc.ruta_radiografia;
@@ -2199,7 +2200,7 @@ class PerfilPaciente extends React.Component{
 										{this.state.lightboxDocumentoIndex !== null && documentosFiltrados.length > 0 && (() => {
 											const idx = this.state.lightboxDocumentoIndex;
 											const doc = documentosFiltrados[idx];
-											const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+											const url = Verficar.url_storage_publico(doc.ruta_radiografia);
 											const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(doc.ruta_radiografia);
 											const esPdf = /\.pdf$/i.test(doc.ruta_radiografia);
 											const titulo = doc.comentarios || doc.ruta_radiografia.split('/').pop() || 'Documento';
@@ -2315,7 +2316,7 @@ class PerfilPaciente extends React.Component{
 								</thead>
 								<tbody>
 									{this.state.documentos.map((doc) => {
-									const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+									const url = Verficar.url_storage_publico(doc.ruta_radiografia);
 									const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(
 										doc.ruta_radiografia
 									);
@@ -2431,7 +2432,7 @@ class PerfilPaciente extends React.Component{
 						) : (
 							<div className="row g-3">
 								{this.state.documentos.map((doc) => {
-								const url = `${Verficar.url_base}/storage/${doc.ruta_radiografia}`;
+								const url = Verficar.url_storage_publico(doc.ruta_radiografia);
 								const esImagen = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(
 									doc.ruta_radiografia
 								);
