@@ -133,7 +133,18 @@ class InvitarPaciente extends React.Component {
       return;
     }
     const clinica = (Core.Config && Core.Config.name_company) || 'la clínica';
-    const texto = `Hola 👋 Complete su registro en *${clinica}* con este enlace (solo sirve *una vez*):\n\n${enlace}`;
+    // Sin emojis: en algunos entornos se ven como "". Texto plano, legible en iOS, Android, Mac y Windows.
+    const texto = [
+      'Hola,',
+      '',
+      `*${clinica}* le invita a completar su registro como paciente.`,
+      '',
+      'Use el enlace de abajo. Solo puede usarlo una vez:',
+      '',
+      enlace,
+      '',
+      'Si tiene alguna duda, puede responder por este chat.',
+    ].join('\n');
     const url = `https://wa.me/${d}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };

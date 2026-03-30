@@ -56,24 +56,57 @@ class ImprimirRecibo extends React.Component {
     
   };
 
+  generarPdfBlobRecibo = async () => {
+    const elemento = document.getElementById('recibo');
+    if (!elemento) {
+      throw new Error('No se encontró el contenido del recibo.');
+    }
+
+    // Captura completa del recibo; luego se pagina en A4.
+    const canvas = await html2canvas(elemento, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      scrollY: -window.scrollY,
+      windowWidth: elemento.scrollWidth,
+      windowHeight: elemento.scrollHeight,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    heightLeft -= pageHeight;
+
+    // Si el recibo es largo, crea páginas adicionales sin recortar contenido.
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+    }
+
+    return pdf.output('blob');
+  };
+
 generarPDFyEnviarWhatsApp = async () => {
     try {
-      const elemento = document.getElementById('recibo');
-      const canvas = await html2canvas(elemento, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-      const pdfBlob = pdf.output('blob');
+      const pdfBlob = await this.generarPdfBlobRecibo();
       const formData = new FormData();
       formData.append('pdf', pdfBlob, 'recibo.pdf');
 
       const response = await Axios.post(`${Core.url_base}/api/subir_recibo_temp`, formData);
-      const pdfUrl = response.data.view_url || response.data.url;
+      const htmlUrl = response.data.view_url || response.data.url;
+      const pdfUrl = response.data.url || response.data.view_url;
 
       let telefono = this.state.recibo.factura?.paciente?.telefono?.replace(/\D/g, '') || '';
       // Normalizar a formato internacional si solo viene el número local (Rep. Dom. = 1 + 10 dígitos)
@@ -85,7 +118,7 @@ generarPDFyEnviarWhatsApp = async () => {
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
 
-      const mensaje = `Hola, aqui tienes tu recibo de pago de ${empresa}.\n\nDescargar: ${pdfUrl}`;
+      const mensaje = `Hola, aqui tienes tu recibo de pago de ${empresa}.\n\nVer recibo: ${htmlUrl}\nDescargar PDF: ${pdfUrl}`;
       const wsLink = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
       window.open(wsLink, '_blank');
@@ -177,35 +210,33 @@ generarPDFyEnviarWhatsApp = async () => {
 
   generarPDFyEnviar = async () => {
     try {
-      const elemento = document.getElementById('recibo');
-      const canvas = await html2canvas(elemento, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
+      const emailPaciente = (this.state.recibo?.factura?.paciente?.correo_electronico || '').trim();
+      if (!emailPaciente) {
+        Alertify.warning('El paciente no tiene correo electrónico registrado.');
+        return;
+      }
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-      const pdfBlob = pdf.output('blob');
+      const pdfBlob = await this.generarPdfBlobRecibo();
       const formData = new FormData();
       formData.append('pdf', pdfBlob, 'recibo.pdf');
-      formData.append('email', this.state.recibo.factura?.paciente?.correo_electronico || '');
+      formData.append('email', emailPaciente);
       formData.append('asunto', `Recibo de Pago - ${Core.Config.name_company}`);
       formData.append('nombre_compania', Core.Config.name_company);
       formData.append('logo_compania', Core.Config.app_logo);
       formData.append('direccion_compania', Core.Config.app_address);
       formData.append('telefono_compania', Core.Config.app_phone);
 
-      await Axios.post(`${Core.url_base}/api/enviar_recibo`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await Axios.post(`${Core.url_base}/api/enviar_recibo`, formData);
 
       Alertify.success('Recibo enviado por correo correctamente');
     } catch (error) {
       console.error(error);
-      Alertify.error('Error al generar o enviar el PDF');
+      const d = error.response?.data;
+      const msg =
+        (d && (d.message || d.error)) ||
+        error.message ||
+        'Error al generar o enviar el PDF';
+      Alertify.error(String(msg));
     }
   };
 
@@ -226,9 +257,59 @@ generarPDFyEnviarWhatsApp = async () => {
           margin: '0 auto',
           padding: '20px',
           minHeight: '100vh',
-          background: '#f9f9f9'
+          background: 'transparent'
         }}
       >
+        <style>{`
+          .recibo-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+          .recibo-action-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 170px;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+          }
+          .recibo-action-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+          }
+          .recibo-action-btn:active {
+            transform: translateY(0);
+          }
+          .recibo-action-btn--print {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+          }
+          .recibo-action-btn--back {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+          }
+          .recibo-action-btn--mail {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+          }
+          .recibo-action-btn--ws {
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+          }
+          @media (max-width: 768px) {
+            .recibo-action-btn {
+              width: 100%;
+              min-width: 0;
+            }
+          }
+        `}</style>
         {/* Logo solo visible en pantalla */}
         <div className="text-center mb-3 d-print-none">
           <img
@@ -243,22 +324,26 @@ generarPDFyEnviarWhatsApp = async () => {
         </div>
 
         {/* Botones */}
-        <div className="text-center mb-3 d-print-none">
-          <button className="btn btn-primary me-2" onClick={this.Imprimir}>
-            <i className="fas fa-print"></i> Imprimir
-          </button>&nbsp;
-          <Link to={`/perfil_paciente/${this.props.match.params.id_factura}/${this.props.match.params.id_doctor || ''}`} >
-            <button className="btn btn-secondary me-2">
-            <i className="fas fa-arrow-left"></i> Volver
+        <div className="recibo-actions d-print-none">
+          <button className="recibo-action-btn recibo-action-btn--print" onClick={this.Imprimir}>
+            <i className="fas fa-print" aria-hidden="true"></i>
+            Imprimir Recibo
           </button>
-          </Link>&nbsp;
-     
-          <button onClick={this.generarPDFyEnviar} className="btn btn-success">
-            <i className="fas fa-file-pdf"></i> Enviar PDF
-          </button>&nbsp;
+          <Link to={`/perfil_paciente/${this.props.match.params.id_factura}/${this.props.match.params.id_doctor || ''}`} >
+            <button className="recibo-action-btn recibo-action-btn--back">
+              <i className="fas fa-arrow-left" aria-hidden="true"></i>
+              Volver al Perfil
+            </button>
+          </Link>
 
-          <button onClick={this.generarPDFyEnviarWhatsApp} className="btn btn-info">
-            <i className="fab fa-whatsapp"></i> Enviar por WhatsApp
+          <button onClick={this.generarPDFyEnviar} className="recibo-action-btn recibo-action-btn--mail">
+            <i className="fas fa-paper-plane" aria-hidden="true"></i>
+            Enviar por Correo
+          </button>
+
+          <button onClick={this.generarPDFyEnviarWhatsApp} className="recibo-action-btn recibo-action-btn--ws">
+            <i className="fab fa-whatsapp" aria-hidden="true"></i>
+            Compartir por WhatsApp
           </button>
         </div>
 

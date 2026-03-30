@@ -247,6 +247,18 @@ function crear_invitacion_paciente(id_doctor, telefono_destino) {
     ).then((r) => r.data);
 }
 
+function verificar_invitacion_doctor(token) {
+    return Axios.get(`${url_base}/api/invitacion_doctor/${encodeURIComponent(token)}`, {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    }).then((r) => r.data);
+}
+
+function registrar_doctor_invitacion(payload) {
+    return Axios.post(`${url_base}/api/invitacion_doctor/registrar`, payload, {
+        headers: headers_invitacion_json,
+    }).then((r) => r.data);
+}
+
  function Consultar_deuda_de_paciente(id_paciente){
    
     Axios.get(`${url_base}/api/consultar_deuda/${id_paciente}`).then(data=>{
@@ -834,6 +846,22 @@ function importar_usuarios(datos) {
         });
 }
 
+function listar_roles() {
+    return Axios.get(`${url_base}/api/listar_roles`).then((r) => r.data);
+}
+
+function guardar_rol(payload) {
+    return Axios.post(`${url_base}/api/guardar_rol`, payload, {
+        headers: headers_invitacion_json,
+    }).then((r) => r.data);
+}
+
+function eliminar_rol(id_rol) {
+    return Axios.post(`${url_base}/api/eliminar_rol`, { id_rol }, {
+        headers: headers_invitacion_json,
+    }).then((r) => r.data);
+}
+
 export default {eliminar_nota,
                 cargar_generos_paciente,
                 cargar_suplidores,
@@ -846,6 +874,8 @@ export default {eliminar_nota,
                 verificar_invitacion_paciente,
                 registrar_paciente_invitacion,
                 crear_invitacion_paciente,
+                verificar_invitacion_doctor,
+                registrar_doctor_invitacion,
                 url_storage_publico,
                 cargar_doctores,cargar_procedimientos,
                 password,
@@ -899,6 +929,9 @@ export default {eliminar_nota,
                     importar_pacientes,
                     exportar_usuarios,
                     importar_usuarios,
+                    listar_roles,
+                    guardar_rol,
+                    eliminar_rol,
                     obtenerTituloDoctor,
                     formatearNombreDoctor
             };

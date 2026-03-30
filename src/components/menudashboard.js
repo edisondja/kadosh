@@ -55,8 +55,83 @@ import Presupuestos from './presupuestos';
 import AdministrarTenants from './administrar_tenants';
 import AsignarGananciasRecibos from './asignar_ganancias_recibos';
 import ManualUsuario from './manual_usuario';
-
 import Axios from 'axios';
+
+/** Bloquea por URL los módulos de administración y finanzas para el rol Odontologo. */
+function bloquearSiOdontologo(Wrapped) {
+  function OdontologoGuard(props) {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('roll') === 'Odontologo') {
+      return <Redirect to="/cargar_pacientes" />;
+    }
+    return <Wrapped {...props} />;
+  }
+  const wn = Wrapped && (Wrapped.displayName || Wrapped.name);
+  OdontologoGuard.displayName = `OdontologoGuard(${wn || 'Component'})`;
+  return OdontologoGuard;
+}
+
+const ContabilidadOdontologoGuard = bloquearSiOdontologo(Contabilidad_template);
+const NominaOdontologoGuard = bloquearSiOdontologo(Nomina);
+const PuntoVentaOdontologoGuard = bloquearSiOdontologo(PuntoVenta);
+const SalariosDoctoresOdontologoGuard = bloquearSiOdontologo(SalariosDoctores);
+const HistorialPagosOdontologoGuard = bloquearSiOdontologo(HistorialPagos);
+const ConsultaDeudasOdontologoGuard = bloquearSiOdontologo(ConsultaDeudas);
+const AsignarGananciasOdontologoGuard = bloquearSiOdontologo(AsignarGananciasRecibos);
+const ReporteOdontologoGuard = bloquearSiOdontologo(Reporte);
+const AuditoriaOdontologoGuard = bloquearSiOdontologo(Auditoria);
+const ExportarImportarOdontologoGuard = bloquearSiOdontologo(ExportarImportar);
+const AdministrarTenantsOdontologoGuard = bloquearSiOdontologo(AdministrarTenants);
+const ConfiguracionOdontologoGuard = bloquearSiOdontologo(Configuracion);
+const UsuarioOdontologoGuard = bloquearSiOdontologo(Usuario);
+const DoctorOdontologoGuard = bloquearSiOdontologo(Doctor);
+const ProcedimientoOdontologoGuard = bloquearSiOdontologo(ProcedimientoForm);
+const EspecialidadesOdontologoGuard = bloquearSiOdontologo(Especialidades);
+const PresupuestosOdontologoGuard = bloquearSiOdontologo(Presupuestos);
+
+function permisosUsuarioActual() {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('permisos') : null;
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj && typeof obj === 'object' ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function bloquearSinPermiso(Wrapped, permisoKey) {
+  function PermisoGuard(props) {
+    const roll = typeof localStorage !== 'undefined' ? localStorage.getItem('roll') : '';
+    if (roll === 'Administrador') return <Wrapped {...props} />;
+    const permisos = permisosUsuarioActual();
+    if (roll === 'Personalizado' && !permisos[permisoKey]) {
+      return <Redirect to="/cargar_pacientes" />;
+    }
+    return <Wrapped {...props} />;
+  }
+  return PermisoGuard;
+}
+
+const UsuarioPermisoGuard = bloquearSinPermiso(UsuarioOdontologoGuard, 'agregar_usuario');
+const DoctorPermisoGuard = bloquearSinPermiso(DoctorOdontologoGuard, 'doctor');
+const ProcedimientoPermisoGuard = bloquearSinPermiso(ProcedimientoOdontologoGuard, 'procedimiento');
+const EspecialidadesPermisoGuard = bloquearSinPermiso(EspecialidadesOdontologoGuard, 'especialidades');
+const ReportePermisoGuard = bloquearSinPermiso(ReporteOdontologoGuard, 'reportes');
+const ContabilidadPermisoGuard = bloquearSinPermiso(ContabilidadOdontologoGuard, 'contabilidad');
+const NominaPermisoGuard = bloquearSinPermiso(NominaOdontologoGuard, 'nomina');
+const PuntoVentaPermisoGuard = bloquearSinPermiso(PuntoVentaOdontologoGuard, 'punto_venta');
+const SalariosPermisoGuard = bloquearSinPermiso(SalariosDoctoresOdontologoGuard, 'salarios_doctores');
+const HistorialPagosPermisoGuard = bloquearSinPermiso(HistorialPagosOdontologoGuard, 'historial_pagos');
+const ConsultaDeudasPermisoGuard = bloquearSinPermiso(ConsultaDeudasOdontologoGuard, 'consulta_deudas');
+const ConfiguracionPermisoGuard = bloquearSinPermiso(ConfiguracionOdontologoGuard, 'configuracion');
+const ExportarImportarPermisoGuard = bloquearSinPermiso(ExportarImportarOdontologoGuard, 'exportar_importar');
+const AuditoriaPermisoGuard = bloquearSinPermiso(AuditoriaOdontologoGuard, 'auditoria');
+const TenantsPermisoGuard = bloquearSinPermiso(AdministrarTenantsOdontologoGuard, 'administrar_tenants');
+const AsignarGananciasPermisoGuard = bloquearSinPermiso(AsignarGananciasOdontologoGuard, 'asignar_ganancias_recibos');
+const PacientePermisoGuard = bloquearSinPermiso(Paciente, 'paciente');
+const InvitarPacientePermisoGuard = bloquearSinPermiso(InvitarPaciente, 'invitar_paciente');
+const NotificacionesPermisoGuard = bloquearSinPermiso(Notificaciones, 'notificaciones');
+const AgregarCitaPermisoGuard = bloquearSinPermiso(AgregarCita, 'agregar_cita');
+
 class MenuDashboard extends React.Component {
   constructor(props) {
     super(props);
@@ -165,6 +240,27 @@ class MenuDashboard extends React.Component {
     }, 28800000);
   }
 
+  actualizarAplicacion = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if (typeof window !== 'undefined' && window.caches && window.caches.keys) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map((k) => window.caches.delete(k)));
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('app_last_forced_refresh', String(Date.now()));
+      }
+    } catch (e) {
+      // Ignorar errores de limpieza y forzar recarga igual.
+    }
+
+    const sep = window.location.href.includes('?') ? '&' : '?';
+    window.location.href = `${window.location.href}${sep}v=${Date.now()}`;
+  }
+
   render() {
     if (this.state.notificaciones.length > 0 && !this.state.notificado) {
       Alertify.success("Hoy están de cumpleaños, revise las notificaciones");
@@ -233,6 +329,7 @@ class MenuDashboard extends React.Component {
 
       const opcionesSistema = [
         { ruta: "/manual_usuario", icono: "fas fa-book", texto: "Manual de Usuario" },
+        { ruta: "/actualizar_app", icono: "fas fa-sync-alt", texto: "Actualizar sistema (limpiar caché)" },
         { ruta: "/configuracion", icono: "fas fa-cog", texto: "Configuración" },
         { ruta: "/exportar_importar", icono: "fas fa-exchange-alt", texto: "Exportar/Importar" },
         { ruta: "/administrar_tenants", icono: "fas fa-building", texto: "Administrar Tenants" },
@@ -497,6 +594,7 @@ class MenuDashboard extends React.Component {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
           <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
+          <li><Link to="/actualizar_app"><i className="fas fa-sync-alt"></i>&nbsp;Actualizar sistema</Link></li>
           <li><Link to="/contabilidad"><img src={Contabilidad} className="img_estilo" />&nbsp;Contabilidad</Link></li>
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
@@ -505,6 +603,7 @@ class MenuDashboard extends React.Component {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
           <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
+          <li><Link to="/actualizar_app"><i className="fas fa-sync-alt"></i>&nbsp;Actualizar sistema</Link></li>
           <li><Link to="/notificaciones" id="notificaiones"><img src={NotificacionImg} className="img_estilo" />&nbsp;Notificaciones</Link></li>
           <li><Link to="/paciente" id="agregar_paciente"><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar Paciente</Link></li>
           <li><Link to="/invitar_paciente"><i className="fas fa-paper-plane" style={{ width: 28, marginRight: 4, textAlign: 'center' }} />&nbsp;Invitar registro paciente</Link></li>
@@ -512,10 +611,52 @@ class MenuDashboard extends React.Component {
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
       );
+    } else if (localStorage.getItem("roll") === "Odontologo") {
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
+          <li><Link to="/actualizar_app"><i className="fas fa-sync-alt"></i>&nbsp;Actualizar sistema</Link></li>
+          <li><Link to="/cargar_pacientes"><img src={CitasImg} className="img_estilo" />&nbsp;Pacientes / Citas</Link></li>
+          <li><Link to="/notificaciones" id="notificaiones"><img src={NotificacionImg} className="img_estilo" />&nbsp;Notificaciones</Link></li>
+          <li><Link to="/paciente" id="agregar_paciente"><img src={PacienteImg} className="img_estilo" />&nbsp;Agregar Paciente</Link></li>
+          <li><Link to="/invitar_paciente"><i className="fas fa-paper-plane" style={{ width: 28, marginRight: 4, textAlign: 'center' }} />&nbsp;Invitar registro paciente</Link></li>
+          <li><Link to="/citas_pendiente" id="cargar_citas"><img src={CitasImg} className="img_estilo" />&nbsp;Citas Pendiente</Link></li>
+          <li><Link to="/agregar_cita/"><i className="fas fa-calendar-plus" style={{ width: 28, marginRight: 4, textAlign: 'center' }} />&nbsp;Agregar cita</Link></li>
+          <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
+        </ul>
+      );
+    } else if (localStorage.getItem("roll") === "Personalizado") {
+      const permisos = permisosUsuarioActual();
+      const items = [
+        { ok: true, to: "/manual_usuario", txt: "Manual de Usuario", icon: "fas fa-book" },
+        { ok: true, to: "/actualizar_app", txt: "Actualizar sistema", icon: "fas fa-sync-alt" },
+        { ok: permisos.cargar_pacientes, to: "/cargar_pacientes", txt: "Pacientes / Citas", icon: "fas fa-calendar-check" },
+        { ok: permisos.notificaciones, to: "/notificaciones", txt: "Notificaciones", icon: "fas fa-bell" },
+        { ok: permisos.paciente, to: "/paciente", txt: "Agregar paciente", icon: "fas fa-user-plus" },
+        { ok: permisos.invitar_paciente, to: "/invitar_paciente", txt: "Invitar paciente", icon: "fas fa-paper-plane" },
+        { ok: permisos.doctor, to: "/doctor", txt: "Doctores", icon: "fas fa-user-md" },
+        { ok: permisos.especialidades, to: "/especialidades", txt: "Especialidades", icon: "fas fa-stethoscope" },
+        { ok: permisos.procedimiento, to: "/procedimiento", txt: "Procedimientos", icon: "fas fa-tools" },
+        { ok: permisos.agregar_usuario, to: "/agregar_usuario", txt: "Usuarios", icon: "fas fa-user-cog" },
+        { ok: permisos.contabilidad, to: "/contabilidad", txt: "Contabilidad", icon: "fas fa-calculator" },
+        { ok: permisos.nomina, to: "/nomina", txt: "Nómina", icon: "fas fa-money-check-alt" },
+        { ok: permisos.punto_venta, to: "/punto_venta", txt: "Punto de venta", icon: "fas fa-cash-register" },
+        { ok: permisos.reportes, to: "/reportes", txt: "Reportes", icon: "fas fa-file-alt" },
+        { ok: permisos.configuracion, to: "/configuracion", txt: "Configuración", icon: "fas fa-cog" },
+      ].filter((i) => i.ok);
+      Menu = (
+        <ul style={this.estilos} className="menuStilos">
+          {items.map((it) => (
+            <li key={it.to}><Link to={it.to}><i className={it.icon}></i>&nbsp;{it.txt}</Link></li>
+          ))}
+          <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
+        </ul>
+      );
     } else {
       Menu = (
         <ul style={this.estilos} className="menuStilos">
           <li><Link to="/manual_usuario"><i className="fas fa-book"></i>&nbsp;Manual de Usuario</Link></li>
+          <li><Link to="/actualizar_app"><i className="fas fa-sync-alt"></i>&nbsp;Actualizar sistema</Link></li>
           <li><Link to="/cerrar_sesion"><img src={Bloquear} className="img_estilo" />&nbsp;Cerrar Sesión</Link></li>
         </ul>
       );
@@ -690,34 +831,34 @@ class MenuDashboard extends React.Component {
               </Route>
               <Route path="/cargar_pacientes" component={Citas} />
               <Route path="/citas" component={Citas} />
-              <Route path="/paciente" component={Paciente} />
-              <Route path="/invitar_paciente" component={InvitarPaciente} />
-              <Route path="/doctor" component={Doctor} />
-              <Route path="/asignar_ganancias_recibos" component={AsignarGananciasRecibos} />
-              <Route path="/procedimiento" component={ProcedimientoForm} />
-              <Route path="/notificaciones" component={Notificaciones} />
-              <Route path="/reportes" component={Reporte} />
+              <Route path="/paciente" component={PacientePermisoGuard} />
+              <Route path="/invitar_paciente" component={InvitarPacientePermisoGuard} />
+              <Route path="/doctor" component={DoctorPermisoGuard} />
+              <Route path="/asignar_ganancias_recibos" component={AsignarGananciasPermisoGuard} />
+              <Route path="/procedimiento" component={ProcedimientoPermisoGuard} />
+              <Route path="/notificaciones" component={NotificacionesPermisoGuard} />
+              <Route path="/reportes" component={ReportePermisoGuard} />
               <Route path="/citas_pendiente" component={CitasPendiente} />
 			        <Route path="/perfil_paciente/:id/:id_doc" component={PerfilPaciente} />
               <Route path="/crear_prepuestos/:id/:id_doc" component={CrearPresupuesto} />
               <Route path="/editar_presupuesto/:id/:id_presupuesto/:id_doc" component={CrearPresupuesto} />
               <Route path="/presupuestos/:id/:id_doc" component={VerPresupuesto} />
-              <Route path="/contabilidad" component={Contabilidad_template} />
-              <Route path="/nomina" component={Nomina} />
-              <Route path="/punto_venta" component={PuntoVenta} />
-              <Route path="/salarios_doctores" component={SalariosDoctores} />
-              <Route path="/especialidades" component={Especialidades} />
+              <Route path="/contabilidad" component={ContabilidadPermisoGuard} />
+              <Route path="/nomina" component={NominaPermisoGuard} />
+              <Route path="/punto_venta" component={PuntoVentaPermisoGuard} />
+              <Route path="/salarios_doctores" component={SalariosPermisoGuard} />
+              <Route path="/especialidades" component={EspecialidadesPermisoGuard} />
               <Route path="/agregar_factura/:id/:id_doc" component={AgregarFactura} />
               <Route path="/ver_facturas/:id" component={VerFacturas} />
               <Route path="/ver_factura/:id/:id_factura" component={VerFactura} />
               <Route path="/editar_factura/:id/:id_factura" component={EditarFactura} />
-              <Route path="/agregar_usuario" component={Usuario} />
+              <Route path="/agregar_usuario" component={UsuarioPermisoGuard} />
               <Route path="/presupuesto/:id/:id_presupuesto/:id_doc" component={VerPresupuestoAhora} />
-              <Route path="/configuracion" component={Configuracion} />
-              <Route path="/historial_pagos" component={HistorialPagos} />
-              <Route path="/consulta_deudas" component={ConsultaDeudas} />
-              <Route path="/exportar_importar" component={ExportarImportar} />
-              <Route path="/presupuestos" component={Presupuestos} />
+              <Route path="/configuracion" component={ConfiguracionPermisoGuard} />
+              <Route path="/historial_pagos" component={HistorialPagosPermisoGuard} />
+              <Route path="/consulta_deudas" component={ConsultaDeudasPermisoGuard} />
+              <Route path="/exportar_importar" component={ExportarImportarPermisoGuard} />
+              <Route path="/presupuestos" component={PresupuestosOdontologoGuard} />
               <Route path="/actualizar_paciente/:id" component={ActulizarPaciente} />
               <Route path="/imprimir_recibo/:id_recibo/:id_factura/:id/:id_doctor" component={ImprimirRecibo} />
               <Route path="/ficha_medica/:id_paciente" component={FichaMedica} />
@@ -725,10 +866,18 @@ class MenuDashboard extends React.Component {
               <Route path="/odontograma/:id_paciente/:id_doctor" component={Odontograma} />
               <Route path="/ver_odontogramas/:id_paciente" component={ver_odontogramas} />
               <Route path="/ver_odontograma/:id" component={VerOdontogramaIndividual} />
-              <Route path="/agregar_cita/" component={AgregarCita} />
-              <Route path="/auditoria" component={Auditoria} />
-              <Route path="/administrar_tenants" component={AdministrarTenants} />
+              <Route path="/agregar_cita/" component={AgregarCitaPermisoGuard} />
+              <Route path="/auditoria" component={AuditoriaPermisoGuard} />
+              <Route path="/administrar_tenants" component={TenantsPermisoGuard} />
               <Route path="/manual_usuario" component={ManualUsuario} />
+              <Route path="/actualizar_app" render={() => {
+                this.actualizarAplicacion();
+                return (
+                  <div className="col-12 col-md-10 p-4">
+                    <div className="alert alert-info">Actualizando sistema, por favor espere...</div>
+                  </div>
+                );
+              }} />
               <Route path="/cerrar_sesion" render={() => {
                 localStorage.clear();
                 window.location.href = "/";

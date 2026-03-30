@@ -53,9 +53,15 @@ class DoctorFormulario extends React.Component{
 			var telefono = document.getElementById("telefono").value;
 			var especialidad = document.getElementById("especialidad").value;
 			var sexo = document.getElementById("sexo").value;
+			var correoEl = document.getElementById("correo_electronico");
+			var correo_electronico = correoEl ? correoEl.value.trim() : "";
 
 			if (!nombre || !apellido || !cedula || !telefono || !sexo) {
 				Alertify.error("Complete todos los campos requeridos");
+				return;
+			}
+			if (!correo_electronico) {
+				Alertify.error("Indique el correo del odontólogo para enviarle el enlace de registro");
 				return;
 			}
 
@@ -63,15 +69,29 @@ class DoctorFormulario extends React.Component{
 
 			// Normalizar URL (eliminar barra final si existe)
 			const urlBase = Core.url_base.endsWith('/') ? Core.url_base.slice(0, -1) : Core.url_base;
+			var urlFrontend = typeof window !== "undefined" && window.location ? window.location.origin : "";
 			Axios.post(`${urlBase}/api/crear_doctor_completo`, {
 				nombre: nombre,
 				apellido: apellido,
 				cedula: cedula,
 				telefono: telefono,
 				especialidad: especialidad || null,
-				sexo: sexo
+				sexo: sexo,
+				correo_electronico: correo_electronico,
+				url_frontend: urlFrontend || null
 			}).then(data=>{
-				Alertify.success("Doctor guardado con éxito");
+				var inv = data.data && data.data.invitacion_correo;
+				if (inv && inv.enviada) {
+					Alertify.success("Doctor guardado. Se envió el correo con el enlace para crear su acceso.");
+				} else if (inv && inv.motivo === "error_correo") {
+					Alertify.warning("Doctor guardado, pero no se pudo enviar el correo. Revise la configuración de correo del servidor.");
+				} else if (inv && inv.motivo === "sin_url_frontend") {
+					Alertify.warning("Doctor guardado, pero falta la URL del sistema (origen) para el enlace del correo.");
+				} else if (inv && inv.motivo === "error_invitacion") {
+					Alertify.warning("Doctor guardado, pero no se pudo crear la invitación (¿migraciones ejecutadas?).");
+				} else {
+					Alertify.success("Doctor guardado con éxito");
+				}
 				// Limpiar campos
 				document.getElementById("nombre").value = "";
 				document.getElementById("apellido").value = "";
@@ -79,6 +99,7 @@ class DoctorFormulario extends React.Component{
 				document.getElementById("telefono").value = "";
 				document.getElementById("especialidad").value = "";
 				document.getElementById("sexo").value = "";
+				if (correoEl) correoEl.value = "";
 				this._guardando = false;
 				this.setState({select_op:'buscar_doctor'});
 			}).catch(error=>{
@@ -135,6 +156,20 @@ class DoctorFormulario extends React.Component{
 							placeholder="809-000-0000"
 							pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
 							/>
+						</div>
+
+						<div className="mac-form-group">
+							<label>Correo electrónico</label>
+							<input
+								type="email"
+								className="mac-input"
+								id="correo_electronico"
+								placeholder="odontologo@correo.com"
+								autoComplete="email"
+							/>
+							<small className="text-muted d-block mt-1">
+								Se enviará un enlace para que defina usuario y contraseña (acceso sin módulos financieros).
+							</small>
 						</div>
 
 						<div className="mac-form-group">

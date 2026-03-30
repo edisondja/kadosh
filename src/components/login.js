@@ -2,6 +2,7 @@ import React from 'react';
 import Dashboard from './dashboard';
 import Verificar from './funciones_extras';
 import RegistroPacienteInvitacion from './registro_paciente_invitacion';
+import RegistroDoctorInvitacion from './registro_doctor_invitacion';
 import Axios from 'axios';
 import alertify from 'alertifyjs';
 import '../css/login.css';
@@ -14,6 +15,32 @@ class Login extends React.Component {
 			cargando: false,
 		};
 	}
+
+	notificarInicioSesion = (nombreCompleto) => {
+		const nombre = nombreCompleto || 'Usuario';
+		alertify.success(`Bienvenido, ${nombre}. Inicio de sesión correcto.`);
+
+		if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+		const mostrar = () => {
+			try {
+				new Notification('OdontoED', {
+					body: `Inicio de sesión detectado para ${nombre}`,
+					icon: (Verificar.Config && Verificar.Config.app_logo) || undefined,
+				});
+			} catch (e) {
+				// Ignorar errores del navegador en notificaciones
+			}
+		};
+
+		if (Notification.permission === 'granted') {
+			mostrar();
+		} else if (Notification.permission !== 'denied') {
+			Notification.requestPermission().then((perm) => {
+				if (perm === 'granted') mostrar();
+			});
+		}
+	};
 
 	componentDidMount() {
 		if (localStorage.getItem('login') === null) {
@@ -39,13 +66,16 @@ class Login extends React.Component {
 			.then((data) => {
 				if (data.data && data.data.id && data.data.token) {
 					this.setState({ login: true });
-					localStorage.setItem('login', data.data.nombre + ' ' + data.data.apellido);
+					const nombreUsuario = `${data.data.nombre || ''} ${data.data.apellido || ''}`.trim();
+					localStorage.setItem('login', nombreUsuario);
 					localStorage.setItem('id_usuario', data.data.id);
 					localStorage.setItem('token', data.data.token);
 					localStorage.setItem('roll', data.data.roll);
+					localStorage.setItem('permisos', JSON.stringify(data.data.permisos || {}));
 					if (data.data.tipo) {
 						localStorage.setItem('tipo_usuario', data.data.tipo);
 					}
+					this.notificarInicioSesion(nombreUsuario);
 				} else {
 					alertify.error('Usuario y contraseña no son correctos');
 				}
@@ -60,9 +90,13 @@ class Login extends React.Component {
 
 	render() {
 		if (typeof window !== 'undefined') {
-			const m = window.location.pathname.match(/^\/registro_paciente\/([^/]+)\/?$/i);
-			if (m && m[1]) {
-				return <RegistroPacienteInvitacion token={m[1]} />;
+			const mPac = window.location.pathname.match(/^\/registro_paciente\/([^/]+)\/?$/i);
+			if (mPac && mPac[1]) {
+				return <RegistroPacienteInvitacion token={mPac[1]} />;
+			}
+			const mDoc = window.location.pathname.match(/^\/registro_doctor\/([^/]+)\/?$/i);
+			if (mDoc && mDoc[1]) {
+				return <RegistroDoctorInvitacion token={mDoc[1]} />;
 			}
 		}
 

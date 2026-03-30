@@ -168,7 +168,10 @@ class Especialidades extends React.Component {
         const totalInactivas = this.state.especialidades.filter(esp => !esp.estado).length;
 
         return (
-            <div className="container-fluid mt-4" style={{ padding: '20px' }}>
+            <div
+                className="col-12 col-md-10 mt-4"
+                style={{ padding: '20px', minWidth: 0, minHeight: '100vh' }}
+            >
                 {/* Header con título y botón */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div>
